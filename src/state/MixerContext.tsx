@@ -20,12 +20,24 @@ import {
   removeCustomSound,
 } from '../storage/customSounds';
 import { loadSavedMixes, persistSavedMixes } from '../storage/mixStorage';
+import {
+  type PersistedTrackPreset,
+  type TrackOverrides,
+  loadFavoriteIds,
+  loadTrackOverrides,
+  loadTrackPresets,
+  persistFavoriteIds,
+  persistTrackOverrides,
+  persistTrackPresets,
+} from '../storage/trackPresets';
 import type {
   CustomSoundRecord,
   MixerSnapshot,
   SavedMix,
   SavedMixTrackState,
+  TrackCategory,
   TrackDefinition,
+  TrackSavedSettings,
   TrackState,
 } from '../types';
 
@@ -61,6 +73,20 @@ type MixerContextValue = {
     saveMix: (name: string) => void;
     loadMix: (mixId: string) => Promise<void>;
     deleteMix: (mixId: string) => void;
+    saveTrackPreset: (
+      sourceTrackId: string,
+      name: string,
+      category: TrackCategory,
+      settings: TrackSavedSettings,
+      existingPresetId?: string,
+    ) => string;
+    restoreTrackSettings: (
+      trackId: string,
+      settings: TrackSavedSettings,
+    ) => void;
+    deleteTrackPreset: (presetId: string) => void;
+    toggleFavorite: (trackId: string) => void;
+    saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => void;
   };
 };
 
@@ -88,32 +114,43 @@ function createCustomTracks(
   );
 }
 
-function createDefaultSingleTrackState(): TrackState {
+function createDefaultSingleTrackState(
+  savedSettings?: TrackSavedSettings,
+): TrackState {
   return {
     enabled: false,
-    volume: 0.78,
-    speed: 1,
-    followsGlobalTempo: true,
-    eqLow: 0,
-    eqMid: 0,
-    eqHigh: 0,
-    reverbSend: 0,
-    delaySend: 0,
+    volume: savedSettings?.volume ?? 0.78,
+    speed: savedSettings?.speed ?? 1,
+    followsGlobalTempo: savedSettings?.followsGlobalTempo ?? true,
+    eqLow: savedSettings?.eqLow ?? 0,
+    eqMid: savedSettings?.eqMid ?? 0,
+    eqHigh: savedSettings?.eqHigh ?? 0,
+    reverbSend: savedSettings?.reverbSend ?? 0,
+    delaySend: savedSettings?.delaySend ?? 0,
     isPlaying: false,
     isPreviewPlaying: false,
   };
 }
 
-function createTrackStateForTracks(
-  trackDefinitions: TrackDefinition[],
-): Record<string, TrackState> {
-  return Object.fromEntries(
-    trackDefinitions.map((track) => [
-      track.id,
-      createDefaultSingleTrackState(),
-    ]),
-  );
+function presetToTrackDefinition(
+  preset: PersistedTrackPreset,
+  favoriteIds: Set<string>,
+): TrackDefinition {
+  return {
+    id: preset.id,
+    name: preset.name,
+    kind: 'demo',
+    category: preset.category,
+    color: preset.color,
+    loopLengthSeconds: preset.loopLengthSeconds,
+    isFavorite: favoriteIds.has(preset.id),
+    savedSettings: preset.savedSettings,
+    sourceTrackId: preset.sourceTrackId,
+    preloadedSrc: preset.preloadedSrc,
+    customSoundId: preset.customSoundId,
+  };
 }
+
 
 async function loadPreloadedTracks(): Promise<TrackDefinition[]> {
   try {
@@ -202,6 +239,12 @@ export function MixerProvider({
     createInitialSnapshot,
   );
   const [tracks, setTracks] = useState<TrackDefinition[]>(DEFAULT_TRACKS);
+  const [, setPresets] = useState<PersistedTrackPreset[]>(
+    loadTrackPresets,
+  );
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(
+    loadFavoriteIds,
+  );
   const engine = useMemo(() => new AudioEngine(), []);
 
   useEffect(() => {
@@ -229,13 +272,37 @@ export function MixerProvider({
       const preloadedTracks = await loadPreloadedTracks();
       const baseTracks =
         preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
-      const nextTracks = [...baseTracks, ...createCustomTracks(sounds)];
+      const loadedPresets = loadTrackPresets();
+      const loadedFavorites = loadFavoriteIds();
+      const presetTracks = loadedPresets.map((p) =>
+        presetToTrackDefinition(p, loadedFavorites),
+      );
+      const nextTracks = [
+        ...baseTracks.map((t) => ({
+          ...t,
+          isFavorite: loadedFavorites.has(t.id),
+        })),
+        ...presetTracks,
+        ...createCustomTracks(sounds),
+      ];
 
+      setPresets(loadedPresets);
+      setFavoriteIds(loadedFavorites);
       setSnapshot((current) => ({
         ...current,
         customSounds: sounds,
         savedMixes: loadSavedMixes(),
-        trackStates: withMissingTrackStates(current.trackStates, nextTracks),
+        trackStates: {
+          ...withMissingTrackStates(current.trackStates, nextTracks),
+          ...Object.fromEntries(
+            presetTracks
+              .filter((t) => !(t.id in current.trackStates))
+              .map((t) => [
+                t.id,
+                createDefaultSingleTrackState(t.savedSettings),
+              ]),
+          ),
+        },
       }));
       setTracks(nextTracks);
     })();
@@ -477,13 +544,16 @@ export function MixerProvider({
       },
       clearAll: async () => {
         await engine.stopTransport(true);
+        const overrides: TrackOverrides = loadTrackOverrides();
         setSnapshot((current) => ({
           ...current,
           transportPlaying: false,
           globalTempo: DEFAULT_GLOBAL_TEMPO,
-          trackStates: withMissingTrackStates(
-            createTrackStateForTracks(tracks),
-            tracks,
+          trackStates: Object.fromEntries(
+            tracks.map((t) => [
+              t.id,
+              createDefaultSingleTrackState(overrides[t.id]),
+            ]),
           ),
         }));
       },
@@ -491,9 +561,21 @@ export function MixerProvider({
         const sounds = await loadCustomSounds();
         const preloadedTracks = await loadPreloadedTracks();
         const loadedMixes = loadSavedMixes();
+        const loadedPresets = loadTrackPresets();
+        const loadedFavorites = loadFavoriteIds();
         const baseTracks =
           preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
-        const nextTracks = [...baseTracks, ...createCustomTracks(sounds)];
+        const presetTracks = loadedPresets.map((p) =>
+          presetToTrackDefinition(p, loadedFavorites),
+        );
+        const nextTracks = [
+          ...baseTracks.map((t) => ({
+            ...t,
+            isFavorite: loadedFavorites.has(t.id),
+          })),
+          ...presetTracks,
+          ...createCustomTracks(sounds),
+        ];
         setSnapshot((current) => ({
           ...current,
           customSounds: sounds,
@@ -501,6 +583,8 @@ export function MixerProvider({
           trackStates: withMissingTrackStates(current.trackStates, nextTracks),
         }));
         setTracks(nextTracks);
+        setPresets(loadedPresets);
+        setFavoriteIds(loadedFavorites);
       },
       addCustomSound: async (file: File) => {
         const record = await addCustomSound(file);
@@ -546,6 +630,7 @@ export function MixerProvider({
             id: soundId,
             name: soundId.toUpperCase(),
             kind: 'custom',
+            category: 'custom' as const,
             color: '#ff4fd8',
             loopLengthSeconds: 8,
             customSoundId: soundId,
@@ -647,8 +732,137 @@ export function MixerProvider({
           savedMixes: nextMixes,
         }));
       },
+      saveTrackPreset: (
+        sourceTrackId: string,
+        name: string,
+        category: TrackCategory,
+        settings: TrackSavedSettings,
+        existingPresetId?: string,
+      ): string => {
+        const sourceTrack = tracks.find((t) => t.id === sourceTrackId);
+        if (!sourceTrack) return existingPresetId ?? '';
+        const generatedId = existingPresetId ?? `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        setPresets((current) => {
+          let next: PersistedTrackPreset[];
+          if (existingPresetId) {
+            next = current.map((p) =>
+              p.id === existingPresetId
+                ? { ...p, name, category, savedSettings: settings }
+                : p,
+            );
+          } else {
+            const newPreset: PersistedTrackPreset = {
+              id: generatedId,
+              name,
+              category,
+              color: sourceTrack.color,
+              loopLengthSeconds: sourceTrack.loopLengthSeconds,
+              savedSettings: settings,
+              sourceTrackId,
+              preloadedSrc: sourceTrack.preloadedSrc,
+              customSoundId: sourceTrack.customSoundId,
+            };
+            next = [...current, newPreset];
+          }
+          persistTrackPresets(next);
+          const presetTracks = next.map((p) =>
+            presetToTrackDefinition(p, favoriteIds),
+          );
+          setTracks((currentTracks) => {
+            const baseTracks = currentTracks.filter(
+              (t) => !t.sourceTrackId,
+            );
+            return [...baseTracks, ...presetTracks];
+          });
+          setSnapshot((s) => ({
+            ...s,
+            trackStates: {
+              ...s.trackStates,
+              ...Object.fromEntries(
+                presetTracks
+                  .filter((t) => !(t.id in s.trackStates))
+                  .map((t) => [
+                    t.id,
+                    createDefaultSingleTrackState(t.savedSettings),
+                  ]),
+              ),
+            },
+          }));
+          return next;
+        });
+        return generatedId;
+      },
+      restoreTrackSettings: (trackId: string, settings: TrackSavedSettings) => {
+        setSnapshot((current) => ({
+          ...current,
+          trackStates: mergeTrackState(current.trackStates, trackId, {
+            volume: settings.volume,
+            speed: settings.speed,
+            followsGlobalTempo: settings.followsGlobalTempo,
+            eqLow: settings.eqLow,
+            eqMid: settings.eqMid,
+            eqHigh: settings.eqHigh,
+            reverbSend: settings.reverbSend,
+            delaySend: settings.delaySend,
+          }),
+        }));
+        engine.updateTrackVolume(trackId, settings.volume);
+        engine.updateTrackRate(
+          trackId,
+          settings.followsGlobalTempo
+            ? snapshot.globalTempo
+            : settings.speed,
+        );
+        engine.updateTrackEq(
+          trackId,
+          settings.eqLow,
+          settings.eqMid,
+          settings.eqHigh,
+        );
+        engine.updateTrackEffects(
+          trackId,
+          settings.reverbSend,
+          settings.delaySend,
+        );
+      },
+      deleteTrackPreset: (presetId: string) => {
+        setPresets((current) => {
+          const next = current.filter((p) => p.id !== presetId);
+          persistTrackPresets(next);
+          setTracks((currentTracks) =>
+            currentTracks.filter((t) => t.id !== presetId),
+          );
+          setSnapshot((s) => {
+            const nextStates = { ...s.trackStates };
+            delete nextStates[presetId];
+            return { ...s, trackStates: nextStates };
+          });
+          return next;
+        });
+      },
+      toggleFavorite: (trackId: string) => {
+        setFavoriteIds((current) => {
+          const next = new Set(current);
+          if (next.has(trackId)) {
+            next.delete(trackId);
+          } else {
+            next.add(trackId);
+          }
+          persistFavoriteIds(next);
+          setTracks((currentTracks) =>
+            currentTracks.map((t) =>
+              t.id === trackId ? { ...t, isFavorite: next.has(trackId) } : t,
+            ),
+          );
+          return next;
+        });
+      },
+      saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => {
+        const current = loadTrackOverrides();
+        persistTrackOverrides({ ...current, [trackId]: settings });
+      },
     }),
-    [engine, snapshot, tracks],
+    [engine, favoriteIds, snapshot, tracks],
   );
 
   const value = useMemo<MixerContextValue>(

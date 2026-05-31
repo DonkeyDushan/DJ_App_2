@@ -1,13 +1,27 @@
-import type { PreloadedAudioFile, TrackDefinition, TrackState } from '../types';
+import type {
+  PreloadedAudioFile,
+  TrackCategory,
+  TrackDefinition,
+  TrackState,
+} from '../types';
 
 export const BASE_BPM = 120;
 export const DEFAULT_GLOBAL_TEMPO = 1;
+
+export function detectCategory(name: string): TrackCategory {
+  const lower = name.toLowerCase();
+  if (/drum|kick|snare|hat|perc|conga/.test(lower)) return 'drums';
+  if (/arp|bass|key|synth|mel|lead|seq|funk/.test(lower)) return 'arp';
+  if (/pad|atm|amb|string|choir/.test(lower)) return 'pad';
+  return 'other';
+}
 
 export const DEFAULT_TRACKS: TrackDefinition[] = [
   {
     id: 'drums',
     name: 'DRUMS',
     kind: 'demo',
+    category: 'drums',
     color: '#ff4fd8',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/drums.wav',
@@ -16,6 +30,7 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     id: 'bass',
     name: 'BASS',
     kind: 'demo',
+    category: 'arp',
     color: '#40d9ff',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/bass.wav',
@@ -24,6 +39,7 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     id: 'keys',
     name: 'KEYS',
     kind: 'demo',
+    category: 'arp',
     color: '#9f6bff',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/keys.wav',
@@ -32,6 +48,7 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     id: 'arp',
     name: 'ARP',
     kind: 'demo',
+    category: 'arp',
     color: '#ff8f4f',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/arp.wav',
@@ -40,6 +57,7 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     id: 'pad',
     name: 'PAD',
     kind: 'demo',
+    category: 'pad',
     color: '#6cff9f',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/pad.wav',
@@ -72,14 +90,18 @@ function createStableTrackId(fileName: string, index: number): string {
 export const createPreloadedTrackDefinitions = (
   files: PreloadedAudioFile[],
 ): TrackDefinition[] =>
-  files.map((file, index) => ({
-    id: createStableTrackId(file.fileName, index),
-    name: normalizeFileName(file.fileName).toUpperCase(),
-    kind: 'demo',
-    color: PRELOADED_COLORS[index % PRELOADED_COLORS.length],
-    loopLengthSeconds: 8,
-    preloadedSrc: file.src,
-  }));
+  files.map((file, index) => {
+    const displayName = normalizeFileName(file.fileName).toUpperCase();
+    return {
+      id: createStableTrackId(file.fileName, index),
+      name: displayName,
+      kind: 'demo',
+      category: detectCategory(file.fileName),
+      color: PRELOADED_COLORS[index % PRELOADED_COLORS.length],
+      loopLengthSeconds: 8,
+      preloadedSrc: file.src,
+    };
+  });
 
 export const createDefaultTrackState = (): Record<string, TrackState> =>
   Object.fromEntries(
@@ -110,6 +132,7 @@ export const createCustomTrackDefinition = (
   id,
   name,
   kind: 'custom',
+  category: 'custom',
   color,
   loopLengthSeconds,
   customSoundId: id,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Container,
@@ -11,7 +11,7 @@ import { GlobalControls } from './components/GlobalControls';
 import { GlobalTempoPanel } from './components/GlobalTempoPanel';
 import { CustomSoundsDialog } from './components/CustomSoundsDialog';
 import { SaveLoadManager } from './components/SaveLoadManager';
-import { TrackList } from './components/TrackList';
+import { TrackGrid } from './components/TrackGrid';
 import { MixerProvider, useMixer } from './state/MixerContext';
 import { retroTheme } from './theme';
 
@@ -20,6 +20,31 @@ function AppShell(): React.ReactElement {
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
+
+  // After a "Save new", apply deferred actions on the newly created preset
+  // once the track list has been updated (React batching means the preset
+  // isn't in `tracks` until the next render).
+  const pendingActionsRef = useRef<{
+    presetId: string;
+    enablePreset: boolean;
+    disableSourceId: string | null;
+    playPreset: boolean;
+  } | null>(null);
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
+
+  useEffect(() => {
+    if (!pendingActionsRef.current) return;
+    const { presetId, enablePreset, disableSourceId, playPreset } =
+      pendingActionsRef.current;
+    const exists = tracks.some((t) => t.id === presetId);
+    if (!exists) return;
+    pendingActionsRef.current = null;
+    if (disableSourceId)
+      void actionsRef.current.toggleTrack(disableSourceId, false);
+    if (enablePreset) void actionsRef.current.toggleTrack(presetId, true);
+    if (playPreset) void actionsRef.current.playTrackOnce(presetId);
+  }, [tracks]);
 
   return (
     <Container
@@ -37,13 +62,14 @@ function AppShell(): React.ReactElement {
         />
 
         <Box sx={{ flex: 1, overflow: 'auto', pr: 1 }}>
-          <TrackList
+          <TrackGrid
             tracks={tracks}
             trackStates={snapshot.trackStates}
             onToggle={(trackId, enabled) =>
               void actions.toggleTrack(trackId, enabled)
             }
             onPlay={(trackId) => void actions.playTrackOnce(trackId)}
+            onToggleFavorite={(trackId) => actions.toggleFavorite(trackId)}
             onVolumeChange={(trackId, volume) =>
               actions.setTrackVolume(trackId, volume)
             }
@@ -55,6 +81,56 @@ function AppShell(): React.ReactElement {
             }
             onEffectsChange={(trackId, reverbSend, delaySend) =>
               actions.setTrackEffects(trackId, reverbSend, delaySend)
+            }
+            onSaveAsNew={(
+              editedTrackId,
+              name,
+              category,
+              settings,
+              originalSettings,
+              wasPreviewPlaying,
+            ) => {
+              const editedTrack = tracks.find((t) => t.id === editedTrackId);
+              const presetSourceTrackId =
+                editedTrack?.sourceTrackId ?? editedTrackId;
+              // Was the edited track enabled (in mix)?
+              const wasEnabled =
+                snapshot.trackStates[editedTrackId]?.enabled ?? false;
+              // 1. Create the new preset
+              const newPresetId = actions.saveTrackPreset(
+                presetSourceTrackId,
+                name,
+                category,
+                settings,
+              );
+              // 2. Revert the edited track to its pre-edit state
+              actions.restoreTrackSettings(editedTrackId, originalSettings);
+              // 3. Stop preview on edited track if it was playing
+              if (wasPreviewPlaying) {
+                void actions.playTrackOnce(editedTrackId); // toggle off
+              }
+              // 4. Defer: transfer checkbox + playback to new preset
+              pendingActionsRef.current = {
+                presetId: newPresetId,
+                enablePreset: wasEnabled,
+                disableSourceId: wasEnabled ? editedTrackId : null,
+                playPreset: wasPreviewPlaying,
+              };
+            }}
+            onSaveOver={(presetId, name, category, settings) =>
+              actions.saveTrackPreset(
+                presetId,
+                name,
+                category,
+                settings,
+                presetId,
+              )
+            }
+            onRestoreChanges={(trackId, settings) =>
+              actions.restoreTrackSettings(trackId, settings)
+            }
+            onSaveToTrack={(trackId, settings) =>
+              actions.saveTrackOverride(trackId, settings)
             }
           />
         </Box>

@@ -1,11 +1,27 @@
 export type TrackKind = 'demo' | 'custom';
+export type TrackCategory = 'drums' | 'arp' | 'pad' | 'custom' | 'other';
+
+export interface TrackSavedSettings {
+  volume: number;
+  speed: number;
+  followsGlobalTempo: boolean;
+  eqLow: number;
+  eqMid: number;
+  eqHigh: number;
+  reverbSend: number;
+  delaySend: number;
+}
 
 export interface TrackDefinition {
   id: string;
   name: string;
   kind: TrackKind;
+  category: TrackCategory;
   color: string;
   loopLengthSeconds: number;
+  isFavorite?: boolean;
+  savedSettings?: TrackSavedSettings;
+  sourceTrackId?: string;
   preloadedSrc?: string;
   customSoundId?: string;
 }
