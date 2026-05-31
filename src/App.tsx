@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Box, Container, CssBaseline, Stack, ThemeProvider } from '@mui/material';
+import {
+  Box,
+  Container,
+  CssBaseline,
+  Stack,
+  ThemeProvider,
+} from '@mui/material';
 
 import { GlobalControls } from './components/GlobalControls';
 import { GlobalTempoPanel } from './components/GlobalTempoPanel';
@@ -16,12 +22,14 @@ function AppShell(): React.ReactElement {
   const [loadOpen, setLoadOpen] = useState(false);
 
   return (
-    <Container maxWidth={false} sx={{ py: 2.5, height: '100vh', overflow: 'hidden' }}>
+    <Container
+      maxWidth={false}
+      sx={{ py: 2.5, height: '100vh', overflow: 'hidden' }}
+    >
       <Stack spacing={2.2} sx={{ height: '100%' }}>
         <GlobalControls
           isPlaying={snapshot.transportPlaying}
           onToggleTransport={() => void actions.toggleTransport()}
-          onRestart={() => void actions.restartTransport()}
           onSave={() => setSaveOpen(true)}
           onLoad={() => setLoadOpen(true)}
           onOpenCustomSounds={() => setCustomSoundsOpen(true)}
@@ -32,14 +40,23 @@ function AppShell(): React.ReactElement {
           <TrackList
             tracks={tracks}
             trackStates={snapshot.trackStates}
-            onToggle={(trackId, enabled) => void actions.toggleTrack(trackId, enabled)}
+            onToggle={(trackId, enabled) =>
+              void actions.toggleTrack(trackId, enabled)
+            }
             onPlay={(trackId) => void actions.playTrackOnce(trackId)}
-            onVolumeChange={(trackId, volume) => actions.setTrackVolume(trackId, volume)}
-            onSpeedChange={(trackId, speed) => actions.setTrackSpeed(trackId, speed)}
+            onVolumeChange={(trackId, volume) =>
+              actions.setTrackVolume(trackId, volume)
+            }
+            onSpeedChange={(trackId, speed) =>
+              actions.setTrackSpeed(trackId, speed)
+            }
           />
         </Box>
 
-        <GlobalTempoPanel globalTempo={snapshot.globalTempo} onChange={(tempo) => actions.setGlobalTempo(tempo)} />
+        <GlobalTempoPanel
+          globalTempo={snapshot.globalTempo}
+          onChange={(tempo) => actions.setGlobalTempo(tempo)}
+        />
       </Stack>
 
       <CustomSoundsDialog

@@ -22,7 +22,11 @@ function getEffectiveRate(trackState: TrackState, globalTempo: number): number {
   return trackState.followsGlobalTempo ? globalTempo : trackState.speed;
 }
 
-function envelopeValue(positionSeconds: number, attack: number, decay: number): number {
+function envelopeValue(
+  positionSeconds: number,
+  attack: number,
+  decay: number,
+): number {
   if (positionSeconds < 0 || positionSeconds > attack + decay) {
     return 0;
   }
@@ -46,11 +50,17 @@ function addSinePulse(
   decay = 2.2,
 ): void {
   const startIndex = Math.max(0, Math.floor(startTime * sampleRate));
-  const endIndex = Math.min(left.length, Math.floor((startTime + durationSeconds) * sampleRate));
+  const endIndex = Math.min(
+    left.length,
+    Math.floor((startTime + durationSeconds) * sampleRate),
+  );
 
   for (let index = startIndex; index < endIndex; index += 1) {
     const time = index / sampleRate - startTime;
-    const env = volume * Math.exp(-time * decay) * envelopeValue(time, 0.01, durationSeconds);
+    const env =
+      volume *
+      Math.exp(-time * decay) *
+      envelopeValue(time, 0.01, durationSeconds);
     const wave = Math.sin(2 * Math.PI * frequency * time);
     const leftGain = 1 - Math.max(0, pan);
     const rightGain = 1 + Math.min(0, pan);
@@ -71,11 +81,17 @@ function addSawPulse(
   decay = 1.7,
 ): void {
   const startIndex = Math.max(0, Math.floor(startTime * sampleRate));
-  const endIndex = Math.min(left.length, Math.floor((startTime + durationSeconds) * sampleRate));
+  const endIndex = Math.min(
+    left.length,
+    Math.floor((startTime + durationSeconds) * sampleRate),
+  );
 
   for (let index = startIndex; index < endIndex; index += 1) {
     const time = index / sampleRate - startTime;
-    const env = volume * Math.exp(-time * decay) * envelopeValue(time, 0.005, durationSeconds);
+    const env =
+      volume *
+      Math.exp(-time * decay) *
+      envelopeValue(time, 0.005, durationSeconds);
     const phase = (time * frequency) % 1;
     const wave = phase * 2 - 1;
     const leftGain = 1 - Math.max(0, pan);
@@ -96,12 +112,19 @@ function addNoiseBurst(
   decay = 3.8,
 ): void {
   const startIndex = Math.max(0, Math.floor(startTime * sampleRate));
-  const endIndex = Math.min(left.length, Math.floor((startTime + durationSeconds) * sampleRate));
+  const endIndex = Math.min(
+    left.length,
+    Math.floor((startTime + durationSeconds) * sampleRate),
+  );
 
   for (let index = startIndex; index < endIndex; index += 1) {
     const time = index / sampleRate - startTime;
-    const env = volume * Math.exp(-time * decay) * envelopeValue(time, 0.002, durationSeconds);
-    const noise = Math.sin((index + 17) * 12.9898) * Math.cos((index + 33) * 78.233);
+    const env =
+      volume *
+      Math.exp(-time * decay) *
+      envelopeValue(time, 0.002, durationSeconds);
+    const noise =
+      Math.sin((index + 17) * 12.9898) * Math.cos((index + 33) * 78.233);
     const value = (noise % 1) * 2 - 1;
     const leftGain = 1 - Math.max(0, pan);
     const rightGain = 1 + Math.min(0, pan);
@@ -119,7 +142,9 @@ function addChordPad(
   rootFrequency: number,
   volume: number,
 ): void {
-  const chord = [1, 1.25, 1.5, 2].map((multiplier) => rootFrequency * multiplier);
+  const chord = [1, 1.25, 1.5, 2].map(
+    (multiplier) => rootFrequency * multiplier,
+  );
   chord.forEach((frequency, chordIndex) => {
     addSinePulse(
       left,
@@ -138,7 +163,11 @@ function addChordPad(
 function createDemoBuffer(context: AudioContext, trackId: string): AudioBuffer {
   const durationSeconds = 8;
   const { sampleRate } = context;
-  const buffer = context.createBuffer(2, Math.floor(durationSeconds * sampleRate), sampleRate);
+  const buffer = context.createBuffer(
+    2,
+    Math.floor(durationSeconds * sampleRate),
+    sampleRate,
+  );
   const [left, right] = [buffer.getChannelData(0), buffer.getChannelData(1)];
   const beat = 60 / 120;
   const step = beat / 2;
@@ -156,7 +185,16 @@ function createDemoBuffer(context: AudioContext, trackId: string): AudioBuffer {
     }
 
     for (let stepIndex = 0; stepIndex < 32; stepIndex += 1) {
-      addNoiseBurst(left, right, sampleRate, stepIndex * step, 0.035, 0.16, 0, 12);
+      addNoiseBurst(
+        left,
+        right,
+        sampleRate,
+        stepIndex * step,
+        0.035,
+        0.16,
+        0,
+        12,
+      );
     }
 
     return buffer;
@@ -166,8 +204,28 @@ function createDemoBuffer(context: AudioContext, trackId: string): AudioBuffer {
     const notes = [55, 55, 65.41, 49, 55, 73.42, 65.41, 49];
     notes.forEach((frequency, index) => {
       const time = index * beat * 2;
-      addSawPulse(left, right, sampleRate, time, 1.25, frequency, 0.8, -0.08, 2.2);
-      addSinePulse(left, right, sampleRate, time, 0.45, frequency / 2, 0.18, 0.05, 3.2);
+      addSawPulse(
+        left,
+        right,
+        sampleRate,
+        time,
+        1.25,
+        frequency,
+        0.8,
+        -0.08,
+        2.2,
+      );
+      addSinePulse(
+        left,
+        right,
+        sampleRate,
+        time,
+        0.45,
+        frequency / 2,
+        0.18,
+        0.05,
+        3.2,
+      );
     });
 
     return buffer;
@@ -184,7 +242,17 @@ function createDemoBuffer(context: AudioContext, trackId: string): AudioBuffer {
     chords.forEach((chord, chordIndex) => {
       const time = chordIndex * 2 * beat;
       chord.forEach((frequency, noteIndex) => {
-        addSinePulse(left, right, sampleRate, time, 1.9, frequency, 0.22, noteIndex === 0 ? -0.1 : 0.1, 0.9);
+        addSinePulse(
+          left,
+          right,
+          sampleRate,
+          time,
+          1.9,
+          frequency,
+          0.22,
+          noteIndex === 0 ? -0.1 : 0.1,
+          0.9,
+        );
       });
       addChordPad(left, right, sampleRate, time, 1.85, chord[0], 0.18);
     });
@@ -193,11 +261,33 @@ function createDemoBuffer(context: AudioContext, trackId: string): AudioBuffer {
   }
 
   if (trackId === 'arp') {
-    const scale = [392.0, 493.88, 587.33, 493.88, 440.0, 523.25, 659.25, 523.25];
+    const scale = [
+      392.0, 493.88, 587.33, 493.88, 440.0, 523.25, 659.25, 523.25,
+    ];
     scale.forEach((frequency, index) => {
       const time = index * beat;
-      addSinePulse(left, right, sampleRate, time, 0.28, frequency, 0.4, index % 2 === 0 ? -0.12 : 0.12, 4.5);
-      addSinePulse(left, right, sampleRate, time + 0.08, 0.1, frequency * 2, 0.16, 0.05, 7.5);
+      addSinePulse(
+        left,
+        right,
+        sampleRate,
+        time,
+        0.28,
+        frequency,
+        0.4,
+        index % 2 === 0 ? -0.12 : 0.12,
+        4.5,
+      );
+      addSinePulse(
+        left,
+        right,
+        sampleRate,
+        time + 0.08,
+        0.1,
+        frequency * 2,
+        0.16,
+        0.05,
+        7.5,
+      );
     });
 
     return buffer;
@@ -207,7 +297,17 @@ function createDemoBuffer(context: AudioContext, trackId: string): AudioBuffer {
   pads.forEach((frequency, index) => {
     const time = index * 2 * beat;
     addChordPad(left, right, sampleRate, time, 2.4, frequency, 0.28);
-    addSinePulse(left, right, sampleRate, time, 2.4, frequency * 0.5, 0.08, 0.04, 0.4);
+    addSinePulse(
+      left,
+      right,
+      sampleRate,
+      time,
+      2.4,
+      frequency * 0.5,
+      0.08,
+      0.04,
+      0.4,
+    );
   });
 
   return buffer;
@@ -228,9 +328,13 @@ export class AudioEngine {
 
   private customBufferCache = new Map<string, AudioBuffer>();
 
-  private playbackListeners = new Set<(trackId: string, playbackState: PlaybackState) => void>();
+  private playbackListeners = new Set<
+    (trackId: string, playbackState: PlaybackState) => void
+  >();
 
-  private async loadPreloadedDemoTrackBuffer(track: TrackDefinition): Promise<AudioBuffer | null> {
+  private async loadPreloadedDemoTrackBuffer(
+    track: TrackDefinition,
+  ): Promise<AudioBuffer | null> {
     if (!track.preloadedSrc) {
       return null;
     }
@@ -265,23 +369,31 @@ export class AudioEngine {
     return this.context;
   }
 
-  private getLoopOffset(track: TrackDefinition, trackState: TrackState, globalTempo: number): number {
+  private getLoopOffset(
+    track: TrackDefinition,
+    trackState: TrackState,
+    globalTempo: number,
+  ): number {
     if (!this.context) {
       return 0;
     }
 
-    const elapsed = Math.max(0, this.context.currentTime - this.transportStartTime);
+    const elapsed = Math.max(
+      0,
+      this.context.currentTime - this.transportStartTime,
+    );
     const rate = getEffectiveRate(trackState, globalTempo);
 
     if (track.kind === 'custom') {
       return 0;
     }
 
-    return elapsed * rate % track.loopLengthSeconds;
+    return (elapsed * rate) % track.loopLengthSeconds;
   }
 
   private registerHandle(handle: PlaybackHandle): void {
-    const set = this.activeHandles.get(handle.trackId) ?? new Set<PlaybackHandle>();
+    const set =
+      this.activeHandles.get(handle.trackId) ?? new Set<PlaybackHandle>();
     set.add(handle);
     this.activeHandles.set(handle.trackId, set);
     this.emitTrackPlaybackState(handle.trackId);
@@ -307,7 +419,9 @@ export class AudioEngine {
       };
     }
 
-    const isPreviewPlaying = Array.from(handles).some((handle) => handle.oneShot);
+    const isPreviewPlaying = Array.from(handles).some(
+      (handle) => handle.oneShot,
+    );
     return {
       isPlaying: true,
       isPreviewPlaying,
@@ -316,22 +430,31 @@ export class AudioEngine {
 
   private emitTrackPlaybackState(trackId: string): void {
     const playbackState = this.getTrackPlaybackState(trackId);
-    this.playbackListeners.forEach((listener) => listener(trackId, playbackState));
+    this.playbackListeners.forEach((listener) =>
+      listener(trackId, playbackState),
+    );
   }
 
-  private async decodeCustomSound(record: CustomSoundRecord): Promise<AudioBuffer> {
+  private async decodeCustomSound(
+    record: CustomSoundRecord,
+  ): Promise<AudioBuffer> {
     const cached = this.customBufferCache.get(record.id);
     if (cached) {
       return cached;
     }
 
     const context = await this.ensureContext();
-    const buffer = await context.decodeAudioData(await record.blob.arrayBuffer());
+    const buffer = await context.decodeAudioData(
+      await record.blob.arrayBuffer(),
+    );
     this.customBufferCache.set(record.id, buffer);
     return buffer;
   }
 
-  private async getBuffer(track: TrackDefinition, customSounds: CustomSoundRecord[]): Promise<AudioBuffer | null> {
+  private async getBuffer(
+    track: TrackDefinition,
+    customSounds: CustomSoundRecord[],
+  ): Promise<AudioBuffer | null> {
     const context = await this.ensureContext();
 
     if (track.kind === 'demo') {
@@ -351,7 +474,9 @@ export class AudioEngine {
       return fallbackBuffer;
     }
 
-    const sound = customSounds.find((entry) => entry.id === track.customSoundId);
+    const sound = customSounds.find(
+      (entry) => entry.id === track.customSoundId,
+    );
     if (!sound) {
       return null;
     }
@@ -359,7 +484,13 @@ export class AudioEngine {
     return this.decodeCustomSound(sound);
   }
 
-  private createHandle(trackId: string, buffer: AudioBuffer, trackState: TrackState, globalTempo: number, oneShot: boolean): PlaybackHandle {
+  private createHandle(
+    trackId: string,
+    buffer: AudioBuffer,
+    trackState: TrackState,
+    globalTempo: number,
+    oneShot: boolean,
+  ): PlaybackHandle {
     if (!this.context || !this.masterGain) {
       throw new Error('Audio context is not ready.');
     }
@@ -380,7 +511,10 @@ export class AudioEngine {
     };
   }
 
-  private updateTrackHandles(trackId: string, updater: (handle: PlaybackHandle) => void): void {
+  private updateTrackHandles(
+    trackId: string,
+    updater: (handle: PlaybackHandle) => void,
+  ): void {
     const handles = this.activeHandles.get(trackId);
     if (!handles) {
       return;
@@ -389,7 +523,10 @@ export class AudioEngine {
     handles.forEach(updater);
   }
 
-  private stopTrackHandles(trackId: string, shouldStop: (handle: PlaybackHandle) => boolean = () => true): void {
+  private stopTrackHandles(
+    trackId: string,
+    shouldStop: (handle: PlaybackHandle) => boolean = () => true,
+  ): void {
     const handles = this.activeHandles.get(trackId);
     if (!handles) {
       return;
@@ -432,9 +569,17 @@ export class AudioEngine {
       return;
     }
 
-    const handle = this.createHandle(track.id, buffer, trackState, globalTempo, false);
+    const handle = this.createHandle(
+      track.id,
+      buffer,
+      trackState,
+      globalTempo,
+      false,
+    );
     const startTime = context.currentTime + 0.04;
-    const offset = alignToTransport ? this.getLoopOffset(track, trackState, globalTempo) : 0;
+    const offset = alignToTransport
+      ? this.getLoopOffset(track, trackState, globalTempo)
+      : 0;
     handle.source.start(startTime, offset);
     this.registerHandle(handle);
   }
@@ -452,13 +597,22 @@ export class AudioEngine {
       return;
     }
 
-    const handle = this.createHandle(track.id, buffer, trackState, globalTempo, true);
+    const handle = this.createHandle(
+      track.id,
+      buffer,
+      trackState,
+      globalTempo,
+      true,
+    );
     handle.source.loop = false;
     handle.source.start(context.currentTime + 0.02, 0);
     this.registerHandle(handle);
   }
 
-  private async fadeMaster(target: number, durationMs = FADE_MS): Promise<void> {
+  private async fadeMaster(
+    target: number,
+    durationMs = FADE_MS,
+  ): Promise<void> {
     if (!this.masterGain || !this.context) {
       return;
     }
@@ -530,7 +684,9 @@ export class AudioEngine {
     customSounds: CustomSoundRecord[],
     globalTempo: number,
   ): Promise<'started' | 'stopped'> {
-    const previewIsPlaying = this.getTrackPlaybackState(track.id).isPreviewPlaying;
+    const previewIsPlaying = this.getTrackPlaybackState(
+      track.id,
+    ).isPreviewPlaying;
     if (previewIsPlaying) {
       this.stopTrackHandles(track.id, (handle) => handle.oneShot);
       return 'stopped';
@@ -561,18 +717,32 @@ export class AudioEngine {
     }
 
     this.stopTrackHandles(track.id);
-    await this.startLoopTrack(track, trackState, customSounds, globalTempo, true);
+    await this.startLoopTrack(
+      track,
+      trackState,
+      customSounds,
+      globalTempo,
+      true,
+    );
   }
 
   updateTrackVolume(trackId: string, volume: number): void {
     this.updateTrackHandles(trackId, (handle) => {
-      handle.gainNode.gain.setTargetAtTime(volume, this.context?.currentTime ?? 0, 0.015);
+      handle.gainNode.gain.setTargetAtTime(
+        volume,
+        this.context?.currentTime ?? 0,
+        0.015,
+      );
     });
   }
 
   updateTrackRate(trackId: string, rate: number): void {
     this.updateTrackHandles(trackId, (handle) => {
-      handle.source.playbackRate.setTargetAtTime(rate, this.context?.currentTime ?? 0, 0.02);
+      handle.source.playbackRate.setTargetAtTime(
+        rate,
+        this.context?.currentTime ?? 0,
+        0.02,
+      );
     });
   }
 
@@ -580,7 +750,9 @@ export class AudioEngine {
     this.transportStartTime = startTime;
   }
 
-  subscribeToPlayback(listener: (trackId: string, playbackState: PlaybackState) => void): () => void {
+  subscribeToPlayback(
+    listener: (trackId: string, playbackState: PlaybackState) => void,
+  ): () => void {
     this.playbackListeners.add(listener);
 
     return () => {
