@@ -25,6 +25,7 @@ export function TrackList({ tracks, trackStates, onToggle, onPlay, onVolumeChang
               speed: 1,
               followsGlobalTempo: true,
               isPlaying: false,
+              isPreviewPlaying: false,
             }}
             onToggle={onToggle}
             onPlay={onPlay}

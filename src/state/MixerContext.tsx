@@ -53,6 +53,7 @@ function createDefaultSingleTrackState(): TrackState {
     speed: 1,
     followsGlobalTempo: true,
     isPlaying: false,
+    isPreviewPlaying: false,
   };
 }
 
@@ -100,6 +101,7 @@ function mergeTrackState(trackStates: Record<string, TrackState>, trackId: strin
     speed: 1,
     followsGlobalTempo: true,
     isPlaying: false,
+    isPreviewPlaying: false,
   };
 
   return {
@@ -165,6 +167,36 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
     window.localStorage.setItem(MIXES_KEY, JSON.stringify(snapshot));
   }, [snapshot]);
 
+  useEffect(() => {
+    const unsubscribe = engine.subscribeToPlayback((trackId, playbackState) => {
+      setSnapshot((current) => {
+        const currentTrackState = current.trackStates[trackId];
+        if (!currentTrackState) {
+          return current;
+        }
+
+        if (
+          currentTrackState.isPlaying === playbackState.isPlaying
+          && currentTrackState.isPreviewPlaying === playbackState.isPreviewPlaying
+        ) {
+          return current;
+        }
+
+        return {
+          ...current,
+          trackStates: mergeTrackState(current.trackStates, trackId, {
+            isPlaying: playbackState.isPlaying,
+            isPreviewPlaying: playbackState.isPreviewPlaying,
+          }),
+        };
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [engine]);
+
   const actions: MixerContextValue['actions'] = useMemo(
     () => ({
       toggleTrack: async (trackId: string, enabled: boolean) => {
@@ -188,6 +220,10 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
         await engine.syncTrack(track, nextState, snapshot.customSounds, snapshot.globalTempo);
       },
       playTrackOnce: async (trackId: string) => {
+        if (snapshot.transportPlaying) {
+          return;
+        }
+
         const track = tracks.find((entry) => entry.id === trackId);
         const state = snapshot.trackStates[trackId];
         if (!track || !state) {
@@ -195,10 +231,6 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
         }
 
         await engine.playTrackOnce(track, state, snapshot.customSounds, snapshot.globalTempo);
-        setSnapshot((current) => ({
-          ...current,
-          trackStates: mergeTrackState(current.trackStates, trackId, { isPlaying: true }),
-        }));
       },
       setTrackVolume: (trackId: string, volume: number) => {
         setSnapshot((current) => ({
@@ -242,7 +274,14 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
             ...current,
             transportPlaying: false,
             trackStates: Object.fromEntries(
-              Object.entries(current.trackStates).map(([trackId, trackState]) => [trackId, { ...trackState, isPlaying: false }]),
+              Object.entries(current.trackStates).map(([trackId, trackState]) => [
+                trackId,
+                {
+                  ...trackState,
+                  isPlaying: false,
+                  isPreviewPlaying: false,
+                },
+              ]),
             ),
           }));
           return;
@@ -258,6 +297,7 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
               {
                 ...trackState,
                 isPlaying: trackState.enabled,
+                isPreviewPlaying: false,
               },
             ]),
           ),
@@ -269,7 +309,14 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
           ...current,
           transportPlaying: true,
           trackStates: Object.fromEntries(
-            Object.entries(current.trackStates).map(([trackId, trackState]) => [trackId, { ...trackState, isPlaying: trackState.enabled }]),
+            Object.entries(current.trackStates).map(([trackId, trackState]) => [
+              trackId,
+              {
+                ...trackState,
+                isPlaying: trackState.enabled,
+                isPreviewPlaying: false,
+              },
+            ]),
           ),
         }));
       },
@@ -340,6 +387,7 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
             speed: 1,
             followsGlobalTempo: true,
             isPlaying: false,
+            isPreviewPlaying: false,
           },
           snapshot.customSounds,
           snapshot.globalTempo,
@@ -383,6 +431,7 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
               speed: 1,
               followsGlobalTempo: true,
               isPlaying: false,
+              isPreviewPlaying: false,
             }),
             ...trackState,
           };

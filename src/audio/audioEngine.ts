@@ -7,6 +7,11 @@ type PlaybackHandle = {
   oneShot: boolean;
 };
 
+type PlaybackState = {
+  isPlaying: boolean;
+  isPreviewPlaying: boolean;
+};
+
 const FADE_MS = 180;
 
 function clamp(value: number, min: number, max: number): number {
@@ -223,6 +228,8 @@ export class AudioEngine {
 
   private customBufferCache = new Map<string, AudioBuffer>();
 
+  private playbackListeners = new Set<(trackId: string, playbackState: PlaybackState) => void>();
+
   private async loadPreloadedDemoTrackBuffer(track: TrackDefinition): Promise<AudioBuffer | null> {
     if (!track.preloadedSrc) {
       return null;
@@ -277,6 +284,7 @@ export class AudioEngine {
     const set = this.activeHandles.get(handle.trackId) ?? new Set<PlaybackHandle>();
     set.add(handle);
     this.activeHandles.set(handle.trackId, set);
+    this.emitTrackPlaybackState(handle.trackId);
 
     handle.source.onended = () => {
       const handles = this.activeHandles.get(handle.trackId);
@@ -286,7 +294,29 @@ export class AudioEngine {
       }
       handle.source.disconnect();
       handle.gainNode.disconnect();
+      this.emitTrackPlaybackState(handle.trackId);
     };
+  }
+
+  private getTrackPlaybackState(trackId: string): PlaybackState {
+    const handles = this.activeHandles.get(trackId);
+    if (!handles || handles.size === 0) {
+      return {
+        isPlaying: false,
+        isPreviewPlaying: false,
+      };
+    }
+
+    const isPreviewPlaying = Array.from(handles).some((handle) => handle.oneShot);
+    return {
+      isPlaying: true,
+      isPreviewPlaying,
+    };
+  }
+
+  private emitTrackPlaybackState(trackId: string): void {
+    const playbackState = this.getTrackPlaybackState(trackId);
+    this.playbackListeners.forEach((listener) => listener(trackId, playbackState));
   }
 
   private async decodeCustomSound(record: CustomSoundRecord): Promise<AudioBuffer> {
@@ -359,6 +389,35 @@ export class AudioEngine {
     handles.forEach(updater);
   }
 
+  private stopTrackHandles(trackId: string, shouldStop: (handle: PlaybackHandle) => boolean = () => true): void {
+    const handles = this.activeHandles.get(trackId);
+    if (!handles) {
+      return;
+    }
+
+    Array.from(handles).forEach((handle) => {
+      if (!shouldStop(handle)) {
+        return;
+      }
+
+      handles.delete(handle);
+      handle.source.onended = null;
+      try {
+        handle.source.stop();
+      } catch {
+        // Ignore double-stop races.
+      }
+      handle.source.disconnect();
+      handle.gainNode.disconnect();
+    });
+
+    if (handles.size === 0) {
+      this.activeHandles.delete(trackId);
+    }
+
+    this.emitTrackPlaybackState(trackId);
+  }
+
   private async startLoopTrack(
     track: TrackDefinition,
     trackState: TrackState,
@@ -378,7 +437,6 @@ export class AudioEngine {
     const offset = alignToTransport ? this.getLoopOffset(track, trackState, globalTempo) : 0;
     handle.source.start(startTime, offset);
     this.registerHandle(handle);
-    this.updateTrackPlayingFlag(track.id, true);
   }
 
   private async startOneShotTrack(
@@ -398,12 +456,6 @@ export class AudioEngine {
     handle.source.loop = false;
     handle.source.start(context.currentTime + 0.02, 0);
     this.registerHandle(handle);
-    this.updateTrackPlayingFlag(track.id, true);
-  }
-
-  private updateTrackPlayingFlag(trackId: string, isPlaying: boolean): void {
-    this.updateTrackHandles(trackId, () => undefined);
-    void isPlaying;
   }
 
   private async fadeMaster(target: number, durationMs = FADE_MS): Promise<void> {
@@ -424,39 +476,16 @@ export class AudioEngine {
     });
   }
 
-  private stopTrackHandles(trackId: string): void {
-    const handles = this.activeHandles.get(trackId);
-    if (!handles) {
-      return;
-    }
-
-    handles.forEach((handle) => {
-      try {
-        handle.source.stop();
-      } catch {
-        // Ignore double-stop races.
-      }
-    });
-
-    this.activeHandles.delete(trackId);
-  }
-
   async stopTransport(fadeOut = true): Promise<void> {
     if (fadeOut) {
       await this.fadeMaster(0);
     }
 
-    this.activeHandles.forEach((handles) => {
-      handles.forEach((handle) => {
-        try {
-          handle.source.stop();
-        } catch {
-          // Ignore double-stop races.
-        }
-      });
+    const trackIds = Array.from(this.activeHandles.keys());
+    trackIds.forEach((trackId) => {
+      this.stopTrackHandles(trackId);
     });
 
-    this.activeHandles.clear();
     this.transportActive = false;
     if (this.masterGain) {
       this.masterGain.gain.value = 1;
@@ -500,8 +529,20 @@ export class AudioEngine {
     trackState: TrackState,
     customSounds: CustomSoundRecord[],
     globalTempo: number,
-  ): Promise<void> {
+  ): Promise<'started' | 'stopped'> {
+    const previewIsPlaying = this.getTrackPlaybackState(track.id).isPreviewPlaying;
+    if (previewIsPlaying) {
+      this.stopTrackHandles(track.id, (handle) => handle.oneShot);
+      return 'stopped';
+    }
+
+    const trackIds = Array.from(this.activeHandles.keys());
+    trackIds.forEach((trackId) => {
+      this.stopTrackHandles(trackId, (handle) => handle.oneShot);
+    });
+
     await this.startOneShotTrack(track, trackState, customSounds, globalTempo);
+    return 'started';
   }
 
   async syncTrack(
@@ -537,6 +578,14 @@ export class AudioEngine {
 
   setTransportClock(startTime: number): void {
     this.transportStartTime = startTime;
+  }
+
+  subscribeToPlayback(listener: (trackId: string, playbackState: PlaybackState) => void): () => void {
+    this.playbackListeners.add(listener);
+
+    return () => {
+      this.playbackListeners.delete(listener);
+    };
   }
 
   async prepareContext(): Promise<void> {

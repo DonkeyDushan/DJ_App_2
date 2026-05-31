@@ -81,6 +81,7 @@ export const createDefaultTrackState = (): Record<string, TrackState> =>
         speed: 1,
         followsGlobalTempo: true,
         isPlaying: false,
+        isPreviewPlaying: false,
       },
     ]),
   );

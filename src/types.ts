@@ -21,6 +21,7 @@ export interface TrackState {
   speed: number;
   followsGlobalTempo: boolean;
   isPlaying: boolean;
+  isPreviewPlaying: boolean;
 }
 
 export interface CustomSoundRecord {

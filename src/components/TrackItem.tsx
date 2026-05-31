@@ -1,5 +1,6 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopCircleIcon from '@mui/icons-material/StopCircle';
 import { Box, Button, Checkbox, Paper, Slider, Stack, Typography } from '@mui/material';
 
 import type { TrackDefinition, TrackState } from '../types';
@@ -59,8 +60,14 @@ export function TrackItem({ track, trackState, onToggle, onPlay, onVolumeChange,
           </Box>
         </Stack>
 
-        <Button fullWidth variant="outlined" startIcon={<PlayArrowIcon />} onClick={() => onPlay(track.id)} sx={{ borderColor: `${track.color}88`, color: '#fff' }}>
-          PLAY
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={trackState.isPreviewPlaying ? <StopCircleIcon /> : <PlayArrowIcon />}
+          onClick={() => onPlay(track.id)}
+          sx={{ borderColor: `${track.color}88`, color: '#fff' }}
+        >
+          {trackState.isPreviewPlaying ? 'STOP' : 'PLAY'}
         </Button>
 
         <Box>
