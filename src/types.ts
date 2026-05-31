@@ -20,6 +20,11 @@ export interface TrackState {
   volume: number;
   speed: number;
   followsGlobalTempo: boolean;
+  eqLow: number;
+  eqMid: number;
+  eqHigh: number;
+  reverbSend: number;
+  delaySend: number;
   isPlaying: boolean;
   isPreviewPlaying: boolean;
 }
@@ -37,6 +42,11 @@ export interface SavedMixTrackState {
   volume: number;
   speed: number;
   followsGlobalTempo: boolean;
+  eqLow: number;
+  eqMid: number;
+  eqHigh: number;
+  reverbSend: number;
+  delaySend: number;
 }
 
 export interface SavedMix {

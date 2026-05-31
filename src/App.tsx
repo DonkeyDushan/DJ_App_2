@@ -50,6 +50,12 @@ function AppShell(): React.ReactElement {
             onSpeedChange={(trackId, speed) =>
               actions.setTrackSpeed(trackId, speed)
             }
+            onEqChange={(trackId, eqLow, eqMid, eqHigh) =>
+              actions.setTrackEq(trackId, eqLow, eqMid, eqHigh)
+            }
+            onEffectsChange={(trackId, reverbSend, delaySend) =>
+              actions.setTrackEffects(trackId, reverbSend, delaySend)
+            }
           />
         </Box>
 

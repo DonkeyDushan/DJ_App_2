@@ -46,7 +46,15 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
   },
 ];
 
-const PRELOADED_COLORS = ['#ff4fd8', '#40d9ff', '#9f6bff', '#ff8f4f', '#6cff9f', '#ffd84f', '#68f0ff'];
+const PRELOADED_COLORS = [
+  '#ff4fd8',
+  '#40d9ff',
+  '#9f6bff',
+  '#ff8f4f',
+  '#6cff9f',
+  '#ffd84f',
+  '#68f0ff',
+];
 
 function normalizeFileName(fileName: string): string {
   return fileName.replace(/\.[^.]+$/, '');
@@ -61,7 +69,9 @@ function createStableTrackId(fileName: string, index: number): string {
   return normalized ? `preloaded-${normalized}` : `preloaded-track-${index}`;
 }
 
-export const createPreloadedTrackDefinitions = (files: PreloadedAudioFile[]): TrackDefinition[] =>
+export const createPreloadedTrackDefinitions = (
+  files: PreloadedAudioFile[],
+): TrackDefinition[] =>
   files.map((file, index) => ({
     id: createStableTrackId(file.fileName, index),
     name: normalizeFileName(file.fileName).toUpperCase(),
@@ -80,6 +90,11 @@ export const createDefaultTrackState = (): Record<string, TrackState> =>
         volume: 0.78,
         speed: 1,
         followsGlobalTempo: true,
+        eqLow: 0,
+        eqMid: 0,
+        eqHigh: 0,
+        reverbSend: 0,
+        delaySend: 0,
         isPlaying: false,
         isPreviewPlaying: false,
       },

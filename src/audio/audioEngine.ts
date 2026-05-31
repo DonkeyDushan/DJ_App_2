@@ -3,6 +3,11 @@ import type { CustomSoundRecord, TrackDefinition, TrackState } from '../types';
 type PlaybackHandle = {
   source: AudioBufferSourceNode;
   gainNode: GainNode;
+  eqLowNode: BiquadFilterNode;
+  eqMidNode: BiquadFilterNode;
+  eqHighNode: BiquadFilterNode;
+  reverbSendNode: GainNode;
+  delaySendNode: GainNode;
   trackId: string;
   oneShot: boolean;
 };
@@ -13,6 +18,26 @@ type PlaybackState = {
 };
 
 const FADE_MS = 180;
+
+function createImpulseResponse(context: AudioContext): AudioBuffer {
+  const durationSeconds = 1.8;
+  const buffer = context.createBuffer(
+    2,
+    Math.floor(durationSeconds * context.sampleRate),
+    context.sampleRate,
+  );
+  const left = buffer.getChannelData(0);
+  const right = buffer.getChannelData(1);
+
+  for (let sampleIndex = 0; sampleIndex < left.length; sampleIndex += 1) {
+    const progress = sampleIndex / left.length;
+    const decay = (1 - progress) ** 2.8;
+    left[sampleIndex] = (Math.random() * 2 - 1) * decay;
+    right[sampleIndex] = (Math.random() * 2 - 1) * decay;
+  }
+
+  return buffer;
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -318,6 +343,10 @@ export class AudioEngine {
 
   private masterGain: GainNode | null = null;
 
+  private reverbInputGain: GainNode | null = null;
+
+  private delayInputGain: GainNode | null = null;
+
   private transportStartTime = 0;
 
   private transportActive = false;
@@ -360,6 +389,33 @@ export class AudioEngine {
       this.masterGain = this.context.createGain();
       this.masterGain.gain.value = 1;
       this.masterGain.connect(this.context.destination);
+
+      const reverbInputGain = this.context.createGain();
+      const reverbWetGain = this.context.createGain();
+      const convolver = this.context.createConvolver();
+      convolver.buffer = createImpulseResponse(this.context);
+      reverbInputGain.gain.value = 1;
+      reverbWetGain.gain.value = 0.22;
+      reverbInputGain.connect(convolver);
+      convolver.connect(reverbWetGain).connect(this.masterGain);
+      this.reverbInputGain = reverbInputGain;
+
+      const delayInputGain = this.context.createGain();
+      const delayNode = this.context.createDelay(1.2);
+      const delayFilter = this.context.createBiquadFilter();
+      const delayFeedbackGain = this.context.createGain();
+      const delayWetGain = this.context.createGain();
+      delayInputGain.gain.value = 1;
+      delayNode.delayTime.value = 0.28;
+      delayFilter.type = 'lowpass';
+      delayFilter.frequency.value = 4200;
+      delayFeedbackGain.gain.value = 0.34;
+      delayWetGain.gain.value = 0.2;
+      delayInputGain.connect(delayNode);
+      delayNode.connect(delayFilter);
+      delayFilter.connect(delayWetGain).connect(this.masterGain);
+      delayFilter.connect(delayFeedbackGain).connect(delayNode);
+      this.delayInputGain = delayInputGain;
     }
 
     if (this.context.state === 'suspended') {
@@ -406,6 +462,11 @@ export class AudioEngine {
       }
       handle.source.disconnect();
       handle.gainNode.disconnect();
+      handle.eqLowNode.disconnect();
+      handle.eqMidNode.disconnect();
+      handle.eqHighNode.disconnect();
+      handle.reverbSendNode.disconnect();
+      handle.delaySendNode.disconnect();
       this.emitTrackPlaybackState(handle.trackId);
     };
   }
@@ -497,15 +558,55 @@ export class AudioEngine {
 
     const source = this.context.createBufferSource();
     const gainNode = this.context.createGain();
+    const eqLowNode = this.context.createBiquadFilter();
+    const eqMidNode = this.context.createBiquadFilter();
+    const eqHighNode = this.context.createBiquadFilter();
+    const reverbSendNode = this.context.createGain();
+    const delaySendNode = this.context.createGain();
+
+    eqLowNode.type = 'lowshelf';
+    eqLowNode.frequency.value = 220;
+    eqLowNode.gain.value = trackState.eqLow;
+
+    eqMidNode.type = 'peaking';
+    eqMidNode.frequency.value = 1200;
+    eqMidNode.Q.value = 0.9;
+    eqMidNode.gain.value = trackState.eqMid;
+
+    eqHighNode.type = 'highshelf';
+    eqHighNode.frequency.value = 4200;
+    eqHighNode.gain.value = trackState.eqHigh;
+
+    reverbSendNode.gain.value = trackState.reverbSend;
+    delaySendNode.gain.value = trackState.delaySend;
+
     source.buffer = buffer;
     source.loop = !oneShot;
     source.playbackRate.value = getEffectiveRate(trackState, globalTempo);
     gainNode.gain.value = trackState.volume;
-    source.connect(gainNode).connect(this.masterGain);
+    source.connect(eqLowNode);
+    eqLowNode.connect(eqMidNode);
+    eqMidNode.connect(eqHighNode);
+    eqHighNode.connect(gainNode);
+
+    gainNode.connect(this.masterGain);
+
+    if (this.reverbInputGain) {
+      gainNode.connect(reverbSendNode).connect(this.reverbInputGain);
+    }
+
+    if (this.delayInputGain) {
+      gainNode.connect(delaySendNode).connect(this.delayInputGain);
+    }
 
     return {
       source,
       gainNode,
+      eqLowNode,
+      eqMidNode,
+      eqHighNode,
+      reverbSendNode,
+      delaySendNode,
       trackId,
       oneShot,
     };
@@ -546,6 +647,11 @@ export class AudioEngine {
       }
       handle.source.disconnect();
       handle.gainNode.disconnect();
+      handle.eqLowNode.disconnect();
+      handle.eqMidNode.disconnect();
+      handle.eqHighNode.disconnect();
+      handle.reverbSendNode.disconnect();
+      handle.delaySendNode.disconnect();
     });
 
     if (handles.size === 0) {
@@ -742,6 +848,50 @@ export class AudioEngine {
         rate,
         this.context?.currentTime ?? 0,
         0.02,
+      );
+    });
+  }
+
+  updateTrackEq(
+    trackId: string,
+    eqLow: number,
+    eqMid: number,
+    eqHigh: number,
+  ): void {
+    this.updateTrackHandles(trackId, (handle) => {
+      handle.eqLowNode.gain.setTargetAtTime(
+        eqLow,
+        this.context?.currentTime ?? 0,
+        0.03,
+      );
+      handle.eqMidNode.gain.setTargetAtTime(
+        eqMid,
+        this.context?.currentTime ?? 0,
+        0.03,
+      );
+      handle.eqHighNode.gain.setTargetAtTime(
+        eqHigh,
+        this.context?.currentTime ?? 0,
+        0.03,
+      );
+    });
+  }
+
+  updateTrackEffects(
+    trackId: string,
+    reverbSend: number,
+    delaySend: number,
+  ): void {
+    this.updateTrackHandles(trackId, (handle) => {
+      handle.reverbSendNode.gain.setTargetAtTime(
+        reverbSend,
+        this.context?.currentTime ?? 0,
+        0.03,
+      );
+      handle.delaySendNode.gain.setTargetAtTime(
+        delaySend,
+        this.context?.currentTime ?? 0,
+        0.03,
       );
     });
   }
