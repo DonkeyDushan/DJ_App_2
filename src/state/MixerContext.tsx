@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { AudioEngine } from '../audio/audioEngine';
-import { DEFAULT_GLOBAL_TEMPO, DEFAULT_TRACKS, createCustomTrackDefinition, createDefaultTrackState } from '../data/defaultTracks';
+import {
+  DEFAULT_GLOBAL_TEMPO,
+  DEFAULT_TRACKS,
+  createCustomTrackDefinition,
+  createDefaultTrackState,
+  createPreloadedTrackDefinitions,
+} from '../data/defaultTracks';
 import { addCustomSound, loadCustomSounds, removeCustomSound } from '../storage/customSounds';
 import { loadSavedMixes, persistSavedMixes } from '../storage/mixStorage';
 import type { CustomSoundRecord, MixerSnapshot, SavedMix, SavedMixTrackState, TrackDefinition, TrackState } from '../types';
@@ -37,6 +43,43 @@ function createCustomTracks(customSounds: CustomSoundRecord[]): TrackDefinition[
 
   return customSounds.map((sound, index) =>
     createCustomTrackDefinition(sound.id, sound.name.toUpperCase(), palette[index % palette.length], 8 + index % 4),
+  );
+}
+
+function createDefaultSingleTrackState(): TrackState {
+  return {
+    enabled: false,
+    volume: 0.78,
+    speed: 1,
+    followsGlobalTempo: true,
+    isPlaying: false,
+  };
+}
+
+function createTrackStateForTracks(trackDefinitions: TrackDefinition[]): Record<string, TrackState> {
+  return Object.fromEntries(trackDefinitions.map((track) => [track.id, createDefaultSingleTrackState()]));
+}
+
+async function loadPreloadedTracks(): Promise<TrackDefinition[]> {
+  try {
+    const files = await window.djApp?.listPreloadedAudio?.();
+    if (!files || files.length === 0) {
+      return [];
+    }
+
+    return createPreloadedTrackDefinitions(files);
+  } catch {
+    return [];
+  }
+}
+
+function withMissingTrackStates(currentStates: Record<string, TrackState>, trackDefinitions: TrackDefinition[]): Record<string, TrackState> {
+  return trackDefinitions.reduce(
+    (states, track) => ({
+      ...states,
+      [track.id]: states[track.id] ?? createDefaultSingleTrackState(),
+    }),
+    currentStates,
   );
 }
 
@@ -104,25 +147,17 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
   useEffect(() => {
     void (async () => {
       const sounds = await loadCustomSounds();
+      const preloadedTracks = await loadPreloadedTracks();
+      const baseTracks = preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
+      const nextTracks = [...baseTracks, ...createCustomTracks(sounds)];
+
       setSnapshot((current) => ({
         ...current,
         customSounds: sounds,
         savedMixes: loadSavedMixes(),
-        trackStates: sounds.reduce(
-          (states, sound) => ({
-            ...states,
-            [sound.id]: states[sound.id] ?? {
-              enabled: false,
-              volume: 0.78,
-              speed: 1,
-              followsGlobalTempo: true,
-              isPlaying: false,
-            },
-          }),
-          current.trackStates,
-        ),
+        trackStates: withMissingTrackStates(current.trackStates, nextTracks),
       }));
-      setTracks([...DEFAULT_TRACKS, ...createCustomTracks(sounds)]);
+      setTracks(nextTracks);
     })();
   }, []);
 
@@ -244,31 +279,22 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
           ...current,
           transportPlaying: false,
           globalTempo: DEFAULT_GLOBAL_TEMPO,
-          trackStates: createDefaultTrackState(),
+          trackStates: withMissingTrackStates(createTrackStateForTracks(tracks), tracks),
         }));
       },
       loadInitialData: async () => {
         const sounds = await loadCustomSounds();
+        const preloadedTracks = await loadPreloadedTracks();
         const loadedMixes = loadSavedMixes();
+        const baseTracks = preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
+        const nextTracks = [...baseTracks, ...createCustomTracks(sounds)];
         setSnapshot((current) => ({
           ...current,
           customSounds: sounds,
           savedMixes: loadedMixes,
-          trackStates: sounds.reduce(
-            (states, sound) => ({
-              ...states,
-              [sound.id]: states[sound.id] ?? {
-                enabled: false,
-                volume: 0.78,
-                speed: 1,
-                followsGlobalTempo: true,
-                isPlaying: false,
-              },
-            }),
-            current.trackStates,
-          ),
+          trackStates: withMissingTrackStates(current.trackStates, nextTracks),
         }));
-        setTracks([...DEFAULT_TRACKS, ...createCustomTracks(sounds)]);
+        setTracks(nextTracks);
       },
       addCustomSound: async (file: File) => {
         const record = await addCustomSound(file);
@@ -277,16 +303,13 @@ export function MixerProvider({ children }: { children: React.ReactNode }): Reac
           customSounds: [...current.customSounds, record],
           trackStates: {
             ...current.trackStates,
-            [record.id]: current.trackStates[record.id] ?? {
-              enabled: false,
-              volume: 0.78,
-              speed: 1,
-              followsGlobalTempo: true,
-              isPlaying: false,
-            },
+            [record.id]: current.trackStates[record.id] ?? createDefaultSingleTrackState(),
           },
         }));
-        setTracks([...DEFAULT_TRACKS, ...createCustomTracks([...snapshot.customSounds, record])]);
+        setTracks((current) => {
+          const baseTracks = current.filter((track) => track.kind !== 'custom');
+          return [...baseTracks, ...createCustomTracks([...snapshot.customSounds, record])];
+        });
       },
       deleteCustomSound: async (soundId: string) => {
         await removeCustomSound(soundId);

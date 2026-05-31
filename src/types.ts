@@ -6,7 +6,13 @@ export interface TrackDefinition {
   kind: TrackKind;
   color: string;
   loopLengthSeconds: number;
+  preloadedSrc?: string;
   customSoundId?: string;
+}
+
+export interface PreloadedAudioFile {
+  fileName: string;
+  src: string;
 }
 
 export interface TrackState {

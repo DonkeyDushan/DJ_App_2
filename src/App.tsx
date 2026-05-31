@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Box, Container, CssBaseline, Stack, ThemeProvider } from '@mui/material';
 
-import { DEFAULT_TRACKS } from './data/defaultTracks';
 import { GlobalControls } from './components/GlobalControls';
 import { GlobalTempoPanel } from './components/GlobalTempoPanel';
 import { CustomSoundsDialog } from './components/CustomSoundsDialog';
@@ -15,8 +14,6 @@ function AppShell(): React.ReactElement {
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
-
-  const visibleTracks = useMemo(() => tracks.filter((track) => DEFAULT_TRACKS.some((baseTrack) => baseTrack.id === track.id) || track.kind === 'custom'), [tracks]);
 
   return (
     <Container maxWidth={false} sx={{ py: 2.5, height: '100vh', overflow: 'hidden' }}>
@@ -33,7 +30,7 @@ function AppShell(): React.ReactElement {
 
         <Box sx={{ flex: 1, overflow: 'auto', pr: 1 }}>
           <TrackList
-            tracks={visibleTracks}
+            tracks={tracks}
             trackStates={snapshot.trackStates}
             onToggle={(trackId, enabled) => void actions.toggleTrack(trackId, enabled)}
             onPlay={(trackId) => void actions.playTrackOnce(trackId)}

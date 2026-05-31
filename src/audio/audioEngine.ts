@@ -223,6 +223,26 @@ export class AudioEngine {
 
   private customBufferCache = new Map<string, AudioBuffer>();
 
+  private async loadPreloadedDemoTrackBuffer(track: TrackDefinition): Promise<AudioBuffer | null> {
+    if (!track.preloadedSrc) {
+      return null;
+    }
+
+    const context = await this.ensureContext();
+
+    try {
+      const response = await fetch(track.preloadedSrc);
+      if (!response.ok) {
+        return null;
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      return await context.decodeAudioData(arrayBuffer);
+    } catch {
+      return null;
+    }
+  }
+
   async ensureContext(): Promise<AudioContext> {
     if (!this.context) {
       this.context = new AudioContext();
@@ -290,9 +310,15 @@ export class AudioEngine {
         return cached;
       }
 
-      const generated = createDemoBuffer(context, track.id);
-      this.demoBufferCache.set(track.id, generated);
-      return generated;
+      const preloadedBuffer = await this.loadPreloadedDemoTrackBuffer(track);
+      if (preloadedBuffer) {
+        this.demoBufferCache.set(track.id, preloadedBuffer);
+        return preloadedBuffer;
+      }
+
+      const fallbackBuffer = createDemoBuffer(context, track.id);
+      this.demoBufferCache.set(track.id, fallbackBuffer);
+      return fallbackBuffer;
     }
 
     const sound = customSounds.find((entry) => entry.id === track.customSoundId);

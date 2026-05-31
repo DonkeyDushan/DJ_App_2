@@ -1,15 +1,75 @@
-import type { TrackDefinition, TrackState } from '../types';
+import type { PreloadedAudioFile, TrackDefinition, TrackState } from '../types';
 
 export const BASE_BPM = 120;
 export const DEFAULT_GLOBAL_TEMPO = 1;
 
 export const DEFAULT_TRACKS: TrackDefinition[] = [
-  { id: 'drums', name: 'DRUMS', kind: 'demo', color: '#ff4fd8', loopLengthSeconds: 8 },
-  { id: 'bass', name: 'BASS', kind: 'demo', color: '#40d9ff', loopLengthSeconds: 8 },
-  { id: 'keys', name: 'KEYS', kind: 'demo', color: '#9f6bff', loopLengthSeconds: 8 },
-  { id: 'arp', name: 'ARP', kind: 'demo', color: '#ff8f4f', loopLengthSeconds: 8 },
-  { id: 'pad', name: 'PAD', kind: 'demo', color: '#6cff9f', loopLengthSeconds: 8 },
+  {
+    id: 'drums',
+    name: 'DRUMS',
+    kind: 'demo',
+    color: '#ff4fd8',
+    loopLengthSeconds: 8,
+    preloadedSrc: 'audio/preloaded/drums.wav',
+  },
+  {
+    id: 'bass',
+    name: 'BASS',
+    kind: 'demo',
+    color: '#40d9ff',
+    loopLengthSeconds: 8,
+    preloadedSrc: 'audio/preloaded/bass.wav',
+  },
+  {
+    id: 'keys',
+    name: 'KEYS',
+    kind: 'demo',
+    color: '#9f6bff',
+    loopLengthSeconds: 8,
+    preloadedSrc: 'audio/preloaded/keys.wav',
+  },
+  {
+    id: 'arp',
+    name: 'ARP',
+    kind: 'demo',
+    color: '#ff8f4f',
+    loopLengthSeconds: 8,
+    preloadedSrc: 'audio/preloaded/arp.wav',
+  },
+  {
+    id: 'pad',
+    name: 'PAD',
+    kind: 'demo',
+    color: '#6cff9f',
+    loopLengthSeconds: 8,
+    preloadedSrc: 'audio/preloaded/pad.wav',
+  },
 ];
+
+const PRELOADED_COLORS = ['#ff4fd8', '#40d9ff', '#9f6bff', '#ff8f4f', '#6cff9f', '#ffd84f', '#68f0ff'];
+
+function normalizeFileName(fileName: string): string {
+  return fileName.replace(/\.[^.]+$/, '');
+}
+
+function createStableTrackId(fileName: string, index: number): string {
+  const normalized = normalizeFileName(fileName)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return normalized ? `preloaded-${normalized}` : `preloaded-track-${index}`;
+}
+
+export const createPreloadedTrackDefinitions = (files: PreloadedAudioFile[]): TrackDefinition[] =>
+  files.map((file, index) => ({
+    id: createStableTrackId(file.fileName, index),
+    name: normalizeFileName(file.fileName).toUpperCase(),
+    kind: 'demo',
+    color: PRELOADED_COLORS[index % PRELOADED_COLORS.length],
+    loopLengthSeconds: 8,
+    preloadedSrc: file.src,
+  }));
 
 export const createDefaultTrackState = (): Record<string, TrackState> =>
   Object.fromEntries(
