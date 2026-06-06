@@ -26,6 +26,18 @@ import type {
 } from '../types';
 import { STRINGS } from '../strings';
 import { SliderRow } from './SliderRow';
+import {
+  backButtonSx,
+  closeButtonSx,
+  colorDotSx,
+  dialogPaperSx,
+  dialogTitleSx,
+  nameLabelSx,
+  nameFieldSx,
+  saveButtonSx,
+  saveNewButtonSx,
+  sectionLabelSx,
+} from './TrackEditModal.styles';
 
 type TrackEditModalProps = {
   open: boolean;
@@ -73,7 +85,7 @@ type TrackEditModalProps = {
   ) => void;
 };
 
-export function TrackEditModal({
+export const TrackEditModal = ({
   open,
   track,
   trackState,
@@ -86,7 +98,7 @@ export function TrackEditModal({
   onSpeedChange,
   onEqChange,
   onEffectsChange,
-}: TrackEditModalProps): React.ReactElement {
+}: TrackEditModalProps): React.ReactElement => {
   const [volume, setVolume] = useState(0.78);
   const [speed, setSpeed] = useState(1);
   const [eqLow, setEqLow] = useState(0);
@@ -160,7 +172,6 @@ export function TrackEditModal({
     delaySend,
   };
 
-  /** Cancel – revert all live changes. */
   const handleCancel = () => {
     if (originalSettingsRef.current) {
       onRestoreChanges(track.id, originalSettingsRef.current);
@@ -169,7 +180,6 @@ export function TrackEditModal({
     onClose();
   };
 
-  /** "Save" – overwrite preset, keep live changes. */
   const handleSaveOver = () => {
     if (!presetName.trim()) return;
     onSaveOver(track.id, presetName.trim(), track.category, currentSettings);
@@ -177,17 +187,14 @@ export function TrackEditModal({
     onClose();
   };
 
-  /** "Save" – persist settings to a base track (no revert, no new entry). */
   const handleSaveToTrack = () => {
     onSaveToTrack(track.id, currentSettings);
     setSaveNewMode(false);
     onClose();
   };
 
-  /** First click on "Save new" → enter rename mode. */
   const handleSaveNewClick = () => setSaveNewMode(true);
 
-  /** Confirm save-new after name entered. */
   const confirmSaveNew = () => {
     if (!presetName.trim()) return;
     const original = originalSettingsRef.current;
@@ -241,59 +248,20 @@ export function TrackEditModal({
       onClose={handleCancel}
       maxWidth="xs"
       fullWidth
-      PaperProps={{
-        sx: {
-          background: 'linear-gradient(160deg, #1a1230 0%, #0d0d1a 100%)',
-          border: `1px solid ${track.color}44`,
-          boxShadow: `0 0 40px ${track.color}22`,
-          borderRadius: 3,
-        },
-      }}
+      slotProps={{ paper: { sx: dialogPaperSx(track.color) } }}
     >
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          pb: 1,
-          fontFamily: 'Orbitron, monospace',
-          fontSize: '0.9rem',
-          color: track.color,
-        }}
-      >
-        <Box
-          sx={{
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            background: track.color,
-            boxShadow: `0 0 8px ${track.color}`,
-            flexShrink: 0,
-          }}
-        />
+      <DialogTitle sx={dialogTitleSx(track.color)}>
+        <Box sx={colorDotSx(track.color)} />
         {S.title}
-        <IconButton
-          size="small"
-          onClick={handleCancel}
-          sx={{ ml: 'auto', color: 'text.disabled' }}
-        >
+        <IconButton size="small" onClick={handleCancel} sx={closeButtonSx}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 0 }}>
         <Stack spacing={2}>
-          {/* Volume & Speed */}
           <Box>
-            <Typography
-              variant="caption"
-              sx={{
-                fontFamily: 'Orbitron, monospace',
-                color: 'text.disabled',
-                fontSize: '0.6rem',
-                letterSpacing: '0.1em',
-              }}
-            >
+            <Typography variant="caption" sx={sectionLabelSx}>
               {S.levels}
             </Typography>
             <Stack spacing={0.5} mt={0.5}>
@@ -321,17 +289,8 @@ export function TrackEditModal({
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
-          {/* EQ */}
           <Box>
-            <Typography
-              variant="caption"
-              sx={{
-                fontFamily: 'Orbitron, monospace',
-                color: 'text.disabled',
-                fontSize: '0.6rem',
-                letterSpacing: '0.1em',
-              }}
-            >
+            <Typography variant="caption" sx={sectionLabelSx}>
               {S.eq}
             </Typography>
             <Stack spacing={0.5} mt={0.5}>
@@ -370,17 +329,8 @@ export function TrackEditModal({
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
-          {/* FX */}
           <Box>
-            <Typography
-              variant="caption"
-              sx={{
-                fontFamily: 'Orbitron, monospace',
-                color: 'text.disabled',
-                fontSize: '0.6rem',
-                letterSpacing: '0.1em',
-              }}
-            >
+            <Typography variant="caption" sx={sectionLabelSx}>
               {S.fxSends}
             </Typography>
             <Stack spacing={0.5} mt={0.5}>
@@ -407,20 +357,11 @@ export function TrackEditModal({
             </Stack>
           </Box>
 
-          {/* Name field – appears in save-new mode */}
           {saveNewMode && (
             <>
               <Divider sx={{ borderColor: `${track.color}44` }} />
               <Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontFamily: 'Orbitron, monospace',
-                    color: track.color,
-                    fontSize: '0.6rem',
-                    letterSpacing: '0.1em',
-                  }}
-                >
+                <Typography variant="caption" sx={nameLabelSx(track.color)}>
                   {S.nameNewPreset}
                 </Typography>
                 <TextField
@@ -435,16 +376,7 @@ export function TrackEditModal({
                   fullWidth
                   variant="outlined"
                   placeholder={S.presetNamePlaceholder}
-                  sx={{
-                    mt: 0.75,
-                    '& .MuiInputBase-input': {
-                      fontFamily: 'Orbitron, monospace',
-                      fontSize: '0.8rem',
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: `${track.color}66`,
-                    },
-                  }}
+                  sx={nameFieldSx(track.color)}
                 />
               </Box>
             </>
@@ -453,19 +385,17 @@ export function TrackEditModal({
       </DialogContent>
 
       <DialogActions sx={{ px: 2, pb: 2, gap: 1, flexWrap: 'wrap' }}>
-        {/* Back button when in rename mode */}
         {saveNewMode && (
           <Button
             size="small"
             variant="text"
             onClick={() => setSaveNewMode(false)}
-            sx={{ fontSize: '0.7rem', color: 'text.disabled', mr: 'auto' }}
+            sx={backButtonSx}
           >
             {S.back}
           </Button>
         )}
 
-        {/* Save (overwrite) – for existing presets; Save (persist) for base tracks */}
         {!saveNewMode && (
           <Tooltip
             title={isPreset ? S.overwritePresetTooltip : S.saveToTrackTooltip}
@@ -476,14 +406,13 @@ export function TrackEditModal({
               startIcon={<SaveIcon />}
               onClick={isPreset ? handleSaveOver : handleSaveToTrack}
               color="secondary"
-              sx={{ fontSize: '0.7rem', fontFamily: 'Orbitron, monospace' }}
+              sx={saveButtonSx}
             >
               {S.save}
             </Button>
           </Tooltip>
         )}
 
-        {/* Save new – first click enters rename mode, second confirms */}
         {!saveNewMode ? (
           <Tooltip title={S.saveAsNewTooltip}>
             <Button
@@ -491,13 +420,7 @@ export function TrackEditModal({
               size="small"
               startIcon={<AddCircleOutlineIcon />}
               onClick={handleSaveNewClick}
-              sx={{
-                fontSize: '0.7rem',
-                fontFamily: 'Orbitron, monospace',
-                background: `linear-gradient(90deg, ${track.color}cc, ${track.color}88)`,
-                color: '#000',
-                '&:hover': { background: track.color },
-              }}
+              sx={saveNewButtonSx(track.color)}
             >
               {S.saveNew}
             </Button>
@@ -509,13 +432,7 @@ export function TrackEditModal({
             startIcon={<AddCircleOutlineIcon />}
             onClick={confirmSaveNew}
             disabled={!presetName.trim()}
-            sx={{
-              fontSize: '0.7rem',
-              fontFamily: 'Orbitron, monospace',
-              background: `linear-gradient(90deg, ${track.color}cc, ${track.color}88)`,
-              color: '#000',
-              '&:hover': { background: track.color },
-            }}
+            sx={saveNewButtonSx(track.color)}
           >
             {S.confirm}
           </Button>
@@ -523,4 +440,4 @@ export function TrackEditModal({
       </DialogActions>
     </Dialog>
   );
-}
+};

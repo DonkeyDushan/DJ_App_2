@@ -11,7 +11,9 @@ export const DEFAULT_GLOBAL_TEMPO = 1;
 export function detectCategory(name: string): TrackCategory {
   const lower = name.toLowerCase();
   if (/drum|kick|snare|hat|perc|conga/.test(lower)) return 'drums';
-  if (/arp|bass|key|synth|mel|lead|seq|funk/.test(lower)) return 'arp';
+  if (/bass/.test(lower)) return 'bass';
+  if (/key/.test(lower)) return 'keys';
+  if (/arp|synth|mel|lead|seq|funk/.test(lower)) return 'arp';
   if (/pad|atm|amb|string|choir/.test(lower)) return 'pad';
   return 'other';
 }
@@ -30,7 +32,7 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     id: 'bass',
     name: 'BASS',
     kind: 'demo',
-    category: 'arp',
+    category: 'bass',
     color: '#40d9ff',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/bass.wav',
@@ -39,7 +41,7 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     id: 'keys',
     name: 'KEYS',
     kind: 'demo',
-    category: 'arp',
+    category: 'keys',
     color: '#9f6bff',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/keys.wav',

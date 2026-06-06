@@ -97,11 +97,11 @@ type MixerContextValue = {
 
 const MixerContext = createContext<MixerContextValue | null>(null);
 
-export function MixerProvider({
+export const MixerProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}): React.ReactElement {
+}): React.ReactElement => {
   const [snapshot, setSnapshot] = useState<MixerSnapshot>(
     createInitialSnapshot,
   );
@@ -723,7 +723,7 @@ export function MixerProvider({
   );
 }
 
-export function useMixer(): MixerContextValue {
+export const useMixer = (): MixerContextValue => {
   const context = useContext(MixerContext);
   if (!context) {
     throw new Error('useMixer must be used inside MixerProvider');

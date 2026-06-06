@@ -15,7 +15,7 @@ import { TrackGrid } from './components/TrackGrid';
 import { MixerProvider, useMixer } from './state/MixerContext';
 import { retroTheme } from './theme';
 
-function AppShell(): React.ReactElement {
+const AppShell = (): React.ReactElement => {
   const { snapshot, tracks, actions } = useMixer();
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -165,7 +165,7 @@ function AppShell(): React.ReactElement {
   );
 }
 
-export function App(): React.ReactElement {
+export const App = (): React.ReactElement => {
   return (
     <ThemeProvider theme={retroTheme}>
       <CssBaseline />

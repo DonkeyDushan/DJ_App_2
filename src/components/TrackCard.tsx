@@ -16,6 +16,15 @@ import {
 
 import type { TrackDefinition, TrackState } from '../types';
 import { STRINGS } from '../strings';
+import {
+  editButtonSx,
+  favButtonSx,
+  paperSx,
+  playButtonSx,
+  rowSx,
+  starBadgeSx,
+  trackNameSx,
+} from './TrackCard.styles';
 
 type TrackCardProps = {
   track: TrackDefinition;
@@ -26,35 +35,22 @@ type TrackCardProps = {
   onToggleFavorite: (trackId: string) => void;
 };
 
-export function TrackCard({
+export const TrackCard = ({
   track,
   trackState,
   onToggle,
   onPlay,
   onEdit,
   onToggleFavorite,
-}: TrackCardProps): React.ReactElement {
+}: TrackCardProps): React.ReactElement => {
   const isActive = trackState.isPlaying || trackState.isPreviewPlaying;
 
   return (
     <Paper
       variant="outlined"
-      sx={{
-        px: 1.5,
-        py: 1,
-        borderRadius: 2,
-        borderColor: isActive
-          ? track.color
-          : 'rgba(255,255,255,0.08)',
-        boxShadow: isActive ? `0 0 14px ${track.color}44` : 'none',
-        transition: 'box-shadow 0.2s, border-color 0.2s',
-        background: isActive
-          ? `linear-gradient(135deg, ${track.color}14 0%, transparent 60%)`
-          : undefined,
-      }}
+      sx={paperSx(track.color, isActive)}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-        {/* Mix checkbox */}
+      <Box sx={rowSx}>
         <Tooltip title={trackState.enabled ? STRINGS.trackCard.removeFromMix : STRINGS.trackCard.addToMix}>
           <Checkbox
             checked={trackState.enabled}
@@ -65,91 +61,61 @@ export function TrackCard({
           />
         </Tooltip>
 
-        {/* Track name */}
         <Typography
           variant="body2"
-          sx={{
-            flex: 1,
-            fontFamily: 'Orbitron, monospace',
-            color: isActive ? track.color : 'text.primary',
-            fontSize: '0.7rem',
-            letterSpacing: '0.06em',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            userSelect: 'none',
-          }}
+          sx={trackNameSx(track.color, isActive)}
           title={track.name}
         >
           {track.name}
           {track.sourceTrackId != null && (
-            <Typography
-              component="span"
-              sx={{
-                fontSize: '0.6rem',
-                color: 'text.disabled',
-                ml: 0.5,
-                fontFamily: 'inherit',
-              }}
-            >
+            <Typography component="span" sx={starBadgeSx}>
               ★
             </Typography>
           )}
         </Typography>
 
-        {/* Preview play/pause */}
         <Tooltip
           title={trackState.isPreviewPlaying ? STRINGS.trackCard.stopPreview : STRINGS.trackCard.preview}
         >
           <IconButton
             size="small"
             onClick={() => onPlay(track.id)}
-            sx={{
-              color: trackState.isPreviewPlaying
-                ? track.color
-                : 'text.secondary',
-              p: 0.5,
-            }}
+            sx={playButtonSx(track.color, trackState.isPreviewPlaying)}
           >
             {trackState.isPreviewPlaying ? (
-              <PauseCircleIcon sx={{ fontSize: 18 }} />
+              <PauseCircleIcon sx={{ fontSize: '18px' }} />
             ) : (
-              <PlayCircleIcon sx={{ fontSize: 18 }} />
+              <PlayCircleIcon sx={{ fontSize: '18px' }} />
             )}
           </IconButton>
         </Tooltip>
 
-        {/* Favourite toggle */}
         <Tooltip
           title={track.isFavorite ? STRINGS.trackCard.removeFromFavourites : STRINGS.trackCard.addToFavourites}
         >
           <IconButton
             size="small"
             onClick={() => onToggleFavorite(track.id)}
-            sx={{
-              color: track.isFavorite ? '#ffd84f' : 'text.disabled',
-              p: 0.5,
-            }}
+            sx={favButtonSx(track.isFavorite ?? false)}
           >
             {track.isFavorite ? (
-              <StarIcon sx={{ fontSize: 16 }} />
+              <StarIcon sx={{ fontSize: '16px' }} />
             ) : (
-              <StarBorderIcon sx={{ fontSize: 16 }} />
+              <StarBorderIcon sx={{ fontSize: '16px' }} />
             )}
           </IconButton>
         </Tooltip>
 
-        {/* Edit */}
         <Tooltip title={STRINGS.trackCard.editTrack}>
           <IconButton
             size="small"
             onClick={() => onEdit(track.id)}
-            sx={{ color: 'text.secondary', p: 0.5 }}
+            sx={editButtonSx}
           >
-            <EditIcon sx={{ fontSize: 16 }} />
+            <EditIcon sx={{ fontSize: '16px' }} />
           </IconButton>
         </Tooltip>
       </Box>
     </Paper>
   );
-}
+};

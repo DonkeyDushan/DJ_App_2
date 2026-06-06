@@ -6,10 +6,18 @@ import type { TrackCategory, TrackDefinition, TrackState } from '../types';
 import { STRINGS } from '../strings';
 import { TrackCard } from './TrackCard';
 import { TrackEditModal } from './TrackEditModal';
+import {
+  columnCountSx,
+  columnHeaderSx,
+  emptyColumnSx,
+  gridSx,
+} from './TrackGrid.styles';
 
 const COLUMNS: { category: TrackCategory; label: string; color: string }[] = [
   { category: 'drums', label: STRINGS.trackGrid.drums, color: '#ff4fd8' },
   { category: 'arp', label: STRINGS.trackGrid.arp, color: '#40d9ff' },
+  { category: 'bass', label: STRINGS.trackGrid.bass, color: '#40d9ff' },
+  { category: 'keys', label: STRINGS.trackGrid.keys, color: '#40d9ff' },
   { category: 'pad', label: STRINGS.trackGrid.pad, color: '#6cff9f' },
   { category: 'custom', label: STRINGS.trackGrid.custom, color: '#ffd84f' },
 ];
@@ -51,7 +59,10 @@ type TrackGridProps = {
     trackId: string,
     settings: import('../types').TrackSavedSettings,
   ) => void;
-  onSaveToTrack: (trackId: string, settings: import('../types').TrackSavedSettings) => void;
+  onSaveToTrack: (
+    trackId: string,
+    settings: import('../types').TrackSavedSettings,
+  ) => void;
 };
 
 const DEFAULT_TRACK_STATE: TrackState = {
@@ -68,7 +79,7 @@ const DEFAULT_TRACK_STATE: TrackState = {
   isPreviewPlaying: false,
 };
 
-export function TrackGrid({
+export const TrackGrid = ({
   tracks,
   trackStates,
   onToggle,
@@ -82,7 +93,7 @@ export function TrackGrid({
   onSaveOver,
   onRestoreChanges,
   onSaveToTrack,
-}: TrackGridProps): React.ReactElement {
+}: TrackGridProps): React.ReactElement => {
   const [editTrackId, setEditTrackId] = useState<string | null>(null);
 
   const editTrack = tracks.find((t) => t.id === editTrackId) ?? null;
@@ -90,10 +101,12 @@ export function TrackGrid({
     ? (trackStates[editTrackId] ?? DEFAULT_TRACK_STATE)
     : null;
 
-  // Group tracks by category; "other" goes into the arp column
+  // Group tracks by category; "other" goes into the custom column
   const grouped: Record<TrackCategory, TrackDefinition[]> = {
     drums: [],
     arp: [],
+    bass: [],
+    keys: [],
     pad: [],
     custom: [],
     other: [],
@@ -101,63 +114,29 @@ export function TrackGrid({
   for (const track of tracks) {
     grouped[track.category].push(track);
   }
-  // Overflow "other" into arp column
-  grouped.arp.push(...grouped.other);
+  // Overflow "other" into custom column
+  grouped.custom.push(...grouped.other);
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-            md: 'repeat(4, 1fr)',
-          },
-          gap: 2,
-          alignItems: 'start',
-        }}
-      >
+      <Box sx={gridSx}>
         {COLUMNS.map(({ category, label, color }) => {
           const columnTracks = grouped[category];
           return (
             <Box key={category}>
-              {/* Column header */}
               <Typography
                 variant="caption"
-                sx={{
-                  display: 'block',
-                  fontFamily: 'Orbitron, monospace',
-                  fontSize: '0.6rem',
-                  letterSpacing: '0.15em',
-                  color,
-                  mb: 1,
-                  textShadow: `0 0 8px ${color}88`,
-                  borderBottom: `1px solid ${color}33`,
-                  pb: 0.5,
-                }}
+                sx={columnHeaderSx(color)}
               >
                 {label}
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: '0.55rem',
-                    color: 'text.disabled',
-                    ml: 0.75,
-                    fontFamily: 'inherit',
-                  }}
-                >
+                <Typography component="span" sx={columnCountSx}>
                   ({columnTracks.length})
                 </Typography>
               </Typography>
 
-              {/* Tracks */}
               <Stack spacing={0.75}>
                 {columnTracks.length === 0 ? (
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.disabled', fontSize: '0.65rem', pl: 0.5 }}
-                  >
+                  <Typography variant="caption" sx={emptyColumnSx}>
                     —
                   </Typography>
                 ) : (
@@ -185,7 +164,9 @@ export function TrackGrid({
         trackState={editTrackState}
         onClose={() => setEditTrackId(null)}
         onSaveAsNew={onSaveAsNew}
-        onSaveOver={onSaveOver}          onRestoreChanges={onRestoreChanges}        onVolumeChange={onVolumeChange}
+        onSaveOver={onSaveOver}
+        onRestoreChanges={onRestoreChanges}
+        onVolumeChange={onVolumeChange}
         onSaveToTrack={onSaveToTrack}
         onSpeedChange={onSpeedChange}
         onEqChange={onEqChange}
@@ -193,4 +174,4 @@ export function TrackGrid({
       />
     </>
   );
-}
+};

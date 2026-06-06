@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Grid } from '@mui/material';
 
 import type { TrackDefinition, TrackState } from '../types';
@@ -23,7 +25,7 @@ type TrackListProps = {
   ) => void;
 };
 
-export function TrackList({
+export const TrackList = ({
   tracks,
   trackStates,
   onToggle,
@@ -32,7 +34,7 @@ export function TrackList({
   onSpeedChange,
   onEqChange,
   onEffectsChange,
-}: TrackListProps): React.ReactElement {
+}: TrackListProps): React.ReactElement => {
   return (
     <Grid container spacing={2}>
       {tracks.map((track, i) => (
@@ -65,4 +67,4 @@ export function TrackList({
       ))}
     </Grid>
   );
-}
+};

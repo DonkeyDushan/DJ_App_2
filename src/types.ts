@@ -1,5 +1,12 @@
 export type TrackKind = 'demo' | 'custom';
-export type TrackCategory = 'drums' | 'arp' | 'pad' | 'custom' | 'other';
+export type TrackCategory =
+  | 'drums'
+  | 'arp'
+  | 'bass'
+  | 'keys'
+  | 'pad'
+  | 'custom'
+  | 'other';
 
 export interface TrackSavedSettings {
   volume: number;

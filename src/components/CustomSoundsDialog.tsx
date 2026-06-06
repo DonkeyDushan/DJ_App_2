@@ -1,9 +1,26 @@
+import React from 'react';
+
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { Avatar, Box, Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Stack,
+  Typography,
+} from '@mui/material';
 
 import type { CustomSoundRecord } from '../types';
 import { STRINGS } from '../strings';
+import { emptyStateSx, listItemSx } from './CustomSoundsDialog.styles';
 
 type CustomSoundsDialogProps = {
   open: boolean;
@@ -15,7 +32,13 @@ type CustomSoundsDialogProps = {
 
 const S = STRINGS.customSoundsDialog;
 
-export function CustomSoundsDialog({ open, sounds, onClose, onUpload, onDelete }: CustomSoundsDialogProps): React.ReactElement {
+export const CustomSoundsDialog = ({
+  open,
+  sounds,
+  onClose,
+  onUpload,
+  onDelete,
+}: CustomSoundsDialogProps): React.ReactElement => {
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
     if (file) {
@@ -29,13 +52,22 @@ export function CustomSoundsDialog({ open, sounds, onClose, onUpload, onDelete }
       <DialogTitle>{S.title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <Button component="label" variant="contained" startIcon={<UploadFileIcon />}>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<UploadFileIcon />}
+          >
             {S.uploadSound}
-            <input hidden type="file" accept="audio/*" onChange={handleUpload} />
+            <input
+              hidden
+              type="file"
+              accept="audio/*"
+              onChange={handleUpload}
+            />
           </Button>
 
           {sounds.length === 0 ? (
-            <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
+            <Box sx={emptyStateSx}>
               <Typography variant="body2">{S.noCustomSounds}</Typography>
             </Box>
           ) : (
@@ -44,16 +76,27 @@ export function CustomSoundsDialog({ open, sounds, onClose, onUpload, onDelete }
                 <ListItem
                   key={sound.id}
                   secondaryAction={
-                    <IconButton edge="end" aria-label="delete" onClick={() => onDelete(sound.id)}>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => onDelete(sound.id)}
+                    >
                       <DeleteForeverIcon />
                     </IconButton>
                   }
-                  sx={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  sx={listItemSx}
                 >
                   <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'secondary.main', color: '#090812' }}>{sound.name.slice(0, 1).toUpperCase()}</Avatar>
+                    <Avatar
+                      sx={{ bgcolor: 'secondary.main', color: '#090812' }}
+                    >
+                      {sound.name.slice(0, 1).toUpperCase()}
+                    </Avatar>
                   </ListItemAvatar>
-                  <ListItemText primary={sound.name} secondary={`${Math.round(sound.blob.size / 1024)} KB • ${sound.mimeType}`} />
+                  <ListItemText
+                    primary={sound.name}
+                    secondary={`${Math.round(sound.blob.size / 1024)} KB • ${sound.mimeType}`}
+                  />
                 </ListItem>
               ))}
             </List>
@@ -62,4 +105,4 @@ export function CustomSoundsDialog({ open, sounds, onClose, onUpload, onDelete }
       </DialogContent>
     </Dialog>
   );
-}
+};

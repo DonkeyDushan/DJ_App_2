@@ -1,3 +1,5 @@
+import React from 'react';
+
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
@@ -12,6 +14,16 @@ import {
 } from '@mui/material';
 
 import type { TrackDefinition, TrackState } from '../types';
+import {
+  controlLabelSx,
+  eqLabelSx,
+  glowOverlaySx,
+  paperSx,
+  playButtonSx,
+  sliderLabelSx,
+  statusBadgeSx,
+  trackNameSx,
+} from './TrackItem.styles';
 
 type TrackItemProps = {
   track: TrackDefinition;
@@ -33,7 +45,7 @@ type TrackItemProps = {
   ) => void;
 };
 
-export function TrackItem({
+export const TrackItem = ({
   track,
   trackState,
   onToggle,
@@ -42,31 +54,10 @@ export function TrackItem({
   onSpeedChange,
   onEqChange,
   onEffectsChange,
-}: TrackItemProps): React.ReactElement {
+}: TrackItemProps): React.ReactElement => {
   return (
-    <Paper
-      sx={{
-        p: 2,
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 4,
-        borderColor: trackState.isPlaying
-          ? track.color
-          : 'rgba(255,255,255,0.08)',
-        boxShadow: trackState.isPlaying
-          ? `0 0 0 1px ${track.color}66, 0 0 22px ${track.color}55, inset 0 0 22px ${track.color}12`
-          : 'none',
-      }}
-    >
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          opacity: 0.16,
-          background: `radial-gradient(circle at top right, ${track.color}88, transparent 45%)`,
-          pointerEvents: 'none',
-        }}
-      />
+    <Paper sx={paperSx(track.color, trackState.isPlaying)}>
+      <Box sx={glowOverlaySx(track.color)} />
       <Stack spacing={1.5} sx={{ position: 'relative' }}>
         <Stack
           direction="row"
@@ -80,23 +71,11 @@ export function TrackItem({
               onChange={(_, checked) => onToggle(track.id, checked)}
               color="secondary"
             />
-            <Typography
-              variant="h6"
-              sx={{ fontFamily: 'Orbitron, sans-serif', color: track.color }}
-            >
+            <Typography variant="h6" sx={trackNameSx(track.color)}>
               {track.name}
             </Typography>
           </Stack>
-          <Box
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 1,
-              color: trackState.isPlaying ? track.color : 'text.secondary',
-              fontSize: 12,
-              letterSpacing: '0.16em',
-            }}
-          >
+          <Box sx={statusBadgeSx(track.color, trackState.isPlaying)}>
             <CheckCircleOutlineIcon fontSize="small" />
             {trackState.isPlaying ? 'PLAYING' : 'IDLE'}
           </Box>
@@ -109,16 +88,13 @@ export function TrackItem({
             trackState.isPreviewPlaying ? <StopCircleIcon /> : <PlayArrowIcon />
           }
           onClick={() => onPlay(track.id)}
-          sx={{ borderColor: `${track.color}88`, color: '#fff' }}
+          sx={playButtonSx(track.color)}
         >
           {trackState.isPreviewPlaying ? 'STOP' : 'PLAY'}
         </Button>
 
         <Box>
-          <Typography
-            variant="caption"
-            sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}
-          >
+          <Typography variant="caption" sx={sliderLabelSx}>
             VOLUME
           </Typography>
           <Slider
@@ -134,10 +110,7 @@ export function TrackItem({
         </Box>
 
         <Box>
-          <Typography
-            variant="caption"
-            sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}
-          >
+          <Typography variant="caption" sx={sliderLabelSx}>
             SPEED
           </Typography>
           <Slider
@@ -153,17 +126,11 @@ export function TrackItem({
         </Box>
 
         <Stack spacing={1}>
-          <Typography
-            variant="caption"
-            sx={{ display: 'block', color: 'text.secondary' }}
-          >
+          <Typography variant="caption" sx={eqLabelSx}>
             EQ (dB)
           </Typography>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="caption"
-              sx={{ width: 26, color: 'text.secondary' }}
-            >
+            <Typography variant="caption" sx={controlLabelSx('1.625rem')}>
               LOW
             </Typography>
             <Slider
@@ -183,10 +150,7 @@ export function TrackItem({
             />
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="caption"
-              sx={{ width: 26, color: 'text.secondary' }}
-            >
+            <Typography variant="caption" sx={controlLabelSx('1.625rem')}>
               MID
             </Typography>
             <Slider
@@ -206,10 +170,7 @@ export function TrackItem({
             />
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="caption"
-              sx={{ width: 26, color: 'text.secondary' }}
-            >
+            <Typography variant="caption" sx={controlLabelSx('1.625rem')}>
               HIGH
             </Typography>
             <Slider
@@ -231,17 +192,11 @@ export function TrackItem({
         </Stack>
 
         <Stack spacing={1}>
-          <Typography
-            variant="caption"
-            sx={{ display: 'block', color: 'text.secondary' }}
-          >
+          <Typography variant="caption" sx={eqLabelSx}>
             FX SEND
           </Typography>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="caption"
-              sx={{ width: 48, color: 'text.secondary' }}
-            >
+            <Typography variant="caption" sx={controlLabelSx('3rem')}>
               REVERB
             </Typography>
             <Slider
@@ -260,10 +215,7 @@ export function TrackItem({
             />
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="caption"
-              sx={{ width: 48, color: 'text.secondary' }}
-            >
+            <Typography variant="caption" sx={controlLabelSx('3rem')}>
               DELAY
             </Typography>
             <Slider
@@ -285,4 +237,4 @@ export function TrackItem({
       </Stack>
     </Paper>
   );
-}
+};

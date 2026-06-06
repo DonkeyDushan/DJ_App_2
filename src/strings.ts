@@ -14,6 +14,8 @@ export const STRINGS = {
   trackGrid: {
     drums: 'DRUMS',
     arp: 'ARP',
+    bass: 'BASS',
+    keys: 'KEYS',
     pad: 'PAD',
     custom: 'CUSTOM',
   },

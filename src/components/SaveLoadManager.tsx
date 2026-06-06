@@ -1,10 +1,26 @@
+import React, { useEffect, useState } from 'react';
+
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SaveIcon from '@mui/icons-material/Save';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import type { SavedMix } from '../types';
 import { STRINGS } from '../strings';
+import { emptyStateSx, listItemSx } from './SaveLoadManager.styles';
 
 type SaveLoadManagerProps = {
   saveOpen: boolean;
@@ -18,7 +34,15 @@ type SaveLoadManagerProps = {
 
 const S = STRINGS.saveLoadManager;
 
-export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, onLoad, onDelete }: SaveLoadManagerProps): React.ReactElement {
+export const SaveLoadManager = ({
+  saveOpen,
+  loadOpen,
+  mixes,
+  onClose,
+  onSave,
+  onLoad,
+  onDelete,
+}: SaveLoadManagerProps): React.ReactElement => {
   const [mixName, setMixName] = useState<string>(S.defaultMixName);
 
   useEffect(() => {
@@ -33,7 +57,13 @@ export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, on
         <DialogTitle>{S.saveMixTitle}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField label={S.mixNameLabel} value={mixName} onChange={(event) => setMixName(event.target.value)} fullWidth autoFocus />
+            <TextField
+              label={S.mixNameLabel}
+              value={mixName}
+              onChange={(event) => setMixName(event.target.value)}
+              fullWidth
+              autoFocus
+            />
             <Typography variant="body2" color="text.secondary">
               {S.savesInfo}
             </Typography>
@@ -58,7 +88,7 @@ export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, on
         <DialogTitle>{S.loadMixTitle}</DialogTitle>
         <DialogContent>
           {mixes.length === 0 ? (
-            <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
+            <Box sx={emptyStateSx}>
               <Typography variant="body2">{S.noSavedMixes}</Typography>
             </Box>
           ) : (
@@ -71,7 +101,7 @@ export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, on
                       <DeleteForeverIcon />
                     </IconButton>
                   }
-                  sx={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  sx={listItemSx}
                 >
                   <ListItemText
                     primary={mix.name}
@@ -91,4 +121,4 @@ export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, on
       </Dialog>
     </>
   );
-}
+};
