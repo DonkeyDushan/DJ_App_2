@@ -85,7 +85,7 @@ export class AudioEngine {
       const convolver = this.context.createConvolver();
       convolver.buffer = createImpulseResponse(this.context);
       reverbInputGain.gain.value = 1;
-      reverbWetGain.gain.value = 0.22;
+      reverbWetGain.gain.value = 0.9;
       reverbInputGain.connect(convolver);
       convolver.connect(reverbWetGain).connect(this.masterGain);
       this.reverbInputGain = reverbInputGain;
@@ -100,7 +100,7 @@ export class AudioEngine {
       delayFilter.type = 'lowpass';
       delayFilter.frequency.value = 4200;
       delayFeedbackGain.gain.value = 0.34;
-      delayWetGain.gain.value = 0.2;
+      delayWetGain.gain.value = 0.8;
       delayInputGain.connect(delayNode);
       delayNode.connect(delayFilter);
       delayFilter.connect(delayWetGain).connect(this.masterGain);

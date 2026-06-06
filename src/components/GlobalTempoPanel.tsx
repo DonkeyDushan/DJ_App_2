@@ -35,7 +35,7 @@ export const GlobalTempoPanel = ({
           value={globalTempo}
           min={0.5}
           max={1.5}
-          step={0.01}
+          step={0.05}
           onChange={(_, value) =>
             onChange(Array.isArray(value) ? value[0] : value)
           }

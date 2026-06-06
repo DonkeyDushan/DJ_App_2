@@ -270,7 +270,7 @@ export const TrackEditModal = ({
                 value={volume}
                 min={0}
                 max={1}
-                step={0.01}
+                step={0.05}
                 onChange={handleVolumeChange}
                 valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
                 color={track.color}
@@ -280,7 +280,7 @@ export const TrackEditModal = ({
                 value={speed}
                 min={0.25}
                 max={4}
-                step={0.01}
+                step={0.05}
                 onChange={handleSpeedChange}
                 valueLabelFormat={(v) => `${v.toFixed(2)}x`}
               />
@@ -297,8 +297,8 @@ export const TrackEditModal = ({
               <SliderRow
                 label={S.low}
                 value={eqLow}
-                min={-12}
-                max={12}
+                min={-30}
+                max={30}
                 step={0.5}
                 onChange={handleEqLowChange}
                 valueLabelFormat={(v) => `${v > 0 ? '+' : ''}${v} dB`}
@@ -307,8 +307,8 @@ export const TrackEditModal = ({
               <SliderRow
                 label={S.mid}
                 value={eqMid}
-                min={-12}
-                max={12}
+                min={-30}
+                max={30}
                 step={0.5}
                 onChange={handleEqMidChange}
                 valueLabelFormat={(v) => `${v > 0 ? '+' : ''}${v} dB`}
@@ -317,8 +317,8 @@ export const TrackEditModal = ({
               <SliderRow
                 label={S.high}
                 value={eqHigh}
-                min={-12}
-                max={12}
+                min={-30}
+                max={30}
                 step={0.5}
                 onChange={handleEqHighChange}
                 valueLabelFormat={(v) => `${v > 0 ? '+' : ''}${v} dB`}
@@ -339,7 +339,7 @@ export const TrackEditModal = ({
                 value={reverbSend}
                 min={0}
                 max={1}
-                step={0.01}
+                step={0.05}
                 onChange={handleReverbChange}
                 valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
                 color="#6cff9f"
@@ -349,7 +349,7 @@ export const TrackEditModal = ({
                 value={delaySend}
                 min={0}
                 max={1}
-                step={0.01}
+                step={0.05}
                 onChange={handleDelayChange}
                 valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
                 color="#ffd84f"

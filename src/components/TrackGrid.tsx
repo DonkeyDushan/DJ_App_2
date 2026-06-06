@@ -140,7 +140,10 @@ export const TrackGrid = ({
                     —
                   </Typography>
                 ) : (
-                  columnTracks.map((track) => (
+                  columnTracks
+                    .slice()
+                    .sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0))
+                    .map((track) => (
                     <TrackCard
                       key={track.id}
                       track={track}

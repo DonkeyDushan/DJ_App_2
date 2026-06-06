@@ -1,5 +1,6 @@
 export function createImpulseResponse(context: AudioContext): AudioBuffer {
-  const durationSeconds = 1.8;
+  const durationSeconds = 4.0;
+  const preDelaySamples = Math.floor(0.018 * context.sampleRate);
   const buffer = context.createBuffer(
     2,
     Math.floor(durationSeconds * context.sampleRate),
@@ -8,9 +9,9 @@ export function createImpulseResponse(context: AudioContext): AudioBuffer {
   const left = buffer.getChannelData(0);
   const right = buffer.getChannelData(1);
 
-  for (let sampleIndex = 0; sampleIndex < left.length; sampleIndex += 1) {
-    const progress = sampleIndex / left.length;
-    const decay = (1 - progress) ** 2.8;
+  for (let sampleIndex = preDelaySamples; sampleIndex < left.length; sampleIndex += 1) {
+    const progress = (sampleIndex - preDelaySamples) / (left.length - preDelaySamples);
+    const decay = Math.exp(-progress * 3.2);
     left[sampleIndex] = (Math.random() * 2 - 1) * decay;
     right[sampleIndex] = (Math.random() * 2 - 1) * decay;
   }

@@ -163,15 +163,13 @@ const AppShell = (): React.ReactElement => {
       />
     </Container>
   );
-}
+};
 
-export const App = (): React.ReactElement => {
-  return (
-    <ThemeProvider theme={retroTheme}>
-      <CssBaseline />
-      <MixerProvider>
-        <AppShell />
-      </MixerProvider>
-    </ThemeProvider>
-  );
-}
+export const App = (): React.ReactElement => (
+  <ThemeProvider theme={retroTheme}>
+    <CssBaseline />
+    <MixerProvider>
+      <AppShell />
+    </MixerProvider>
+  </ThemeProvider>
+);

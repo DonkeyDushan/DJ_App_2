@@ -51,6 +51,7 @@ module.exports = {
     'no-restricted-syntax': 'off',
     'no-await-in-loop': 'off',
     'no-continue': 'off',
+    'react/require-default-props': 'off',
     'react/function-component-definition': [
       'error',
       {
