@@ -78,6 +78,23 @@ export interface SavedMix {
   createdAt: number;
   globalTempo: number;
   trackStates: Record<string, SavedMixTrackState>;
+  isFavorite?: boolean;
+}
+
+export interface SessionSlot {
+  id: string;
+  mixId: string;
+  durationSeconds: number;
+  transitionDuration: number;
+}
+
+export interface DJSession {
+  id: string;
+  name: string;
+  createdAt: number;
+  totalDurationSeconds: number;
+  slots: SessionSlot[];
+  isFavorite: boolean;
 }
 
 export interface MixerSnapshot {

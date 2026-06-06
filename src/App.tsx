@@ -4,6 +4,8 @@ import {
   Container,
   CssBaseline,
   Stack,
+  Tab,
+  Tabs,
   ThemeProvider,
 } from '@mui/material';
 
@@ -12,18 +14,18 @@ import { GlobalTempoPanel } from './components/GlobalTempoPanel';
 import { CustomSoundsDialog } from './components/CustomSoundsDialog';
 import { SaveLoadManager } from './components/SaveLoadManager';
 import { TrackGrid } from './components/TrackGrid';
+import { SetTab } from './components/set/SetTab';
 import { MixerProvider, useMixer } from './state/MixerContext';
+import { SessionProvider } from './state/SessionContext';
 import { retroTheme } from './theme';
+import { STRINGS } from './strings';
 
-const AppShell = (): React.ReactElement => {
+const MixerTab = (): React.ReactElement => {
   const { snapshot, tracks, actions } = useMixer();
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
 
-  // After a "Save new", apply deferred actions on the newly created preset
-  // once the track list has been updated (React batching means the preset
-  // isn't in `tracks` until the next render).
   const pendingActionsRef = useRef<{
     presetId: string;
     enablePreset: boolean;
@@ -47,10 +49,7 @@ const AppShell = (): React.ReactElement => {
   }, [tracks]);
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ py: 2.5, height: '100vh', overflow: 'hidden' }}
-    >
+    <>
       <Stack spacing={2.2} sx={{ height: '100%' }}>
         <GlobalControls
           isPlaying={snapshot.transportPlaying}
@@ -92,23 +91,18 @@ const AppShell = (): React.ReactElement => {
               const editedTrack = tracks.find((t) => t.id === editedTrackId);
               const presetSourceTrackId =
                 editedTrack?.sourceTrackId ?? editedTrackId;
-              // Was the edited track enabled (in mix)?
               const wasEnabled =
                 snapshot.trackStates[editedTrackId]?.enabled ?? false;
-              // 1. Create the new preset
               const newPresetId = actions.saveTrackPreset(
                 presetSourceTrackId,
                 name,
                 category,
                 settings,
               );
-              // 2. Revert the edited track to its pre-edit state
               actions.restoreTrackSettings(editedTrackId, originalSettings);
-              // 3. Stop preview on edited track if it was playing
               if (wasPreviewPlaying) {
-                void actions.playTrackOnce(editedTrackId); // toggle off
+                void actions.playTrackOnce(editedTrackId);
               }
-              // 4. Defer: transfer checkbox + playback to new preset
               pendingActionsRef.current = {
                 presetId: newPresetId,
                 enablePreset: wasEnabled,
@@ -160,6 +154,48 @@ const AppShell = (): React.ReactElement => {
         onLoad={(mixId) => void actions.loadMix(mixId)}
         onDelete={(mixId) => actions.deleteMix(mixId)}
       />
+    </>
+  );
+};
+
+const AppShell = (): React.ReactElement => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  return (
+    <Container
+      maxWidth={false}
+      sx={{
+        py: 2,
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Tabs
+        value={activeTab}
+        onChange={(_, v: number) => setActiveTab(v)}
+        sx={{ mb: 1.5, minHeight: 0, flexShrink: 0 }}
+        slotProps={{ indicator: { style: { height: 2 } } }}
+      >
+        <Tab
+          label={STRINGS.set.tabMixer}
+          sx={{ minHeight: 0, py: 0.75, fontSize: '0.7rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.08em' }}
+        />
+        <Tab
+          label={STRINGS.set.tabSet}
+          sx={{ minHeight: 0, py: 0.75, fontSize: '0.7rem', fontFamily: 'Orbitron, monospace', letterSpacing: '0.08em' }}
+        />
+      </Tabs>
+
+      <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        <Box sx={{ display: activeTab === 0 ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
+          <MixerTab />
+        </Box>
+        <Box sx={{ display: activeTab === 1 ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
+          <SetTab />
+        </Box>
+      </Box>
     </Container>
   );
 };
@@ -168,7 +204,9 @@ export const App = (): React.ReactElement => (
   <ThemeProvider theme={retroTheme}>
     <CssBaseline />
     <MixerProvider>
-      <AppShell />
+      <SessionProvider>
+        <AppShell />
+      </SessionProvider>
     </MixerProvider>
   </ThemeProvider>
 );

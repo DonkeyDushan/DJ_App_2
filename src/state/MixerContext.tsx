@@ -90,6 +90,7 @@ type MixerContextValue = {
     deleteTrackPreset: (presetId: string) => void;
     toggleFavorite: (trackId: string) => void;
     saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => void;
+    toggleMixFavorite: (mixId: string) => void;
   };
 };
 
@@ -706,6 +707,15 @@ export const MixerProvider = ({
       saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => {
         loadTrackOverrides().then((current) => {
           persistTrackOverrides({ ...current, [trackId]: settings });
+        });
+      },
+      toggleMixFavorite: (mixId: string) => {
+        setSnapshot((current) => {
+          const nextMixes = current.savedMixes.map((m) =>
+            m.id === mixId ? { ...m, isFavorite: !m.isFavorite } : m,
+          );
+          persistSavedMixes(nextMixes);
+          return { ...current, savedMixes: nextMixes };
         });
       },
     }),
