@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Divider,
   IconButton,
-  Slider,
   Stack,
   TextField,
   Tooltip,
@@ -25,6 +24,8 @@ import type {
   TrackSavedSettings,
   TrackState,
 } from '../types';
+import { STRINGS } from '../strings';
+import { SliderRow } from './SliderRow';
 
 type TrackEditModalProps = {
   open: boolean;
@@ -70,72 +71,6 @@ type TrackEditModalProps = {
     reverbSend: number,
     delaySend: number,
   ) => void;
-};
-
-function SliderRow({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
-  valueLabelFormat,
-  color,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange: (v: number) => void;
-  valueLabelFormat?: (v: number) => string;
-  color?: string;
-}): React.ReactElement {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-      <Typography
-        variant="caption"
-        sx={{
-          fontFamily: 'Orbitron, monospace',
-          width: 52,
-          color: color ?? 'text.secondary',
-          fontSize: '0.65rem',
-          letterSpacing: '0.05em',
-          flexShrink: 0,
-        }}
-      >
-        {label}
-      </Typography>
-      <Slider
-        size="small"
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        valueLabelDisplay="auto"
-        valueLabelFormat={valueLabelFormat}
-        onChange={(_, v) => onChange(v as number)}
-        sx={{ color: color ?? 'secondary.main' }}
-      />
-      <Typography
-        variant="caption"
-        sx={{
-          width: 36,
-          textAlign: 'right',
-          color: 'text.disabled',
-          fontSize: '0.65rem',
-          flexShrink: 0,
-        }}
-      >
-        {valueLabelFormat ? valueLabelFormat(value) : value.toFixed(2)}
-      </Typography>
-    </Box>
-  );
-}
-
-SliderRow.defaultProps = {
-  valueLabelFormat: undefined,
-  color: undefined,
 };
 
 export function TrackEditModal({
@@ -298,6 +233,8 @@ export function TrackEditModal({
     onEffectsChange(track.id, reverbSend, v);
   };
 
+  const S = STRINGS.trackEditModal;
+
   return (
     <Dialog
       open={open}
@@ -334,7 +271,7 @@ export function TrackEditModal({
             flexShrink: 0,
           }}
         />
-        EDIT TRACK
+        {S.title}
         <IconButton
           size="small"
           onClick={handleCancel}
@@ -357,11 +294,11 @@ export function TrackEditModal({
                 letterSpacing: '0.1em',
               }}
             >
-              LEVELS
+              {S.levels}
             </Typography>
             <Stack spacing={0.5} mt={0.5}>
               <SliderRow
-                label="VOL"
+                label={S.vol}
                 value={volume}
                 min={0}
                 max={1}
@@ -371,7 +308,7 @@ export function TrackEditModal({
                 color={track.color}
               />
               <SliderRow
-                label="SPEED"
+                label={S.speed}
                 value={speed}
                 min={0.25}
                 max={4}
@@ -395,11 +332,11 @@ export function TrackEditModal({
                 letterSpacing: '0.1em',
               }}
             >
-              EQ
+              {S.eq}
             </Typography>
             <Stack spacing={0.5} mt={0.5}>
               <SliderRow
-                label="LOW"
+                label={S.low}
                 value={eqLow}
                 min={-12}
                 max={12}
@@ -409,7 +346,7 @@ export function TrackEditModal({
                 color="#40d9ff"
               />
               <SliderRow
-                label="MID"
+                label={S.mid}
                 value={eqMid}
                 min={-12}
                 max={12}
@@ -419,7 +356,7 @@ export function TrackEditModal({
                 color="#9f6bff"
               />
               <SliderRow
-                label="HIGH"
+                label={S.high}
                 value={eqHigh}
                 min={-12}
                 max={12}
@@ -444,11 +381,11 @@ export function TrackEditModal({
                 letterSpacing: '0.1em',
               }}
             >
-              FX SENDS
+              {S.fxSends}
             </Typography>
             <Stack spacing={0.5} mt={0.5}>
               <SliderRow
-                label="REVERB"
+                label={S.reverb}
                 value={reverbSend}
                 min={0}
                 max={1}
@@ -458,7 +395,7 @@ export function TrackEditModal({
                 color="#6cff9f"
               />
               <SliderRow
-                label="DELAY"
+                label={S.delay}
                 value={delaySend}
                 min={0}
                 max={1}
@@ -484,7 +421,7 @@ export function TrackEditModal({
                     letterSpacing: '0.1em',
                   }}
                 >
-                  NAME NEW PRESET
+                  {S.nameNewPreset}
                 </Typography>
                 <TextField
                   inputRef={nameInputRef}
@@ -497,7 +434,7 @@ export function TrackEditModal({
                   size="small"
                   fullWidth
                   variant="outlined"
-                  placeholder="Enter preset name…"
+                  placeholder={S.presetNamePlaceholder}
                   sx={{
                     mt: 0.75,
                     '& .MuiInputBase-input': {
@@ -524,18 +461,14 @@ export function TrackEditModal({
             onClick={() => setSaveNewMode(false)}
             sx={{ fontSize: '0.7rem', color: 'text.disabled', mr: 'auto' }}
           >
-            Back
+            {S.back}
           </Button>
         )}
 
         {/* Save (overwrite) – for existing presets; Save (persist) for base tracks */}
         {!saveNewMode && (
           <Tooltip
-            title={
-              isPreset
-                ? 'Overwrite this preset with current settings'
-                : 'Save current settings to this track'
-            }
+            title={isPreset ? S.overwritePresetTooltip : S.saveToTrackTooltip}
           >
             <Button
               variant="outlined"
@@ -545,14 +478,14 @@ export function TrackEditModal({
               color="secondary"
               sx={{ fontSize: '0.7rem', fontFamily: 'Orbitron, monospace' }}
             >
-              Save
+              {S.save}
             </Button>
           </Tooltip>
         )}
 
         {/* Save new – first click enters rename mode, second confirms */}
         {!saveNewMode ? (
-          <Tooltip title="Save as a new preset — original track stays unchanged">
+          <Tooltip title={S.saveAsNewTooltip}>
             <Button
               variant="contained"
               size="small"
@@ -566,7 +499,7 @@ export function TrackEditModal({
                 '&:hover': { background: track.color },
               }}
             >
-              Save new
+              {S.saveNew}
             </Button>
           </Tooltip>
         ) : (
@@ -584,7 +517,7 @@ export function TrackEditModal({
               '&:hover': { background: track.color },
             }}
           >
-            Confirm
+            {S.confirm}
           </Button>
         )}
       </DialogActions>

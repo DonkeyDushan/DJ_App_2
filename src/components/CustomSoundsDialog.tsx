@@ -3,6 +3,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Avatar, Box, Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
 
 import type { CustomSoundRecord } from '../types';
+import { STRINGS } from '../strings';
 
 type CustomSoundsDialogProps = {
   open: boolean;
@@ -11,6 +12,8 @@ type CustomSoundsDialogProps = {
   onUpload: (file: File) => void;
   onDelete: (soundId: string) => void;
 };
+
+const S = STRINGS.customSoundsDialog;
 
 export function CustomSoundsDialog({ open, sounds, onClose, onUpload, onDelete }: CustomSoundsDialogProps): React.ReactElement {
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -23,17 +26,17 @@ export function CustomSoundsDialog({ open, sounds, onClose, onUpload, onDelete }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Custom Sounds</DialogTitle>
+      <DialogTitle>{S.title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Button component="label" variant="contained" startIcon={<UploadFileIcon />}>
-            Upload sound
+            {S.uploadSound}
             <input hidden type="file" accept="audio/*" onChange={handleUpload} />
           </Button>
 
           {sounds.length === 0 ? (
             <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
-              <Typography variant="body2">No custom sounds stored yet.</Typography>
+              <Typography variant="body2">{S.noCustomSounds}</Typography>
             </Box>
           ) : (
             <List disablePadding>

@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 
 import type { TrackDefinition, TrackState } from '../types';
+import { STRINGS } from '../strings';
 
 type TrackCardProps = {
   track: TrackDefinition;
@@ -54,7 +55,7 @@ export function TrackCard({
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
         {/* Mix checkbox */}
-        <Tooltip title={trackState.enabled ? 'Remove from mix' : 'Add to mix'}>
+        <Tooltip title={trackState.enabled ? STRINGS.trackCard.removeFromMix : STRINGS.trackCard.addToMix}>
           <Checkbox
             checked={trackState.enabled}
             onChange={(_, checked) => onToggle(track.id, checked)}
@@ -98,7 +99,7 @@ export function TrackCard({
 
         {/* Preview play/pause */}
         <Tooltip
-          title={trackState.isPreviewPlaying ? 'Stop preview' : 'Preview'}
+          title={trackState.isPreviewPlaying ? STRINGS.trackCard.stopPreview : STRINGS.trackCard.preview}
         >
           <IconButton
             size="small"
@@ -120,9 +121,7 @@ export function TrackCard({
 
         {/* Favourite toggle */}
         <Tooltip
-          title={
-            track.isFavorite ? 'Remove from favourites' : 'Add to favourites'
-          }
+          title={track.isFavorite ? STRINGS.trackCard.removeFromFavourites : STRINGS.trackCard.addToFavourites}
         >
           <IconButton
             size="small"
@@ -141,7 +140,7 @@ export function TrackCard({
         </Tooltip>
 
         {/* Edit */}
-        <Tooltip title="Edit track">
+        <Tooltip title={STRINGS.trackCard.editTrack}>
           <IconButton
             size="small"
             onClick={() => onEdit(track.id)}

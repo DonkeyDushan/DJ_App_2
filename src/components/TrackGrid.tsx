@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { Box, Stack, Typography } from '@mui/material';
 
 import type { TrackCategory, TrackDefinition, TrackState } from '../types';
+import { STRINGS } from '../strings';
 import { TrackCard } from './TrackCard';
 import { TrackEditModal } from './TrackEditModal';
 
 const COLUMNS: { category: TrackCategory; label: string; color: string }[] = [
-  { category: 'drums', label: 'DRUMS', color: '#ff4fd8' },
-  { category: 'arp', label: 'ARP', color: '#40d9ff' },
-  { category: 'pad', label: 'PAD', color: '#6cff9f' },
-  { category: 'custom', label: 'CUSTOM', color: '#ffd84f' },
+  { category: 'drums', label: STRINGS.trackGrid.drums, color: '#ff4fd8' },
+  { category: 'arp', label: STRINGS.trackGrid.arp, color: '#40d9ff' },
+  { category: 'pad', label: STRINGS.trackGrid.pad, color: '#6cff9f' },
+  { category: 'custom', label: STRINGS.trackGrid.custom, color: '#ffd84f' },
 ];
 
 type TrackGridProps = {

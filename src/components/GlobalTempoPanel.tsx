@@ -1,5 +1,7 @@
 import { Paper, Slider, Stack, Typography } from '@mui/material';
 
+import { STRINGS } from '../strings';
+
 type GlobalTempoPanelProps = {
   globalTempo: number;
   onChange: (tempo: number) => void;
@@ -13,10 +15,10 @@ export function GlobalTempoPanel({ globalTempo, onChange }: GlobalTempoPanelProp
       <Stack spacing={1.25}>
         <Stack direction="row" justifyContent="space-between" alignItems="baseline">
           <Typography variant="overline" sx={{ letterSpacing: '0.22em', color: 'secondary.main' }}>
-            Global tempo
+            {STRINGS.globalTempoPanel.label}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {bpm} BPM • x{globalTempo.toFixed(2)}
+            {bpm} {STRINGS.globalTempoPanel.bpm} • x{globalTempo.toFixed(2)}
           </Typography>
         </Stack>
         <Slider

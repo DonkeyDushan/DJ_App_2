@@ -10,9 +10,6 @@ import { AudioEngine } from '../audio/audioEngine';
 import {
   DEFAULT_GLOBAL_TEMPO,
   DEFAULT_TRACKS,
-  createCustomTrackDefinition,
-  createDefaultTrackState,
-  createPreloadedTrackDefinitions,
 } from '../data/defaultTracks';
 import {
   addCustomSound,
@@ -31,15 +28,23 @@ import {
   persistTrackPresets,
 } from '../storage/trackPresets';
 import type {
-  CustomSoundRecord,
   MixerSnapshot,
   SavedMix,
-  SavedMixTrackState,
   TrackCategory,
   TrackDefinition,
   TrackSavedSettings,
-  TrackState,
 } from '../types';
+import {
+  DEFAULT_SINGLE_TRACK_VALUES,
+  createCustomTracks,
+  createDefaultSingleTrackState,
+  createInitialSnapshot,
+  loadPreloadedTracks,
+  mergeTrackState,
+  normalizeMixTrackState,
+  presetToTrackDefinition,
+  withMissingTrackStates,
+} from './mixerHelpers';
 
 const MIXES_KEY = 'dj-app-2-active-mix';
 
@@ -91,144 +96,6 @@ type MixerContextValue = {
 };
 
 const MixerContext = createContext<MixerContextValue | null>(null);
-
-function createCustomTracks(
-  customSounds: CustomSoundRecord[],
-): TrackDefinition[] {
-  const palette = [
-    '#ff4fd8',
-    '#40d9ff',
-    '#9f6bff',
-    '#ff8f4f',
-    '#6cff9f',
-    '#ffd84f',
-  ];
-
-  return customSounds.map((sound, index) =>
-    createCustomTrackDefinition(
-      sound.id,
-      sound.name.toUpperCase(),
-      palette[index % palette.length],
-      8 + (index % 4),
-    ),
-  );
-}
-
-function createDefaultSingleTrackState(
-  savedSettings?: TrackSavedSettings,
-): TrackState {
-  return {
-    enabled: false,
-    volume: savedSettings?.volume ?? 0.78,
-    speed: savedSettings?.speed ?? 1,
-    followsGlobalTempo: savedSettings?.followsGlobalTempo ?? true,
-    eqLow: savedSettings?.eqLow ?? 0,
-    eqMid: savedSettings?.eqMid ?? 0,
-    eqHigh: savedSettings?.eqHigh ?? 0,
-    reverbSend: savedSettings?.reverbSend ?? 0,
-    delaySend: savedSettings?.delaySend ?? 0,
-    isPlaying: false,
-    isPreviewPlaying: false,
-  };
-}
-
-function presetToTrackDefinition(
-  preset: PersistedTrackPreset,
-  favoriteIds: Set<string>,
-): TrackDefinition {
-  return {
-    id: preset.id,
-    name: preset.name,
-    kind: 'demo',
-    category: preset.category,
-    color: preset.color,
-    loopLengthSeconds: preset.loopLengthSeconds,
-    isFavorite: favoriteIds.has(preset.id),
-    savedSettings: preset.savedSettings,
-    sourceTrackId: preset.sourceTrackId,
-    preloadedSrc: preset.preloadedSrc,
-    customSoundId: preset.customSoundId,
-  };
-}
-
-
-async function loadPreloadedTracks(): Promise<TrackDefinition[]> {
-  try {
-    const files = await window.djApp?.listPreloadedAudio?.();
-    if (!files || files.length === 0) {
-      return [];
-    }
-
-    return createPreloadedTrackDefinitions(files);
-  } catch {
-    return [];
-  }
-}
-
-function withMissingTrackStates(
-  currentStates: Record<string, TrackState>,
-  trackDefinitions: TrackDefinition[],
-): Record<string, TrackState> {
-  return trackDefinitions.reduce(
-    (states, track) => ({
-      ...states,
-      [track.id]: states[track.id] ?? createDefaultSingleTrackState(),
-    }),
-    currentStates,
-  );
-}
-
-function createInitialSnapshot(): MixerSnapshot {
-  return {
-    globalTempo: DEFAULT_GLOBAL_TEMPO,
-    trackStates: createDefaultTrackState(),
-    customSounds: [],
-    savedMixes: loadSavedMixes(),
-    transportPlaying: false,
-  };
-}
-
-function mergeTrackState(
-  trackStates: Record<string, TrackState>,
-  trackId: string,
-  patch: Partial<TrackState>,
-): Record<string, TrackState> {
-  const current = trackStates[trackId] ?? {
-    enabled: false,
-    volume: 0.78,
-    speed: 1,
-    followsGlobalTempo: true,
-    eqLow: 0,
-    eqMid: 0,
-    eqHigh: 0,
-    reverbSend: 0,
-    delaySend: 0,
-    isPlaying: false,
-    isPreviewPlaying: false,
-  };
-
-  return {
-    ...trackStates,
-    [trackId]: {
-      ...current,
-      ...patch,
-    },
-  };
-}
-
-function normalizeMixTrackState(trackState: TrackState): SavedMixTrackState {
-  return {
-    enabled: trackState.enabled,
-    volume: trackState.volume,
-    speed: trackState.speed,
-    followsGlobalTempo: trackState.followsGlobalTempo,
-    eqLow: trackState.eqLow,
-    eqMid: trackState.eqMid,
-    eqHigh: trackState.eqHigh,
-    reverbSend: trackState.reverbSend,
-    delaySend: trackState.delaySend,
-  };
-}
 
 export function MixerProvider({
   children,
@@ -635,19 +502,7 @@ export function MixerProvider({
             loopLengthSeconds: 8,
             customSoundId: soundId,
           },
-          {
-            enabled: false,
-            volume: 0,
-            speed: 1,
-            followsGlobalTempo: true,
-            eqLow: 0,
-            eqMid: 0,
-            eqHigh: 0,
-            reverbSend: 0,
-            delaySend: 0,
-            isPlaying: false,
-            isPreviewPlaying: false,
-          },
+          { ...DEFAULT_SINGLE_TRACK_VALUES, volume: 0 },
           snapshot.customSounds,
           snapshot.globalTempo,
         );
@@ -689,19 +544,7 @@ export function MixerProvider({
         const nextTrackStates = { ...snapshot.trackStates };
         Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
           nextTrackStates[trackId] = {
-            ...(nextTrackStates[trackId] ?? {
-              enabled: false,
-              volume: 0.78,
-              speed: 1,
-              followsGlobalTempo: true,
-              eqLow: 0,
-              eqMid: 0,
-              eqHigh: 0,
-              reverbSend: 0,
-              delaySend: 0,
-              isPlaying: false,
-              isPreviewPlaying: false,
-            }),
+            ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
             ...trackState,
           };
         });

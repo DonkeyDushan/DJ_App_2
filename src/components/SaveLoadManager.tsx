@@ -4,6 +4,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconBut
 import { useEffect, useState } from 'react';
 
 import type { SavedMix } from '../types';
+import { STRINGS } from '../strings';
 
 type SaveLoadManagerProps = {
   saveOpen: boolean;
@@ -15,48 +16,50 @@ type SaveLoadManagerProps = {
   onDelete: (mixId: string) => void;
 };
 
+const S = STRINGS.saveLoadManager;
+
 export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, onLoad, onDelete }: SaveLoadManagerProps): React.ReactElement {
-  const [mixName, setMixName] = useState('Neon Session');
+  const [mixName, setMixName] = useState<string>(S.defaultMixName);
 
   useEffect(() => {
     if (saveOpen) {
-      setMixName('Neon Session');
+      setMixName(S.defaultMixName);
     }
   }, [saveOpen]);
 
   return (
     <>
       <Dialog open={saveOpen} onClose={onClose} fullWidth maxWidth="sm">
-        <DialogTitle>Save mix</DialogTitle>
+        <DialogTitle>{S.saveMixTitle}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField label="Mix name" value={mixName} onChange={(event) => setMixName(event.target.value)} fullWidth autoFocus />
+            <TextField label={S.mixNameLabel} value={mixName} onChange={(event) => setMixName(event.target.value)} fullWidth autoFocus />
             <Typography variant="body2" color="text.secondary">
-              Stores selected tracks, volume, speed and global tempo.
+              {S.savesInfo}
             </Typography>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{S.cancel}</Button>
           <Button
             variant="contained"
             startIcon={<SaveIcon />}
             onClick={() => {
-              onSave(mixName.trim() || 'Neon Session');
+              onSave(mixName.trim() || S.defaultMixName);
               onClose();
             }}
           >
-            Save
+            {S.save}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={loadOpen} onClose={onClose} fullWidth maxWidth="md">
-        <DialogTitle>Load mix</DialogTitle>
+        <DialogTitle>{S.loadMixTitle}</DialogTitle>
         <DialogContent>
           {mixes.length === 0 ? (
             <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
-              <Typography variant="body2">No saved mixes yet.</Typography>
+              <Typography variant="body2">{S.noSavedMixes}</Typography>
             </Box>
           ) : (
             <List disablePadding>
@@ -75,7 +78,7 @@ export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, on
                     secondary={`${new Date(mix.createdAt).toLocaleString()} • ${Object.values(mix.trackStates).filter((state) => state.enabled).length} tracks`}
                   />
                   <Button variant="outlined" onClick={() => onLoad(mix.id)}>
-                    Load
+                    {S.load}
                   </Button>
                 </ListItem>
               ))}
@@ -83,7 +86,7 @@ export function SaveLoadManager({ saveOpen, loadOpen, mixes, onClose, onSave, on
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>{S.close}</Button>
         </DialogActions>
       </Dialog>
     </>

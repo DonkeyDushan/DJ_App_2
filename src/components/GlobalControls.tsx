@@ -5,6 +5,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Box, Button, Paper, Stack, Typography } from '@mui/material';
 
+import { STRINGS } from '../strings';
+
 type GlobalControlsProps = {
   isPlaying: boolean;
   onToggleTransport: () => void;
@@ -27,28 +29,28 @@ export function GlobalControls({
       <Stack spacing={2}>
         <Stack direction="row" spacing={1.2} useFlexGap flexWrap="wrap">
           <Button variant="contained" startIcon={<SaveIcon />} onClick={onSave}>
-            SAVE
+            {STRINGS.globalControls.save}
           </Button>
           <Button
             variant="outlined"
             startIcon={<UploadFileIcon />}
             onClick={onLoad}
           >
-            LOAD
+            {STRINGS.globalControls.load}
           </Button>
           <Button
             variant="outlined"
             startIcon={<CloudUploadIcon />}
             onClick={onOpenCustomSounds}
           >
-            CUSTOM SOUNDS
+            {STRINGS.globalControls.customSounds}
           </Button>
           <Button
             variant="outlined"
             startIcon={<DeleteSweepIcon />}
             onClick={onClearAll}
           >
-            CLEAR ALL
+            {STRINGS.globalControls.clearAll}
           </Button>
         </Stack>
 
@@ -63,7 +65,7 @@ export function GlobalControls({
               variant="overline"
               sx={{ color: 'secondary.main', letterSpacing: '0.3em' }}
             >
-              Master Transport
+              {STRINGS.app.masterTransport}
             </Typography>
             <Typography
               variant="h4"
@@ -72,7 +74,7 @@ export function GlobalControls({
                 textShadow: '0 0 18px rgba(255,79,216,0.42)',
               }}
             >
-              NEON MIXER
+              {STRINGS.app.title}
             </Typography>
           </Box>
 
@@ -83,7 +85,7 @@ export function GlobalControls({
             startIcon={<CasinoIcon />}
             sx={{ minWidth: 220, height: 72, borderRadius: 3, fontSize: 20 }}
           >
-            {isPlaying ? 'PLAYING' : 'PLAY'}
+            {isPlaying ? STRINGS.app.playing : STRINGS.app.play}
           </Button>
         </Stack>
       </Stack>
