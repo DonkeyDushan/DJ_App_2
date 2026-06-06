@@ -5,7 +5,6 @@ import {
   createDefaultTrackState,
   createPreloadedTrackDefinitions,
 } from '../data/defaultTracks';
-import { loadSavedMixes } from '../storage/mixStorage';
 import type { PersistedTrackPreset } from '../storage/trackPresets';
 import type {
   CustomSoundRecord,
@@ -108,7 +107,7 @@ export function createInitialSnapshot(): MixerSnapshot {
     globalTempo: DEFAULT_GLOBAL_TEMPO,
     trackStates: createDefaultTrackState(),
     customSounds: [],
-    savedMixes: loadSavedMixes(),
+    savedMixes: [],
     transportPlaying: false,
   };
 }

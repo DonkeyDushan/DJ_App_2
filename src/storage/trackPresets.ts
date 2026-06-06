@@ -1,7 +1,5 @@
 import type { TrackCategory, TrackSavedSettings } from '../types';
-
-const PRESETS_KEY = 'dj-app-2-track-presets';
-const FAVORITES_KEY = 'dj-app-2-track-favorites';
+import { getState, setState } from './appState';
 
 export interface PersistedTrackPreset {
   id: string;
@@ -15,54 +13,29 @@ export interface PersistedTrackPreset {
   customSoundId?: string;
 }
 
-export function loadTrackPresets(): PersistedTrackPreset[] {
-  try {
-    const raw = localStorage.getItem(PRESETS_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as PersistedTrackPreset[];
-  } catch {
-    return [];
-  }
-}
-
-export function persistTrackPresets(presets: PersistedTrackPreset[]): void {
-  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
-}
-
-export function loadFavoriteIds(): Set<string> {
-  try {
-    const raw = localStorage.getItem(FAVORITES_KEY);
-    if (!raw) return new Set();
-    return new Set(JSON.parse(raw) as string[]);
-  } catch {
-    return new Set();
-  }
-}
-
-export function persistFavoriteIds(ids: Set<string>): void {
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...ids]));
-}
-
-// ---------------------------------------------------------------------------
-// Track setting overrides (for base/preloaded tracks)
-// Persists user-saved settings independently of the mix snapshot so that
-// clearAll still restores user-tuned defaults.
-// ---------------------------------------------------------------------------
-
-const OVERRIDES_KEY = 'dj-app-2-track-overrides';
-
 export type TrackOverrides = Record<string, TrackSavedSettings>;
 
-export function loadTrackOverrides(): TrackOverrides {
-  try {
-    const raw = localStorage.getItem(OVERRIDES_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as TrackOverrides;
-  } catch {
-    return {};
-  }
-}
+const PRESETS_KEY = 'track-presets';
+const FAVORITES_KEY = 'track-favorites';
+const OVERRIDES_KEY = 'track-overrides';
 
-export function persistTrackOverrides(overrides: TrackOverrides): void {
-  localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
-}
+export const loadTrackPresets = async (): Promise<PersistedTrackPreset[]> =>
+  (await getState<PersistedTrackPreset[]>(PRESETS_KEY)) ?? [];
+
+export const persistTrackPresets = (presets: PersistedTrackPreset[]): void => {
+  setState(PRESETS_KEY, presets);
+};
+
+export const loadFavoriteIds = async (): Promise<string[]> =>
+  (await getState<string[]>(FAVORITES_KEY)) ?? [];
+
+export const persistFavoriteIds = (ids: Set<string>): void => {
+  setState(FAVORITES_KEY, [...ids]);
+};
+
+export const loadTrackOverrides = async (): Promise<TrackOverrides> =>
+  (await getState<TrackOverrides>(OVERRIDES_KEY)) ?? {};
+
+export const persistTrackOverrides = (overrides: TrackOverrides): void => {
+  setState(OVERRIDES_KEY, overrides);
+};

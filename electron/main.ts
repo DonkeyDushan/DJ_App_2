@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { registerStorageHandlers, unregisterStorageHandlers } from './storageHandlers';
 
 const isDev = Boolean(process.env.VITE_DEV_SERVER_URL);
 const SUPPORTED_AUDIO_EXTENSIONS = new Set(['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a']);
@@ -74,6 +75,7 @@ async function createWindow(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
+  registerStorageHandlers();
   ipcMain.handle('preloaded-audio:list', async () => listPreloadedAudioFiles());
 
   await createWindow();
@@ -92,5 +94,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
+  unregisterStorageHandlers();
   ipcMain.removeHandler('preloaded-audio:list');
 });

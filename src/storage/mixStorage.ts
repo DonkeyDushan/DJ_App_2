@@ -1,20 +1,11 @@
 import type { SavedMix } from '../types';
+import { getState, setState } from './appState';
 
-const STORAGE_KEY = 'dj-app-2-saved-mixes';
+const KEY = 'saved-mixes';
 
-export function loadSavedMixes(): SavedMix[] {
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return [];
-  }
+export const loadSavedMixes = async (): Promise<SavedMix[]> =>
+  (await getState<SavedMix[]>(KEY)) ?? [];
 
-  try {
-    return JSON.parse(raw) as SavedMix[];
-  } catch {
-    return [];
-  }
-}
-
-export function persistSavedMixes(mixes: SavedMix[]): void {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mixes));
-}
+export const persistSavedMixes = (mixes: SavedMix[]): void => {
+  setState(KEY, mixes);
+};

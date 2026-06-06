@@ -3,6 +3,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -27,12 +28,14 @@ import {
   persistTrackOverrides,
   persistTrackPresets,
 } from '../storage/trackPresets';
+import { type PersistedActiveState, getState, setState } from '../storage/appState';
 import type {
   MixerSnapshot,
   SavedMix,
   TrackCategory,
   TrackDefinition,
   TrackSavedSettings,
+  TrackState,
 } from '../types';
 import {
   DEFAULT_SINGLE_TRACK_VALUES,
@@ -46,7 +49,7 @@ import {
   withMissingTrackStates,
 } from './mixerHelpers';
 
-const MIXES_KEY = 'dj-app-2-active-mix';
+const ACTIVE_STATE_KEY = 'active-state';
 
 type MixerContextValue = {
   snapshot: MixerSnapshot;
@@ -102,81 +105,94 @@ export const MixerProvider = ({
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const [snapshot, setSnapshot] = useState<MixerSnapshot>(
-    createInitialSnapshot,
-  );
+  const [snapshot, setSnapshot] = useState<MixerSnapshot>(createInitialSnapshot);
   const [tracks, setTracks] = useState<TrackDefinition[]>(DEFAULT_TRACKS);
-  const [, setPresets] = useState<PersistedTrackPreset[]>(
-    loadTrackPresets,
-  );
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(
-    loadFavoriteIds,
-  );
+  const [, setPresets] = useState<PersistedTrackPreset[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const engine = useMemo(() => new AudioEngine(), []);
 
-  useEffect(() => {
-    const persisted = window.localStorage.getItem(MIXES_KEY);
-    if (!persisted) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(persisted) as MixerSnapshot;
-      setSnapshot((current) => ({
-        ...current,
-        globalTempo: parsed.globalTempo ?? current.globalTempo,
-        trackStates: { ...current.trackStates, ...parsed.trackStates },
-        transportPlaying: false,
-      }));
-    } catch {
-      // Ignore malformed state.
-    }
-  }, []);
-
+  // Load all persisted state on mount.
   useEffect(() => {
     void (async () => {
-      const sounds = await loadCustomSounds();
-      const preloadedTracks = await loadPreloadedTracks();
-      const baseTracks =
-        preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
-      const loadedPresets = loadTrackPresets();
-      const loadedFavorites = loadFavoriteIds();
+      const [
+        sounds,
+        preloadedTracks,
+        loadedMixes,
+        loadedPresets,
+        loadedFavoriteIds,
+        activeState,
+      ] = await Promise.all([
+        loadCustomSounds(),
+        loadPreloadedTracks(),
+        loadSavedMixes(),
+        loadTrackPresets(),
+        loadFavoriteIds(),
+        getState<PersistedActiveState>(ACTIVE_STATE_KEY),
+      ]);
+
+      const baseTracks = preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
+      const loadedFavoriteSet = new Set(loadedFavoriteIds);
       const presetTracks = loadedPresets.map((p) =>
-        presetToTrackDefinition(p, loadedFavorites),
+        presetToTrackDefinition(p, loadedFavoriteSet),
       );
       const nextTracks = [
-        ...baseTracks.map((t) => ({
-          ...t,
-          isFavorite: loadedFavorites.has(t.id),
-        })),
+        ...baseTracks.map((t) => ({ ...t, isFavorite: loadedFavoriteSet.has(t.id) })),
         ...presetTracks,
         ...createCustomTracks(sounds),
       ];
 
+      const restoredTrackStates: Record<string, TrackState> = Object.fromEntries(
+        Object.entries(activeState?.trackStates ?? {}).map(([id, state]) => [
+          id,
+          { ...state, isPlaying: false, isPreviewPlaying: false },
+        ]),
+      );
+
       setPresets(loadedPresets);
-      setFavoriteIds(loadedFavorites);
+      setFavoriteIds(loadedFavoriteSet);
       setSnapshot((current) => ({
         ...current,
-        customSounds: sounds,
-        savedMixes: loadSavedMixes(),
+        globalTempo: activeState?.globalTempo ?? current.globalTempo,
         trackStates: {
-          ...withMissingTrackStates(current.trackStates, nextTracks),
+          ...withMissingTrackStates(restoredTrackStates, nextTracks),
           ...Object.fromEntries(
             presetTracks
-              .filter((t) => !(t.id in current.trackStates))
-              .map((t) => [
-                t.id,
-                createDefaultSingleTrackState(t.savedSettings),
-              ]),
+              .filter((t) => !(t.id in restoredTrackStates))
+              .map((t) => [t.id, createDefaultSingleTrackState(t.savedSettings)]),
           ),
         },
+        customSounds: sounds,
+        savedMixes: loadedMixes,
       }));
       setTracks(nextTracks);
     })();
   }, []);
 
+  // Persist active state (globalTempo + trackStates) with a debounce so rapid
+  // changes like slider dragging don't flood the IPC channel with writes.
+  const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    window.localStorage.setItem(MIXES_KEY, JSON.stringify(snapshot));
+    if (persistTimerRef.current !== null) {
+      clearTimeout(persistTimerRef.current);
+    }
+    persistTimerRef.current = setTimeout(() => {
+      const toStore: PersistedActiveState = {
+        globalTempo: snapshot.globalTempo,
+        trackStates: Object.fromEntries(
+          Object.entries(snapshot.trackStates).map(([id, state]) => {
+            const { isPlaying: _p, isPreviewPlaying: _pp, ...rest } = state;
+            return [id, rest];
+          }),
+        ),
+      };
+      setState(ACTIVE_STATE_KEY, toStore);
+    }, 500);
+
+    return () => {
+      if (persistTimerRef.current !== null) {
+        clearTimeout(persistTimerRef.current);
+      }
+    };
   }, [snapshot]);
 
   useEffect(() => {
@@ -411,7 +427,7 @@ export const MixerProvider = ({
       },
       clearAll: async () => {
         await engine.stopTransport(true);
-        const overrides: TrackOverrides = loadTrackOverrides();
+        const overrides: TrackOverrides = await loadTrackOverrides();
         setSnapshot((current) => ({
           ...current,
           transportPlaying: false,
@@ -425,24 +441,31 @@ export const MixerProvider = ({
         }));
       },
       loadInitialData: async () => {
-        const sounds = await loadCustomSounds();
-        const preloadedTracks = await loadPreloadedTracks();
-        const loadedMixes = loadSavedMixes();
-        const loadedPresets = loadTrackPresets();
-        const loadedFavorites = loadFavoriteIds();
-        const baseTracks =
-          preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
+        const [
+          sounds,
+          preloadedTracks,
+          loadedMixes,
+          loadedPresets,
+          loadedFavoriteIds,
+        ] = await Promise.all([
+          loadCustomSounds(),
+          loadPreloadedTracks(),
+          loadSavedMixes(),
+          loadTrackPresets(),
+          loadFavoriteIds(),
+        ]);
+
+        const baseTracks = preloadedTracks.length > 0 ? preloadedTracks : DEFAULT_TRACKS;
+        const loadedFavoriteSet = new Set(loadedFavoriteIds);
         const presetTracks = loadedPresets.map((p) =>
-          presetToTrackDefinition(p, loadedFavorites),
+          presetToTrackDefinition(p, loadedFavoriteSet),
         );
         const nextTracks = [
-          ...baseTracks.map((t) => ({
-            ...t,
-            isFavorite: loadedFavorites.has(t.id),
-          })),
+          ...baseTracks.map((t) => ({ ...t, isFavorite: loadedFavoriteSet.has(t.id) })),
           ...presetTracks,
           ...createCustomTracks(sounds),
         ];
+
         setSnapshot((current) => ({
           ...current,
           customSounds: sounds,
@@ -451,7 +474,7 @@ export const MixerProvider = ({
         }));
         setTracks(nextTracks);
         setPresets(loadedPresets);
-        setFavoriteIds(loadedFavorites);
+        setFavoriteIds(loadedFavoriteSet);
       },
       addCustomSound: async (file: File) => {
         const record = await addCustomSound(file);
@@ -701,8 +724,9 @@ export const MixerProvider = ({
         });
       },
       saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => {
-        const current = loadTrackOverrides();
-        persistTrackOverrides({ ...current, [trackId]: settings });
+        loadTrackOverrides().then((current) => {
+          persistTrackOverrides({ ...current, [trackId]: settings });
+        });
       },
     }),
     [engine, favoriteIds, snapshot, tracks],
