@@ -9,7 +9,6 @@ export const STRINGS = {
     save: 'SAVE',
     load: 'LOAD',
     customSounds: 'CUSTOM SOUNDS',
-    clearAll: 'CLEAR ALL',
   },
   trackGrid: {
     drums: 'DRUMS',
@@ -50,6 +49,7 @@ export const STRINGS = {
     overwritePresetTooltip: 'Overwrite this preset with current settings',
     saveToTrackTooltip: 'Save current settings to this track',
     saveAsNewTooltip: 'Save as a new preset — original track stays unchanged',
+    discardChanges: 'Discard changes',
   },
   saveLoadManager: {
     saveMixTitle: 'Save mix',

@@ -58,7 +58,6 @@ const AppShell = (): React.ReactElement => {
           onSave={() => setSaveOpen(true)}
           onLoad={() => setLoadOpen(true)}
           onOpenCustomSounds={() => setCustomSoundsOpen(true)}
-          onClearAll={() => void actions.clearAll()}
         />
 
         <Box sx={{ flex: 1, overflow: 'auto', pr: 1 }}>

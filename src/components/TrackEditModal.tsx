@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import RestoreIcon from '@mui/icons-material/Restore';
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
@@ -29,6 +30,7 @@ import { SliderRow } from './SliderRow';
 import {
   backButtonSx,
   closeButtonSx,
+  discardButtonSx,
   colorDotSx,
   dialogPaperSx,
   dialogTitleSx,
@@ -172,6 +174,19 @@ export const TrackEditModal = ({
     delaySend,
   };
 
+  const handleDiscardChanges = () => {
+    const original = originalSettingsRef.current;
+    if (!original) return;
+    onRestoreChanges(track.id, original);
+    setVolume(original.volume);
+    setSpeed(original.speed);
+    setEqLow(original.eqLow);
+    setEqMid(original.eqMid);
+    setEqHigh(original.eqHigh);
+    setReverbSend(original.reverbSend);
+    setDelaySend(original.delaySend);
+  };
+
   const handleCancel = () => {
     if (originalSettingsRef.current) {
       onRestoreChanges(track.id, originalSettingsRef.current);
@@ -253,6 +268,11 @@ export const TrackEditModal = ({
       <DialogTitle sx={dialogTitleSx(track.color)}>
         <Box sx={colorDotSx(track.color)} />
         {S.title}
+        <Tooltip title={S.discardChanges}>
+          <IconButton size="small" onClick={handleDiscardChanges} sx={discardButtonSx}>
+            <RestoreIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <IconButton size="small" onClick={handleCancel} sx={closeButtonSx}>
           <CloseIcon fontSize="small" />
         </IconButton>

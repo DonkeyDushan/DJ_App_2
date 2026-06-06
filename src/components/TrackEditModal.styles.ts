@@ -26,8 +26,12 @@ export const colorDotSx = (color: string): SxProps<Theme> => ({
   flexShrink: 0,
 });
 
-export const closeButtonSx: SxProps<Theme> = {
+export const discardButtonSx: SxProps<Theme> = {
   ml: 'auto',
+  color: 'text.disabled',
+};
+
+export const closeButtonSx: SxProps<Theme> = {
   color: 'text.disabled',
 };
 

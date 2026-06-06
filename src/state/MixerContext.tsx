@@ -8,10 +8,7 @@ import React, {
 } from 'react';
 
 import { AudioEngine } from '../audio/audioEngine';
-import {
-  DEFAULT_GLOBAL_TEMPO,
-  DEFAULT_TRACKS,
-} from '../data/defaultTracks';
+import { DEFAULT_TRACKS } from '../data/defaultTracks';
 import {
   addCustomSound,
   loadCustomSounds,
@@ -20,7 +17,6 @@ import {
 import { loadSavedMixes, persistSavedMixes } from '../storage/mixStorage';
 import {
   type PersistedTrackPreset,
-  type TrackOverrides,
   loadFavoriteIds,
   loadTrackOverrides,
   loadTrackPresets,
@@ -74,7 +70,6 @@ type MixerContextValue = {
     setGlobalTempo: (tempo: number) => void;
     toggleTransport: () => Promise<void>;
     restartTransport: () => Promise<void>;
-    clearAll: () => Promise<void>;
     loadInitialData: () => Promise<void>;
     addCustomSound: (file: File) => Promise<void>;
     deleteCustomSound: (soundId: string) => Promise<void>;
@@ -421,21 +416,6 @@ export const MixerProvider = ({
                 isPlaying: trackState.enabled,
                 isPreviewPlaying: false,
               },
-            ]),
-          ),
-        }));
-      },
-      clearAll: async () => {
-        await engine.stopTransport(true);
-        const overrides: TrackOverrides = await loadTrackOverrides();
-        setSnapshot((current) => ({
-          ...current,
-          transportPlaying: false,
-          globalTempo: DEFAULT_GLOBAL_TEMPO,
-          trackStates: Object.fromEntries(
-            tracks.map((t) => [
-              t.id,
-              createDefaultSingleTrackState(overrides[t.id]),
             ]),
           ),
         }));

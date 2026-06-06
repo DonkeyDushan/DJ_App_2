@@ -2,7 +2,6 @@ import React from 'react';
 
 import CasinoIcon from '@mui/icons-material/Casino';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import SaveIcon from '@mui/icons-material/Save';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Box, Button, Paper, Stack, Typography } from '@mui/material';
@@ -20,7 +19,6 @@ type GlobalControlsProps = {
   onSave: () => void;
   onLoad: () => void;
   onOpenCustomSounds: () => void;
-  onClearAll: () => void;
 };
 
 export const GlobalControls = ({
@@ -29,7 +27,6 @@ export const GlobalControls = ({
   onSave,
   onLoad,
   onOpenCustomSounds,
-  onClearAll,
 }: GlobalControlsProps): React.ReactElement => (
   <Paper sx={{ p: 2.5, borderRadius: 4 }}>
     <Stack spacing={2}>
@@ -50,13 +47,6 @@ export const GlobalControls = ({
           onClick={onOpenCustomSounds}
         >
           {STRINGS.globalControls.customSounds}
-        </Button>
-        <Button
-          variant="outlined"
-          startIcon={<DeleteSweepIcon />}
-          onClick={onClearAll}
-        >
-          {STRINGS.globalControls.clearAll}
         </Button>
       </Stack>
 
