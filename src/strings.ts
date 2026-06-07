@@ -13,6 +13,7 @@ export const STRINGS = {
   topBar: {
     saveSet: 'SAVE SET',
     loadSet: 'LOAD SET',
+    resetSet: 'RESET',
   },
   mixLibrary: {
     newMix: 'NEW MIX',

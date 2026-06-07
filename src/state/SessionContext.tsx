@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { loadSessions, persistSessions } from '../storage/sessionStorage';
 import type { DJSession, SessionSlot } from '../types';
@@ -21,6 +21,7 @@ type SessionActions = {
   setSessionName: (name: string) => void;
   loadSession: (sessionId: string) => void;
   saveSession: () => void;
+  resetSession: () => void;
   deleteSession: (sessionId: string) => void;
   toggleSessionFavorite: (sessionId: string) => void;
   addSlot: (mixId: string) => void;
@@ -43,6 +44,7 @@ type SessionContextValue = {
   currentSlotIndex: number | null;
   slotOffsetSeconds: number;
   playingMixId: string | null;
+  hasUnsavedChanges: boolean;
   actions: SessionActions;
 };
 
@@ -58,6 +60,10 @@ export const SessionProvider = ({
   const [setIsPlaying, setSetIsPlaying] = useState(false);
   const [currentSlotIndex, setCurrentSlotIndex] = useState<number | null>(null);
   const [slotOffsetSeconds, setSlotOffsetSeconds] = useState(0);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const sessionsRef = useRef(sessions);
+  useEffect(() => { sessionsRef.current = sessions; }, [sessions]);
 
   useEffect(() => {
     void loadSessions().then(setSessions);
@@ -72,9 +78,11 @@ export const SessionProvider = ({
     () => ({
       newSession: () => {
         setActiveSession(createBlankSession());
+        setHasUnsavedChanges(false);
       },
       setSessionName: (name: string) => {
         setActiveSession((current) => ({ ...current, name }));
+        setHasUnsavedChanges(true);
       },
       loadSession: (sessionId: string) => {
         setSessions((current) => {
@@ -82,6 +90,7 @@ export const SessionProvider = ({
           if (session) setActiveSession({ ...session });
           return current;
         });
+        setHasUnsavedChanges(false);
       },
       saveSession: () => {
         setActiveSession((current) => {
@@ -97,6 +106,14 @@ export const SessionProvider = ({
           });
           return toSave;
         });
+        setHasUnsavedChanges(false);
+      },
+      resetSession: () => {
+        setActiveSession((current) => {
+          const savedVersion = sessionsRef.current.find((s) => s.id === current.id);
+          return savedVersion ? { ...savedVersion } : createBlankSession();
+        });
+        setHasUnsavedChanges(false);
       },
       deleteSession: (sessionId: string) => {
         setSessions((prev) => {
@@ -125,12 +142,14 @@ export const SessionProvider = ({
           ...current,
           slots: [...current.slots, slot],
         }));
+        setHasUnsavedChanges(true);
       },
       removeSlot: (slotId: string) => {
         setActiveSession((current) => ({
           ...current,
           slots: current.slots.filter((s) => s.id !== slotId),
         }));
+        setHasUnsavedChanges(true);
       },
       duplicateSlot: (slotId: string) => {
         setActiveSession((current) => {
@@ -144,9 +163,11 @@ export const SessionProvider = ({
           next.splice(idx + 1, 0, copy);
           return { ...current, slots: next };
         });
+        setHasUnsavedChanges(true);
       },
       reorderSlots: (newSlots: SessionSlot[]) => {
         setActiveSession((current) => ({ ...current, slots: newSlots }));
+        setHasUnsavedChanges(true);
       },
       setSlotDuration: (slotId: string, durationSeconds: number) => {
         setActiveSession((current) => ({
@@ -155,6 +176,7 @@ export const SessionProvider = ({
             s.id === slotId ? { ...s, durationSeconds } : s,
           ),
         }));
+        setHasUnsavedChanges(true);
       },
       setSlotTransitionDuration: (slotId: string, transitionDuration: number) => {
         setActiveSession((current) => ({
@@ -163,9 +185,11 @@ export const SessionProvider = ({
             s.id === slotId ? { ...s, transitionDuration } : s,
           ),
         }));
+        setHasUnsavedChanges(true);
       },
       setTotalDuration: (totalDurationSeconds: number) => {
         setActiveSession((current) => ({ ...current, totalDurationSeconds }));
+        setHasUnsavedChanges(true);
       },
       startSetPlayback: () => {
         setSetIsPlaying(true);
@@ -190,8 +214,8 @@ export const SessionProvider = ({
   );
 
   const value = useMemo<SessionContextValue>(
-    () => ({ sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, actions }),
-    [sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, actions],
+    () => ({ sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, hasUnsavedChanges, actions }),
+    [sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, hasUnsavedChanges, actions],
   );
 
   return (

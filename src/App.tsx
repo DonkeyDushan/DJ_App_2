@@ -34,6 +34,7 @@ const AppShell = (): React.ReactElement => {
     currentSlotIndex,
     slotOffsetSeconds,
     playingMixId,
+    hasUnsavedChanges,
     actions: sessionActions,
   } = useSession();
 
@@ -141,6 +142,8 @@ const AppShell = (): React.ReactElement => {
       <TopBar
         onSaveSet={sessionActions.saveSession}
         onLoadSet={() => setLoadSetOpen(true)}
+        onResetSet={sessionActions.resetSession}
+        hasUnsavedChanges={hasUnsavedChanges}
       />
 
       {/* Main content: left sidebar + mixer + set */}
