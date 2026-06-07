@@ -18,6 +18,7 @@ interface MixLibraryProps {
   mixes: SavedMix[];
   activeMixId: string | null;
   playingMixId: string | null;
+  isSetPlaybackActive: boolean;
   onToggleFavorite: (mixId: string) => void;
   onAddToTimeline: (mixId: string) => void;
   onLoadMix: (mixId: string) => void;
@@ -28,6 +29,7 @@ export const MixLibrary = ({
   mixes,
   activeMixId,
   playingMixId,
+  isSetPlaybackActive,
   onToggleFavorite,
   onAddToTimeline,
   onLoadMix,
@@ -88,6 +90,7 @@ export const MixLibrary = ({
               mix={mix}
               isActive={activeMixId === mix.id}
               isSetPlaying={playingMixId === mix.id}
+              isSetPlaybackActive={isSetPlaybackActive}
               onToggleFavorite={() => onToggleFavorite(mix.id)}
               onAdd={() => onAddToTimeline(mix.id)}
               onLoad={() => onLoadMix(mix.id)}

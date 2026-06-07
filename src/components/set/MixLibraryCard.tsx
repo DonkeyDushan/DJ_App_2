@@ -19,6 +19,7 @@ interface MixLibraryCardProps {
   mix: SavedMix;
   isActive: boolean;
   isSetPlaying: boolean;
+  isSetPlaybackActive: boolean;
   onToggleFavorite: () => void;
   onAdd: () => void;
   onLoad: () => void;
@@ -28,6 +29,7 @@ export const MixLibraryCard = ({
   mix,
   isActive,
   isSetPlaying,
+  isSetPlaybackActive,
   onToggleFavorite,
   onAdd,
   onLoad,
@@ -49,8 +51,8 @@ export const MixLibraryCard = ({
     <Paper
       ref={setNodeRef}
       variant="outlined"
-      sx={cardSx(!!mix.isFavorite, isDragging, isActive, isSetPlaying)}
-      onClick={onLoad}
+      sx={cardSx(!!mix.isFavorite, isDragging, isActive, isSetPlaying, isSetPlaybackActive)}
+      onClick={isSetPlaybackActive ? undefined : onLoad}
       {...attributes}
       {...listeners}
     >

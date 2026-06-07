@@ -162,6 +162,7 @@ const AppShell = (): React.ReactElement => {
             mixes={snapshot.savedMixes}
             activeMixId={activeMixId}
             playingMixId={playingMixId}
+            isSetPlaybackActive={setIsPlaying}
             onToggleFavorite={mixerActions.toggleMixFavorite}
             onAddToTimeline={sessionActions.addSlot}
             onLoadMix={(mixId) => void mixerActions.loadMix(mixId)}

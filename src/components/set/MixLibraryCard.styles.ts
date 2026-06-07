@@ -5,28 +5,34 @@ export const cardSx = (
   isDragging: boolean,
   isActive: boolean,
   isSetPlaying: boolean,
-): SxProps<Theme> => ({
-  px: 1.25,
-  py: 0.75,
-  borderRadius: 1.5,
-  cursor: 'grab',
-  opacity: isDragging ? 0.4 : 1,
-  borderColor: isSetPlaying
-    ? 'success.main'
-    : isActive
-      ? 'primary.main'
-      : isFavorite
-        ? '#ffd84f44'
-        : 'rgba(255,255,255,0.06)',
-  bgcolor: isSetPlaying
-    ? 'rgba(108,255,159,0.06)'
-    : isActive
-      ? 'rgba(255,79,220,0.06)'
-      : 'transparent',
-  transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
-  '&:hover': { borderColor: isActive || isSetPlaying ? undefined : 'rgba(255,255,255,0.18)' },
-  '&:active': { cursor: 'grabbing' },
-});
+  isSetPlaybackActive: boolean,
+): SxProps<Theme> => {
+  const dimmed = isSetPlaybackActive && !isSetPlaying;
+  return {
+    px: 1.25,
+    py: 0.75,
+    borderRadius: 1.5,
+    cursor: isSetPlaybackActive ? (isSetPlaying ? 'default' : 'default') : 'grab',
+    opacity: isDragging ? 0.4 : dimmed ? 0.35 : 1,
+    borderColor: isSetPlaying
+      ? 'success.main'
+      : isActive
+        ? 'primary.main'
+        : isFavorite
+          ? '#ffd84f44'
+          : 'rgba(255,255,255,0.06)',
+    bgcolor: isSetPlaying
+      ? 'rgba(108,255,159,0.06)'
+      : isActive
+        ? 'rgba(255,79,220,0.06)'
+        : 'transparent',
+    transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
+    '&:hover': {
+      borderColor: isActive || isSetPlaying || dimmed ? undefined : 'rgba(255,255,255,0.18)',
+    },
+    '&:active': { cursor: isSetPlaybackActive ? 'default' : 'grabbing' },
+  };
+};
 
 export const rowSx: SxProps<Theme> = {
   display: 'flex',
