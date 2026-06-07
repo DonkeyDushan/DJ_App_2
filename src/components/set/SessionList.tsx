@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
@@ -76,9 +76,9 @@ export const SessionList = ({
                 <IconButton
                   size="small"
                   onClick={() => onLoad(session.id)}
-                  sx={{ p: 0.25, color: 'success.main' }}
+                  sx={{ p: 0.25, color: 'secondary.main' }}
                 >
-                  <PlayArrowIcon sx={{ fontSize: 14 }} />
+                  <PlaylistAddIcon sx={{ fontSize: 14 }} />
                 </IconButton>
               </Tooltip>
 

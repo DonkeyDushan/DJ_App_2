@@ -4,16 +4,17 @@ export const timelineWrapperSx: SxProps<Theme> = {
   borderRadius: 1,
   border: '1px solid rgba(255,255,255,0.06)',
   bgcolor: 'rgba(0,0,0,0.28)',
-  overflow: 'auto',
+  overflow: 'hidden',
   flexShrink: 0,
+  width: '100%',
 };
 
-export const rulerSx = (totalWidth: number): SxProps<Theme> => ({
+export const rulerSx: SxProps<Theme> = {
   position: 'relative',
   height: '1.25rem',
-  minWidth: totalWidth,
+  width: '100%',
   borderBottom: '1px solid rgba(255,255,255,0.06)',
-});
+};
 
 export const tickLabelSx: SxProps<Theme> = {
   fontFamily: 'Share Tech Mono, monospace',
@@ -23,11 +24,11 @@ export const tickLabelSx: SxProps<Theme> = {
   lineHeight: 1,
 };
 
-export const slotsRowSx = (totalWidth: number, isOver: boolean): SxProps<Theme> => ({
+export const slotsRowSx = (isOver: boolean): SxProps<Theme> => ({
   display: 'flex',
   alignItems: 'stretch',
   height: '5rem',
-  minWidth: totalWidth,
+  width: '100%',
   gap: '2px',
   p: '2px',
   outline: isOver ? '2px solid rgba(64,217,255,0.5)' : '2px solid transparent',
@@ -51,11 +52,4 @@ export const emptyLabelSx: SxProps<Theme> = {
   fontSize: '0.7rem',
   color: 'text.disabled',
   textAlign: 'center',
-};
-
-export const controlsRowSx: SxProps<Theme> = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 1,
-  mb: 0.75,
 };

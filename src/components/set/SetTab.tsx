@@ -28,9 +28,7 @@ export const SetTab = (): React.ReactElement => {
       const overIsTimeline =
         over.id === TIMELINE_DROPPABLE_ID ||
         activeSession.slots.some((s) => s.id === over.id);
-      if (overIsTimeline) {
-        actions.addSlot(mixId);
-      }
+      if (overIsTimeline) actions.addSlot(mixId);
     } else if (type === 'slot') {
       if (active.id !== over.id) {
         const oldIdx = activeSession.slots.findIndex((s) => s.id === active.id);
@@ -39,6 +37,22 @@ export const SetTab = (): React.ReactElement => {
           actions.reorderSlots(arrayMove(activeSession.slots, oldIdx, newIdx));
         }
       }
+    }
+  };
+
+  const handlePlayPause = () => {
+    if (snapshot.transportPlaying) {
+      void mixerActions.toggleTransport();
+      return;
+    }
+    const firstSlot = activeSession.slots[0];
+    if (firstSlot) {
+      void (async () => {
+        await mixerActions.loadMix(firstSlot.mixId);
+        await mixerActions.toggleTransport();
+      })();
+    } else {
+      void mixerActions.toggleTransport();
     }
   };
 
@@ -55,6 +69,8 @@ export const SetTab = (): React.ReactElement => {
           activeSession={activeSession}
           sessions={sessions}
           mixes={snapshot.savedMixes}
+          isPlaying={snapshot.transportPlaying}
+          onPlayPause={handlePlayPause}
           onNewSession={actions.newSession}
           onSaveSession={actions.saveSession}
           onLoadSession={actions.loadSession}
