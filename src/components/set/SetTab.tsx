@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   type DragEndEvent,
@@ -16,6 +17,15 @@ import { setTabRootSx } from './SetTab.styles';
 export const SetTab = (): React.ReactElement => {
   const { snapshot, actions: mixerActions } = useMixer();
   const { activeSession, sessions, actions } = useSession();
+  const [playheadSeconds, setPlayheadSeconds] = useState(0);
+  const prevSessionIdRef = useRef(activeSession.id);
+
+  useEffect(() => {
+    if (prevSessionIdRef.current !== activeSession.id) {
+      prevSessionIdRef.current = activeSession.id;
+      setPlayheadSeconds(0);
+    }
+  }, [activeSession.id]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -47,10 +57,7 @@ export const SetTab = (): React.ReactElement => {
     }
     const firstSlot = activeSession.slots[0];
     if (firstSlot) {
-      void (async () => {
-        await mixerActions.loadMix(firstSlot.mixId);
-        await mixerActions.toggleTransport();
-      })();
+      void mixerActions.loadMixAndPlay(firstSlot.mixId);
     } else {
       void mixerActions.toggleTransport();
     }
@@ -82,6 +89,8 @@ export const SetTab = (): React.ReactElement => {
           onSetSlotDuration={actions.setSlotDuration}
           onSetTotalDuration={actions.setTotalDuration}
           onTimelineDragEnd={handleDragEnd}
+          playheadSeconds={playheadSeconds}
+          onSeek={setPlayheadSeconds}
         />
       </Box>
     </DndContext>

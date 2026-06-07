@@ -70,6 +70,7 @@ type MixerContextValue = {
     setGlobalTempo: (tempo: number) => void;
     toggleTransport: () => Promise<void>;
     restartTransport: () => Promise<void>;
+    loadMixAndPlay: (mixId: string) => Promise<void>;
     loadInitialData: () => Promise<void>;
     addCustomSound: (file: File) => Promise<void>;
     deleteCustomSound: (soundId: string) => Promise<void>;
@@ -419,6 +420,45 @@ export const MixerProvider = ({
               },
             ]),
           ),
+        }));
+      },
+      loadMixAndPlay: async (mixId: string) => {
+        const mix = snapshot.savedMixes.find((entry) => entry.id === mixId);
+        if (!mix) return;
+
+        if (snapshot.transportPlaying) {
+          await engine.stopTransport(true);
+        }
+
+        const nextTrackStates = { ...snapshot.trackStates };
+        Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
+          nextTrackStates[trackId] = {
+            ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
+            ...trackState,
+          };
+        });
+
+        await engine.startTransport(
+          tracks,
+          nextTrackStates,
+          snapshot.customSounds,
+          mix.globalTempo,
+        );
+
+        setSnapshot((current) => ({
+          ...current,
+          globalTempo: mix.globalTempo,
+          trackStates: Object.fromEntries(
+            Object.entries(nextTrackStates).map(([trackId, trackState]) => [
+              trackId,
+              {
+                ...trackState,
+                isPlaying: trackState.enabled,
+                isPreviewPlaying: false,
+              },
+            ]),
+          ),
+          transportPlaying: true,
         }));
       },
       loadInitialData: async () => {

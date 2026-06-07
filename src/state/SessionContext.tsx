@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { loadSessions, persistSessions } from '../storage/sessionStorage';
 import type { DJSession, SessionSlot } from '../types';
 
-const DEFAULT_TOTAL_DURATION_SECONDS = 1800;
+const DEFAULT_TOTAL_DURATION_SECONDS = 600;
 const DEFAULT_SLOT_DURATION_SECONDS = 300;
 const DEFAULT_TRANSITION_DURATION_SECONDS = 8;
 

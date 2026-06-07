@@ -32,6 +32,8 @@ interface SessionEditorProps {
   onSetSlotDuration: (slotId: string, durationSeconds: number) => void;
   onSetTotalDuration: (seconds: number) => void;
   onTimelineDragEnd: (event: DragEndEvent) => void;
+  playheadSeconds: number;
+  onSeek: (seconds: number) => void;
 }
 
 export const SessionEditor = ({
@@ -51,6 +53,8 @@ export const SessionEditor = ({
   onSetSlotDuration,
   onSetTotalDuration,
   onTimelineDragEnd,
+  playheadSeconds,
+  onSeek,
 }: SessionEditorProps): React.ReactElement => {
   const totalMinutes = Math.round(activeSession.totalDurationSeconds / 60);
   const hasSlots = activeSession.slots.length > 0;
@@ -135,10 +139,13 @@ export const SessionEditor = ({
       <SessionTimeline
         session={activeSession}
         mixes={mixes}
+        isPlaying={isPlaying}
+        playheadSeconds={playheadSeconds}
         onDragEnd={onTimelineDragEnd}
         onRemoveSlot={onRemoveSlot}
         onDuplicateSlot={onDuplicateSlot}
         onSetSlotDuration={onSetSlotDuration}
+        onSeek={onSeek}
       />
 
       {/* Saved sessions */}

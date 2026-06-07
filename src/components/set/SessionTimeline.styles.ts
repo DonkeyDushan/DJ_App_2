@@ -1,6 +1,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export const timelineWrapperSx: SxProps<Theme> = {
+  position: 'relative',
   borderRadius: 1,
   border: '1px solid rgba(255,255,255,0.06)',
   bgcolor: 'rgba(0,0,0,0.28)',
@@ -14,6 +15,39 @@ export const rulerSx: SxProps<Theme> = {
   height: '1.25rem',
   width: '100%',
   borderBottom: '1px solid rgba(255,255,255,0.06)',
+  cursor: 'crosshair',
+  userSelect: 'none',
+};
+
+export const playheadContainerSx: SxProps<Theme> = {
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  width: 0,
+  zIndex: 10,
+  pointerEvents: 'none',
+};
+
+export const playheadLineSx: SxProps<Theme> = {
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: '-1px',
+  width: '2px',
+  bgcolor: 'rgba(255,255,255,0.75)',
+};
+
+export const playheadHandleSx: SxProps<Theme> = {
+  position: 'absolute',
+  top: '-5px',
+  left: '-6px',
+  width: '12px',
+  height: '12px',
+  borderRadius: '50%',
+  bgcolor: 'white',
+  cursor: 'ew-resize',
+  pointerEvents: 'auto',
+  boxShadow: '0 0 4px rgba(0,0,0,0.5)',
 };
 
 export const tickLabelSx: SxProps<Theme> = {
