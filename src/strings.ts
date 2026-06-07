@@ -10,6 +10,31 @@ export const STRINGS = {
     load: 'LOAD',
     customSounds: 'CUSTOM SOUNDS',
   },
+  topBar: {
+    saveSet: 'SAVE SET',
+    loadSet: 'LOAD SET',
+  },
+  mixLibrary: {
+    newMix: 'NEW MIX',
+    loadMix: 'Load mix',
+  },
+  mixerHeader: {
+    play: 'PLAY',
+    stop: 'STOP',
+    reset: 'RESET',
+    save: 'SAVE',
+    saveNew: 'SAVE NEW',
+    sounds: 'SOUNDS',
+    bpm: 'BPM',
+    lockedBySet: 'Mixer is locked while set is playing',
+  },
+  setSection: {
+    playSet: 'PLAY SET',
+    stopSet: 'STOP SET',
+    newSet: 'NEW',
+    saveSet: 'SAVE',
+    locked: 'Set is playing — mixer locked',
+  },
   trackGrid: {
     drums: 'DRUMS',
     arp: 'ARP',

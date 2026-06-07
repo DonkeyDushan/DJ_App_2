@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import AddIcon from '@mui/icons-material/Add';
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
@@ -10,19 +11,26 @@ import {
   cardSx,
   mixMetaSx,
   mixNameSx,
+  playingDotSx,
   rowSx,
 } from './MixLibraryCard.styles';
 
 interface MixLibraryCardProps {
   mix: SavedMix;
+  isActive: boolean;
+  isSetPlaying: boolean;
   onToggleFavorite: () => void;
   onAdd: () => void;
+  onLoad: () => void;
 }
 
 export const MixLibraryCard = ({
   mix,
+  isActive,
+  isSetPlaying,
   onToggleFavorite,
   onAdd,
+  onLoad,
 }: MixLibraryCardProps): React.ReactElement => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `lib-${mix.id}`,
@@ -41,13 +49,20 @@ export const MixLibraryCard = ({
     <Paper
       ref={setNodeRef}
       variant="outlined"
-      sx={cardSx(!!mix.isFavorite, isDragging)}
+      sx={cardSx(!!mix.isFavorite, isDragging, isActive, isSetPlaying)}
+      onClick={onLoad}
       {...attributes}
       {...listeners}
     >
       <Box sx={rowSx}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={mixNameSx}>{mix.name}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {isSetPlaying && <Box sx={playingDotSx} />}
+            {isActive && !isSetPlaying && (
+              <GraphicEqIcon sx={{ fontSize: 10, color: 'primary.main' }} />
+            )}
+            <Typography sx={mixNameSx}>{mix.name}</Typography>
+          </Box>
           <Typography sx={mixMetaSx}>
             {trackCount} tracks · {date}
           </Typography>

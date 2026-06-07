@@ -30,11 +30,17 @@ type SessionActions = {
   setSlotDuration: (slotId: string, durationSeconds: number) => void;
   setSlotTransitionDuration: (slotId: string, transitionDuration: number) => void;
   setTotalDuration: (seconds: number) => void;
+  startSetPlayback: () => void;
+  stopSetPlayback: () => void;
+  advanceSlot: () => void;
 };
 
 type SessionContextValue = {
   sessions: DJSession[];
   activeSession: DJSession;
+  setIsPlaying: boolean;
+  currentSlotIndex: number | null;
+  playingMixId: string | null;
   actions: SessionActions;
 };
 
@@ -47,10 +53,17 @@ export const SessionProvider = ({
 }): React.ReactElement => {
   const [sessions, setSessions] = useState<DJSession[]>([]);
   const [activeSession, setActiveSession] = useState<DJSession>(createBlankSession);
+  const [setIsPlaying, setSetIsPlaying] = useState(false);
+  const [currentSlotIndex, setCurrentSlotIndex] = useState<number | null>(null);
 
   useEffect(() => {
     void loadSessions().then(setSessions);
   }, []);
+
+  const playingMixId = useMemo(() => {
+    if (currentSlotIndex === null) return null;
+    return activeSession.slots[currentSlotIndex]?.mixId ?? null;
+  }, [currentSlotIndex, activeSession.slots]);
 
   const actions = useMemo<SessionActions>(
     () => ({
@@ -151,13 +164,24 @@ export const SessionProvider = ({
       setTotalDuration: (totalDurationSeconds: number) => {
         setActiveSession((current) => ({ ...current, totalDurationSeconds }));
       },
+      startSetPlayback: () => {
+        setSetIsPlaying(true);
+        setCurrentSlotIndex(0);
+      },
+      stopSetPlayback: () => {
+        setSetIsPlaying(false);
+        setCurrentSlotIndex(null);
+      },
+      advanceSlot: () => {
+        setCurrentSlotIndex((prev) => (prev !== null ? prev + 1 : null));
+      },
     }),
     [],
   );
 
   const value = useMemo<SessionContextValue>(
-    () => ({ sessions, activeSession, actions }),
-    [sessions, activeSession, actions],
+    () => ({ sessions, activeSession, setIsPlaying, currentSlotIndex, playingMixId, actions }),
+    [sessions, activeSession, setIsPlaying, currentSlotIndex, playingMixId, actions],
   );
 
   return (

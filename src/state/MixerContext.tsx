@@ -51,6 +51,7 @@ type MixerContextValue = {
   snapshot: MixerSnapshot;
   tracks: TrackDefinition[];
   engine: AudioEngine;
+  activeMixId: string | null;
   actions: {
     toggleTrack: (trackId: string, enabled: boolean) => Promise<void>;
     playTrackOnce: (trackId: string) => Promise<void>;
@@ -76,6 +77,9 @@ type MixerContextValue = {
     deleteCustomSound: (soundId: string) => Promise<void>;
     saveMix: (name: string) => void;
     loadMix: (mixId: string) => Promise<void>;
+    overwriteMix: (mixId: string) => void;
+    clearMix: () => Promise<void>;
+    resetMix: () => Promise<void>;
     deleteMix: (mixId: string) => void;
     saveTrackPreset: (
       sourceTrackId: string,
@@ -106,6 +110,7 @@ export const MixerProvider = ({
   const [tracks, setTracks] = useState<TrackDefinition[]>(DEFAULT_TRACKS);
   const [, setPresets] = useState<PersistedTrackPreset[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [activeMixId, setActiveMixId] = useState<string | null>(null);
   const engine = useMemo(() => new AudioEngine(), []);
 
   // Load all persisted state on mount.
@@ -593,6 +598,77 @@ export const MixerProvider = ({
           };
         });
 
+        setActiveMixId(mixId);
+        setSnapshot((current) => ({
+          ...current,
+          globalTempo: mix.globalTempo,
+          trackStates: nextTrackStates,
+          transportPlaying: wasPlaying,
+        }));
+
+        if (wasPlaying) {
+          await engine.startTransport(
+            tracks,
+            nextTrackStates,
+            snapshot.customSounds,
+            mix.globalTempo,
+          );
+        }
+      },
+      overwriteMix: (mixId: string) => {
+        setSnapshot((current) => {
+          const mix = current.savedMixes.find((m) => m.id === mixId);
+          if (!mix) return current;
+          const updated: SavedMix = {
+            ...mix,
+            globalTempo: current.globalTempo,
+            trackStates: Object.fromEntries(
+              Object.entries(current.trackStates).map(([id, state]) => [
+                id,
+                normalizeMixTrackState(state),
+              ]),
+            ),
+          };
+          const nextMixes = current.savedMixes.map((m) =>
+            m.id === mixId ? updated : m,
+          );
+          persistSavedMixes(nextMixes);
+          return { ...current, savedMixes: nextMixes };
+        });
+      },
+      clearMix: async () => {
+        if (snapshot.transportPlaying) {
+          await engine.stopTransport(true);
+        }
+        setActiveMixId(null);
+        setSnapshot((current) => ({
+          ...current,
+          transportPlaying: false,
+          trackStates: Object.fromEntries(
+            Object.entries(current.trackStates).map(([id, state]) => [
+              id,
+              { ...state, enabled: false, isPlaying: false, isPreviewPlaying: false },
+            ]),
+          ),
+        }));
+      },
+      resetMix: async () => {
+        const mix = snapshot.savedMixes.find((m) => m.id === activeMixId);
+        if (!mix) return;
+
+        const wasPlaying = snapshot.transportPlaying;
+        if (wasPlaying) {
+          await engine.stopTransport(true);
+        }
+
+        const nextTrackStates = { ...snapshot.trackStates };
+        Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
+          nextTrackStates[trackId] = {
+            ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
+            ...trackState,
+          };
+        });
+
         setSnapshot((current) => ({
           ...current,
           globalTempo: mix.globalTempo,
@@ -759,7 +835,7 @@ export const MixerProvider = ({
         });
       },
     }),
-    [engine, favoriteIds, snapshot, tracks],
+    [activeMixId, engine, favoriteIds, snapshot, tracks],
   );
 
   const value = useMemo<MixerContextValue>(
@@ -767,9 +843,10 @@ export const MixerProvider = ({
       snapshot,
       tracks,
       engine,
+      activeMixId,
       actions,
     }),
-    [actions, engine, snapshot, tracks],
+    [actions, activeMixId, engine, snapshot, tracks],
   );
 
   return (

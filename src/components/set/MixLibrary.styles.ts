@@ -8,14 +8,13 @@ export const panelSx: SxProps<Theme> = {
   borderRight: '1px solid rgba(255,255,255,0.06)',
   pr: 1.5,
   mr: 1.5,
+  overflow: 'hidden',
 };
 
-export const headerSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '0.6rem',
-  fontWeight: 700,
-  letterSpacing: '0.12em',
-  color: 'text.secondary',
+export const headerRowSx: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
   mb: 1,
 };
 
@@ -40,4 +39,13 @@ export const emptyLabelSx: SxProps<Theme> = {
   textAlign: 'center',
   mt: 2,
   whiteSpace: 'pre-line',
+};
+
+export const newMixButtonSx: SxProps<Theme> = {
+  py: 0.25,
+  px: 0.75,
+  fontSize: '0.55rem',
+  minWidth: 0,
+  letterSpacing: '0.06em',
+  fontFamily: 'Orbitron, monospace',
 };
