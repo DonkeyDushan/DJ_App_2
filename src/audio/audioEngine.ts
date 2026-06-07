@@ -453,14 +453,13 @@ export class AudioEngine {
     this.transportActive = true;
     this.transportStartTime = this.context?.currentTime ?? 0;
 
-    for (const track of tracks) {
-      const state = trackStates[track.id];
-      if (!state?.enabled) {
-        continue;
-      }
-
-      await this.startLoopTrack(track, state, customSounds, globalTempo, false);
-    }
+    await Promise.all(
+      tracks
+        .filter((track) => trackStates[track.id]?.enabled)
+        .map((track) =>
+          this.startLoopTrack(track, trackStates[track.id], customSounds, globalTempo, false),
+        ),
+    );
 
     await this.fadeMaster(1, 220);
   }

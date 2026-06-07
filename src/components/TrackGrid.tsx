@@ -150,7 +150,7 @@ export const TrackGrid = ({
                       trackState={trackStates[track.id] ?? DEFAULT_TRACK_STATE}
                       onToggle={onToggle}
                       onPlay={onPlay}
-                      onEdit={(id) => setEditTrackId(id)}
+                      onEdit={setEditTrackId}
                       onToggleFavorite={onToggleFavorite}
                     />
                   ))

@@ -35,7 +35,7 @@ type TrackCardProps = {
   onToggleFavorite: (trackId: string) => void;
 };
 
-export const TrackCard = ({
+const TrackCardInner = ({
   track,
   trackState,
   onToggle,
@@ -119,3 +119,8 @@ export const TrackCard = ({
     </Paper>
   );
 };
+
+export const TrackCard = React.memo(
+  TrackCardInner,
+  (prev, next) => prev.track === next.track && prev.trackState === next.trackState,
+);

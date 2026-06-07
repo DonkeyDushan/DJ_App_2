@@ -204,23 +204,13 @@ const AppShell = (): React.ReactElement => {
             <TrackGrid
               tracks={tracks}
               trackStates={snapshot.trackStates}
-              onToggle={(trackId, enabled) =>
-                void mixerActions.toggleTrack(trackId, enabled)
-              }
-              onPlay={(trackId) => void mixerActions.playTrackOnce(trackId)}
-              onToggleFavorite={(trackId) => mixerActions.toggleFavorite(trackId)}
-              onVolumeChange={(trackId, volume) =>
-                mixerActions.setTrackVolume(trackId, volume)
-              }
-              onSpeedChange={(trackId, speed) =>
-                mixerActions.setTrackSpeed(trackId, speed)
-              }
-              onEqChange={(trackId, eqLow, eqMid, eqHigh) =>
-                mixerActions.setTrackEq(trackId, eqLow, eqMid, eqHigh)
-              }
-              onEffectsChange={(trackId, reverbSend, delaySend) =>
-                mixerActions.setTrackEffects(trackId, reverbSend, delaySend)
-              }
+              onToggle={mixerActions.toggleTrack}
+              onPlay={mixerActions.playTrackOnce}
+              onToggleFavorite={mixerActions.toggleFavorite}
+              onVolumeChange={mixerActions.setTrackVolume}
+              onSpeedChange={mixerActions.setTrackSpeed}
+              onEqChange={mixerActions.setTrackEq}
+              onEffectsChange={mixerActions.setTrackEffects}
               onSaveAsNew={(
                 editedTrackId,
                 name,
@@ -260,12 +250,8 @@ const AppShell = (): React.ReactElement => {
                   presetId,
                 )
               }
-              onRestoreChanges={(trackId, settings) =>
-                mixerActions.restoreTrackSettings(trackId, settings)
-              }
-              onSaveToTrack={(trackId, settings) =>
-                mixerActions.saveTrackOverride(trackId, settings)
-              }
+              onRestoreChanges={mixerActions.restoreTrackSettings}
+              onSaveToTrack={mixerActions.saveTrackOverride}
             />
           </Box>
 

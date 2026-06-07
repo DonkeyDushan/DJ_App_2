@@ -113,6 +113,15 @@ export const MixerProvider = ({
   const [activeMixId, setActiveMixId] = useState<string | null>(null);
   const engine = useMemo(() => new AudioEngine(), []);
 
+  const snapshotRef = useRef(snapshot);
+  snapshotRef.current = snapshot;
+  const tracksRef = useRef(tracks);
+  tracksRef.current = tracks;
+  const favoriteIdsRef = useRef(favoriteIds);
+  favoriteIdsRef.current = favoriteIds;
+  const activeMixIdRef = useRef(activeMixId);
+  activeMixIdRef.current = activeMixId;
+
   // Load all persisted state on mount.
   useEffect(() => {
     void (async () => {
@@ -230,6 +239,8 @@ export const MixerProvider = ({
   const actions: MixerContextValue['actions'] = useMemo(
     () => ({
       toggleTrack: async (trackId: string, enabled: boolean) => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
         setSnapshot((current) => ({
           ...current,
           trackStates: mergeTrackState(current.trackStates, trackId, {
@@ -262,6 +273,8 @@ export const MixerProvider = ({
         );
       },
       playTrackOnce: async (trackId: string) => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
         if (snapshot.transportPlaying) {
           return;
         }
@@ -289,6 +302,7 @@ export const MixerProvider = ({
         engine.updateTrackVolume(trackId, volume);
       },
       setTrackSpeed: (trackId: string, speed: number) => {
+        const snapshot = snapshotRef.current;
         const followsGlobalTempo =
           Math.abs(speed - snapshot.globalTempo) < 0.001;
         setSnapshot((current) => ({
@@ -337,6 +351,7 @@ export const MixerProvider = ({
         engine.updateTrackEffects(trackId, reverbSend, delaySend);
       },
       setGlobalTempo: (tempo: number) => {
+        const snapshot = snapshotRef.current;
         setSnapshot((current) => ({
           ...current,
           globalTempo: tempo,
@@ -363,6 +378,8 @@ export const MixerProvider = ({
         );
       },
       toggleTransport: async () => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
         if (snapshot.transportPlaying) {
           await engine.stopTransport(true);
           setSnapshot((current) => ({
@@ -406,6 +423,8 @@ export const MixerProvider = ({
         }));
       },
       restartTransport: async () => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
         await engine.restartTransport(
           tracks,
           snapshot.trackStates,
@@ -428,6 +447,8 @@ export const MixerProvider = ({
         }));
       },
       loadMixAndPlay: async (mixId: string) => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
         const mix = snapshot.savedMixes.find((entry) => entry.id === mixId);
         if (!mix) return;
 
@@ -503,6 +524,7 @@ export const MixerProvider = ({
         setFavoriteIds(loadedFavoriteSet);
       },
       addCustomSound: async (file: File) => {
+        const snapshot = snapshotRef.current;
         const record = await addCustomSound(file);
         setSnapshot((current) => ({
           ...current,
@@ -522,6 +544,7 @@ export const MixerProvider = ({
         });
       },
       deleteCustomSound: async (soundId: string) => {
+        const snapshot = snapshotRef.current;
         await removeCustomSound(soundId);
         setSnapshot((current) => {
           const nextSounds = current.customSounds.filter(
@@ -557,6 +580,7 @@ export const MixerProvider = ({
         );
       },
       saveMix: (name: string) => {
+        const snapshot = snapshotRef.current;
         const mix: SavedMix = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           name,
@@ -580,6 +604,8 @@ export const MixerProvider = ({
         }));
       },
       loadMix: async (mixId: string) => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
         const mix = snapshot.savedMixes.find((entry) => entry.id === mixId);
         if (!mix) {
           return;
@@ -637,6 +663,7 @@ export const MixerProvider = ({
         });
       },
       clearMix: async () => {
+        const snapshot = snapshotRef.current;
         if (snapshot.transportPlaying) {
           await engine.stopTransport(true);
         }
@@ -653,6 +680,9 @@ export const MixerProvider = ({
         }));
       },
       resetMix: async () => {
+        const snapshot = snapshotRef.current;
+        const tracks = tracksRef.current;
+        const activeMixId = activeMixIdRef.current;
         const mix = snapshot.savedMixes.find((m) => m.id === activeMixId);
         if (!mix) return;
 
@@ -686,6 +716,7 @@ export const MixerProvider = ({
         }
       },
       deleteMix: (mixId: string) => {
+        const snapshot = snapshotRef.current;
         const nextMixes = snapshot.savedMixes.filter(
           (entry) => entry.id !== mixId,
         );
@@ -702,6 +733,8 @@ export const MixerProvider = ({
         settings: TrackSavedSettings,
         existingPresetId?: string,
       ): string => {
+        const tracks = tracksRef.current;
+        const favoriteIds = favoriteIdsRef.current;
         const sourceTrack = tracks.find((t) => t.id === sourceTrackId);
         if (!sourceTrack) return existingPresetId ?? '';
         const generatedId = existingPresetId ?? `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -756,6 +789,7 @@ export const MixerProvider = ({
         return generatedId;
       },
       restoreTrackSettings: (trackId: string, settings: TrackSavedSettings) => {
+        const snapshot = snapshotRef.current;
         setSnapshot((current) => ({
           ...current,
           trackStates: mergeTrackState(current.trackStates, trackId, {
@@ -835,7 +869,7 @@ export const MixerProvider = ({
         });
       },
     }),
-    [activeMixId, engine, favoriteIds, snapshot, tracks],
+    [engine],
   );
 
   const value = useMemo<MixerContextValue>(

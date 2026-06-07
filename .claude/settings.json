@@ -5,7 +5,8 @@
       "Bash(cd * && npx tsc --noEmit *)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\" -Recurse -Name)",
       "Bash(Remove-Item \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\\\\components\\\\set\\\\SetTab.tsx\" -Force)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\\\\components\\\\set\\\\SetTab.styles.ts\" -Force)"
+      "Bash(Remove-Item \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\\\\components\\\\set\\\\SetTab.styles.ts\" -Force)",
+      "Bash(Select-String \"src/\")"
     ]
   }
 }
