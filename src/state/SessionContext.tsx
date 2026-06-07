@@ -33,6 +33,7 @@ type SessionActions = {
   startSetPlayback: () => void;
   stopSetPlayback: () => void;
   advanceSlot: () => void;
+  seekToSlot: (slotIndex: number, offsetSeconds: number) => void;
 };
 
 type SessionContextValue = {
@@ -40,6 +41,7 @@ type SessionContextValue = {
   activeSession: DJSession;
   setIsPlaying: boolean;
   currentSlotIndex: number | null;
+  slotOffsetSeconds: number;
   playingMixId: string | null;
   actions: SessionActions;
 };
@@ -55,6 +57,7 @@ export const SessionProvider = ({
   const [activeSession, setActiveSession] = useState<DJSession>(createBlankSession);
   const [setIsPlaying, setSetIsPlaying] = useState(false);
   const [currentSlotIndex, setCurrentSlotIndex] = useState<number | null>(null);
+  const [slotOffsetSeconds, setSlotOffsetSeconds] = useState(0);
 
   useEffect(() => {
     void loadSessions().then(setSessions);
@@ -167,21 +170,28 @@ export const SessionProvider = ({
       startSetPlayback: () => {
         setSetIsPlaying(true);
         setCurrentSlotIndex(0);
+        setSlotOffsetSeconds(0);
       },
       stopSetPlayback: () => {
         setSetIsPlaying(false);
         setCurrentSlotIndex(null);
+        setSlotOffsetSeconds(0);
       },
       advanceSlot: () => {
+        setSlotOffsetSeconds(0);
         setCurrentSlotIndex((prev) => (prev !== null ? prev + 1 : null));
+      },
+      seekToSlot: (slotIndex: number, offsetSeconds: number) => {
+        setCurrentSlotIndex(slotIndex);
+        setSlotOffsetSeconds(offsetSeconds);
       },
     }),
     [],
   );
 
   const value = useMemo<SessionContextValue>(
-    () => ({ sessions, activeSession, setIsPlaying, currentSlotIndex, playingMixId, actions }),
-    [sessions, activeSession, setIsPlaying, currentSlotIndex, playingMixId, actions],
+    () => ({ sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, actions }),
+    [sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, actions],
   );
 
   return (

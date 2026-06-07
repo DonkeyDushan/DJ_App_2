@@ -32,6 +32,7 @@ const AppShell = (): React.ReactElement => {
     sessions,
     setIsPlaying,
     currentSlotIndex,
+    slotOffsetSeconds,
     playingMixId,
     actions: sessionActions,
   } = useSession();
@@ -74,6 +75,7 @@ const AppShell = (): React.ReactElement => {
 
     void mixerActions.loadMixAndPlay(slot.mixId);
 
+    const remaining = Math.max(0, slot.durationSeconds - slotOffsetSeconds);
     const timer = setTimeout(() => {
       const next = currentSlotIndex + 1;
       if (next < activeSession.slots.length) {
@@ -82,11 +84,24 @@ const AppShell = (): React.ReactElement => {
         sessionActions.stopSetPlayback();
         void mixerActions.toggleTransport();
       }
-    }, slot.durationSeconds * 1000);
+    }, remaining * 1000);
 
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIsPlaying, currentSlotIndex]);
+  }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
+
+  const handleSeek = (seconds: number) => {
+    if (!setIsPlaying) return;
+    const slots = activeSession.slots;
+    let cumulative = 0;
+    for (let i = 0; i < slots.length; i++) {
+      if (seconds < cumulative + slots[i].durationSeconds) {
+        sessionActions.seekToSlot(i, seconds - cumulative);
+        return;
+      }
+      cumulative += slots[i].durationSeconds;
+    }
+  };
 
   const handleSetPlayPause = () => {
     if (setIsPlaying) {
@@ -264,6 +279,7 @@ const AppShell = (): React.ReactElement => {
             onSetSlotDuration={sessionActions.setSlotDuration}
             onAddSlot={sessionActions.addSlot}
             onReorderSlots={sessionActions.reorderSlots}
+            onSeekSlot={handleSeek}
           />
         </Box>
       </Box>

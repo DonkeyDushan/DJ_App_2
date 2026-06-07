@@ -33,6 +33,7 @@ interface SetSectionProps {
   onSetSlotDuration: (slotId: string, durationSeconds: number) => void;
   onAddSlot: (mixId: string) => void;
   onReorderSlots: (slots: DJSession['slots']) => void;
+  onSeekSlot?: (seconds: number) => void;
 }
 
 export const SetSection = ({
@@ -48,6 +49,7 @@ export const SetSection = ({
   onSetSlotDuration,
   onAddSlot,
   onReorderSlots,
+  onSeekSlot,
 }: SetSectionProps): React.ReactElement => {
   const [playheadSeconds, setPlayheadSeconds] = useState(0);
   const prevSessionIdRef = useRef(activeSession.id);
@@ -175,7 +177,7 @@ export const SetSection = ({
           onRemoveSlot={onRemoveSlot}
           onDuplicateSlot={onDuplicateSlot}
           onSetSlotDuration={onSetSlotDuration}
-          onSeek={setPlayheadSeconds}
+          onSeek={(seconds) => { setPlayheadSeconds(seconds); onSeekSlot?.(seconds); }}
         />
       </Box>
     </DndContext>
