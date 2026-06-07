@@ -1,5 +1,5 @@
 export const PX_PER_SECOND = 0.5;
-export const MIN_SLOT_DURATION_SECONDS = 60;
+export const MIN_SLOT_DURATION_SECONDS = 5;
 
 export const getTickIntervalSeconds = (totalSeconds: number): number => {
   if (totalSeconds <= 5 * 60) return 15;
@@ -34,6 +34,7 @@ export const getSlotColor = (mixId: string): string => {
 };
 
 export const formatSlotDuration = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`;
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return secs === 0 ? `${mins}m` : `${mins}m ${secs}s`;

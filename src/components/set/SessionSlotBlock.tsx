@@ -1,15 +1,18 @@
+import { useEffect, useRef, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Box, IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 
 import type { SavedMix, SessionSlot } from '../../types';
 import { MIN_SLOT_DURATION_SECONDS, formatSlotDuration } from './timelineConstants';
 import {
   actionsSx,
   dragHandleSx,
+  narrowActionsSx,
   resizeHandleSx,
   slotContentSx,
   slotDurationSx,
@@ -17,6 +20,8 @@ import {
   slotRootSx,
   slotTransitionSx,
 } from './SessionSlotBlock.styles';
+
+const ACTIONS_MIN_WIDTH_PX = 80;
 
 interface SessionSlotBlockProps {
   slot: SessionSlot;
@@ -47,6 +52,25 @@ export const SessionSlotBlock = ({
     transition,
     isDragging,
   } = useSortable({ id: slot.id, data: { type: 'slot' } });
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const setRefs = (el: HTMLDivElement | null) => {
+    rootRef.current = el;
+    setNodeRef(el);
+  };
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setIsNarrow(entry.contentRect.width < ACTIONS_MIN_WIDTH_PX);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -80,7 +104,7 @@ export const SessionSlotBlock = ({
   };
 
   return (
-    <Box ref={setNodeRef} style={style} sx={slotRootSx(color, isDragging)}>
+    <Box ref={setRefs} style={style} sx={slotRootSx(color, isDragging)}>
       <Box {...attributes} {...listeners} sx={dragHandleSx}>
         <DragHandleIcon sx={{ fontSize: 14 }} />
       </Box>
@@ -93,26 +117,61 @@ export const SessionSlotBlock = ({
         <Typography sx={slotTransitionSx}>↗ {slot.transitionDuration}s</Typography>
       </Box>
 
-      <Box className="slot-actions" sx={actionsSx}>
-        <Tooltip title="Duplicate" placement="top">
+      {isNarrow ? (
+        <Box sx={narrowActionsSx}>
           <IconButton
             size="small"
-            onClick={onDuplicate}
+            onClick={(e) => { e.stopPropagation(); setMenuAnchor(e.currentTarget); }}
             sx={{ p: 0.25, color: 'text.disabled' }}
           >
-            <ContentCopyIcon sx={{ fontSize: 10 }} />
+            <MoreVertIcon sx={{ fontSize: 10 }} />
           </IconButton>
-        </Tooltip>
-        <Tooltip title="Remove" placement="top">
-          <IconButton
-            size="small"
-            onClick={onRemove}
-            sx={{ p: 0.25, color: 'text.disabled' }}
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={() => setMenuAnchor(null)}
+            slotProps={{ paper: { sx: { minWidth: '8rem' } } }}
           >
-            <CloseIcon sx={{ fontSize: 10 }} />
-          </IconButton>
-        </Tooltip>
-      </Box>
+            <MenuItem
+              dense
+              onClick={() => { onDuplicate(); setMenuAnchor(null); }}
+              sx={{ gap: 1, fontSize: '0.75rem' }}
+            >
+              <ContentCopyIcon sx={{ fontSize: 14 }} />
+              Duplicate
+            </MenuItem>
+            <MenuItem
+              dense
+              onClick={() => { onRemove(); setMenuAnchor(null); }}
+              sx={{ gap: 1, fontSize: '0.75rem', color: 'error.main' }}
+            >
+              <CloseIcon sx={{ fontSize: 14 }} />
+              Remove
+            </MenuItem>
+          </Menu>
+        </Box>
+      ) : (
+        <Box className="slot-actions" sx={actionsSx}>
+          <Tooltip title="Duplicate" placement="top">
+            <IconButton
+              size="small"
+              onClick={onDuplicate}
+              sx={{ p: 0.25, color: 'text.disabled' }}
+            >
+              <ContentCopyIcon sx={{ fontSize: 10 }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Remove" placement="top">
+            <IconButton
+              size="small"
+              onClick={onRemove}
+              sx={{ p: 0.25, color: 'text.disabled' }}
+            >
+              <CloseIcon sx={{ fontSize: 10 }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
 
       <Box sx={resizeHandleSx} onMouseDown={handleResizeMouseDown} />
     </Box>

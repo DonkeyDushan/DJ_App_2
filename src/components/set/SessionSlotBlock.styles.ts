@@ -13,6 +13,7 @@ export const slotRootSx = (color: string, isDragging: boolean): SxProps<Theme> =
   overflow: 'hidden',
   userSelect: 'none',
   transition: 'opacity 0.15s',
+  pr: '6px',
   '&:hover .slot-actions': { opacity: 1 },
 });
 
@@ -70,9 +71,19 @@ export const actionsSx: SxProps<Theme> = {
   transition: 'opacity 0.15s',
 };
 
-export const resizeHandleSx: SxProps<Theme> = {
-  width: '6px',
+export const narrowActionsSx: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   flexShrink: 0,
+};
+
+export const resizeHandleSx: SxProps<Theme> = {
+  position: 'absolute',
+  right: 0,
+  top: 0,
+  bottom: 0,
+  width: '6px',
   cursor: 'col-resize',
   display: 'flex',
   alignItems: 'center',
@@ -80,4 +91,5 @@ export const resizeHandleSx: SxProps<Theme> = {
   bgcolor: 'rgba(255,255,255,0.06)',
   '&:hover': { bgcolor: 'rgba(255,255,255,0.14)' },
   transition: 'background-color 0.15s',
+  zIndex: 1,
 };
