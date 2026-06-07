@@ -616,7 +616,12 @@ export const MixerProvider = ({
           await engine.stopTransport(true);
         }
 
-        const nextTrackStates = { ...snapshot.trackStates };
+        const nextTrackStates = Object.fromEntries(
+          Object.entries(snapshotRef.current.trackStates).map(([id, state]) => [
+            id,
+            { ...state, isPlaying: false, isPreviewPlaying: false },
+          ]),
+        );
         Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
           nextTrackStates[trackId] = {
             ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
@@ -636,7 +641,7 @@ export const MixerProvider = ({
           await engine.startTransport(
             tracks,
             nextTrackStates,
-            snapshot.customSounds,
+            snapshotRef.current.customSounds,
             mix.globalTempo,
           );
         }
@@ -691,7 +696,12 @@ export const MixerProvider = ({
           await engine.stopTransport(true);
         }
 
-        const nextTrackStates = { ...snapshot.trackStates };
+        const nextTrackStates = Object.fromEntries(
+          Object.entries(snapshotRef.current.trackStates).map(([id, state]) => [
+            id,
+            { ...state, isPlaying: false, isPreviewPlaying: false },
+          ]),
+        );
         Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
           nextTrackStates[trackId] = {
             ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
@@ -710,7 +720,7 @@ export const MixerProvider = ({
           await engine.startTransport(
             tracks,
             nextTrackStates,
-            snapshot.customSounds,
+            snapshotRef.current.customSounds,
             mix.globalTempo,
           );
         }

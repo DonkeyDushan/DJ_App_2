@@ -43,7 +43,7 @@ const TrackCardInner = ({
   onEdit,
   onToggleFavorite,
 }: TrackCardProps): React.ReactElement => {
-  const isActive = trackState.isPlaying || trackState.isPreviewPlaying;
+  const isActive = (trackState.isPlaying && trackState.enabled) || trackState.isPreviewPlaying;
 
   return (
     <Paper
