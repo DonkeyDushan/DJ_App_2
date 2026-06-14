@@ -6,6 +6,7 @@ import { Box, Button, IconButton, InputBase, Tooltip, Typography } from '@mui/ma
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
+import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionList } from '../SessionList/SessionList';
 import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
 import {
@@ -20,6 +21,7 @@ interface SessionEditorProps {
   activeSession: DJSession;
   sessions: DJSession[];
   mixes: SavedMix[];
+  tracks: TrackDefinition[];
   isPlaying: boolean;
   onPlayPause: () => void;
   onNewSession: () => void;
@@ -41,6 +43,7 @@ export const SessionEditor = ({
   activeSession,
   sessions,
   mixes,
+  tracks,
   isPlaying,
   onPlayPause,
   onNewSession,
@@ -149,6 +152,7 @@ export const SessionEditor = ({
       <SessionTimeline
         session={activeSession}
         mixes={mixes}
+        tracks={tracks}
         isPlaying={isPlaying}
         playheadSeconds={playheadSeconds}
         onDragEnd={onTimelineDragEnd}

@@ -12,6 +12,7 @@ import { Box, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
+import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionTimeline, TIMELINE_DROPPABLE_ID } from '../SessionTimeline/SessionTimeline';
 import {
   controlsRowSx,
@@ -24,6 +25,7 @@ import {
 interface SetSectionProps {
   activeSession: DJSession;
   mixes: SavedMix[];
+  tracks: TrackDefinition[];
   isSetPlaying: boolean;
   currentSlotIndex: number | null;
   onPlayPause: () => void;
@@ -40,6 +42,7 @@ interface SetSectionProps {
 export const SetSection = ({
   activeSession,
   mixes,
+  tracks,
   isSetPlaying,
   currentSlotIndex,
   onPlayPause,
@@ -173,6 +176,7 @@ export const SetSection = ({
         <SessionTimeline
           session={activeSession}
           mixes={mixes}
+          tracks={tracks}
           isPlaying={isSetPlaying}
           playheadSeconds={playheadSeconds}
           onDragEnd={handleDragEnd}

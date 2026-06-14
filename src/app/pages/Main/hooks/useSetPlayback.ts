@@ -37,7 +37,11 @@ export const useSetPlayback = ({
   mixerActions,
   sessionActions,
 }: UseSetPlaybackParams): UseSetPlaybackResult => {
-  // When slot changes, load the mix and schedule advancement to the next slot.
+  // Load the active slot's mix and align its loops to the in-slot offset.
+  // Reruns when the slot changes (advance, or seek into another slot) and when
+  // the offset changes (seek within the same slot): in every case the mix is
+  // (re)started at the loop phase it would occupy had the set played from the
+  // start, so the DJ auditions transitions exactly as they will sound live.
   useEffect(() => {
     if (!setIsPlaying || currentSlotIndex === null) return;
     const slot = activeSession.slots[currentSlotIndex];
@@ -47,7 +51,16 @@ export const useSetPlayback = ({
       return;
     }
 
-    void mixerActions.loadMixAndPlay(slot.mixId);
+    void mixerActions.loadMixAndPlay(slot.mixId, slotOffsetSeconds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
+
+  // Schedule advancement to the next slot based on the time remaining in the
+  // current slot. Reruns on seek so the timer reflects the new playhead offset.
+  useEffect(() => {
+    if (!setIsPlaying || currentSlotIndex === null) return;
+    const slot = activeSession.slots[currentSlotIndex];
+    if (!slot) return;
 
     const remaining = Math.max(0, slot.durationSeconds - slotOffsetSeconds);
     const timer = setTimeout(() => {

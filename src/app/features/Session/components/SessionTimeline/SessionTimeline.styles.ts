@@ -50,6 +50,16 @@ export const playheadHandleSx: SxProps<Theme> = {
   boxShadow: '0 0 4px rgba(0,0,0,0.5)',
 };
 
+export const loopMarkerSx: SxProps<Theme> = {
+  position: 'absolute',
+  top: '1.25rem',
+  bottom: 0,
+  width: 0,
+  borderLeft: '1px dashed rgba(255,255,255,0.28)',
+  pointerEvents: 'none',
+  zIndex: 5,
+};
+
 export const tickLabelSx: SxProps<Theme> = {
   fontFamily: 'Share Tech Mono, monospace',
   fontSize: '0.55rem',

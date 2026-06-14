@@ -186,6 +186,7 @@ export const Main = (): React.ReactElement => {
           <SetSection
             activeSession={activeSession}
             mixes={snapshot.savedMixes}
+            tracks={tracks}
             isSetPlaying={setIsPlaying}
             currentSlotIndex={currentSlotIndex}
             onPlayPause={handleSetPlayPause}

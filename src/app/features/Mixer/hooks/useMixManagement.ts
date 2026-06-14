@@ -61,7 +61,7 @@ export const buildMixManagementActions = ({
   setTracks,
   setActiveMixId,
 }: MixManagementParams): MixManagementActions => ({
-  loadMixAndPlay: async (mixId: string) => {
+  loadMixAndPlay: async (mixId: string, offsetSeconds = 0) => {
     const currentSnapshot = snapshotRef.current;
     const currentTracks = tracksRef.current;
     const mix = currentSnapshot.savedMixes.find((entry) => entry.id === mixId);
@@ -84,6 +84,7 @@ export const buildMixManagementActions = ({
       nextTrackStates,
       currentSnapshot.customSounds,
       mix.globalTempo,
+      offsetSeconds,
     );
 
     setSnapshot((current) => ({

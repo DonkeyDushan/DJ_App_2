@@ -573,4 +573,3 @@ Before marking any implementation complete:
 - [ ] `data-testid` added to all meaningful interactive elements and display containers targeted by automated tests
 - [ ] No hardcoded user-visible strings — all copy goes through `t('namespace:key')`
 - [ ] Every `return` is preceded by a blank line (unless it is the sole statement); declarations are grouped and separated by blank lines
-- [ ] Changelog entry added in `docs/changelog/<version>.md` — one bullet per user-visible change, linked to the Jira ticket

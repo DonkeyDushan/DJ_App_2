@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   SortableContext,
   arrayMove,
@@ -11,10 +11,12 @@ import { Box, Typography } from '@mui/material';
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
+import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionSlotBlock } from '../SessionSlotBlock/SessionSlotBlock';
 import {
   emptyLabelSx,
   emptyTimelineSx,
+  loopMarkerSx,
   playheadContainerSx,
   playheadHandleSx,
   playheadLineSx,
@@ -24,12 +26,14 @@ import {
   timelineWrapperSx,
 } from './SessionTimeline.styles';
 import { formatTickLabel, getSlotColor, getTickIntervalSeconds } from '../../utils/timelineFormatters';
+import { computeLoopMarkers } from '../../utils/loopMarkers';
 
 export const TIMELINE_DROPPABLE_ID = 'timeline';
 
 interface SessionTimelineProps {
   session: DJSession;
   mixes: SavedMix[];
+  tracks: TrackDefinition[];
   isPlaying: boolean;
   playheadSeconds: number;
   onDragEnd: (event: DragEndEvent) => void;
@@ -42,6 +46,7 @@ interface SessionTimelineProps {
 export const SessionTimeline = ({
   session,
   mixes,
+  tracks,
   isPlaying,
   playheadSeconds,
   onDragEnd: _onDragEnd,
@@ -79,6 +84,11 @@ export const SessionTimeline = ({
   const tickIntervalSeconds = getTickIntervalSeconds(effectiveTotal);
   const tickCount = Math.ceil(effectiveTotal / tickIntervalSeconds);
   const ticks = Array.from({ length: tickCount + 1 }, (_, i) => i * tickIntervalSeconds);
+
+  const loopMarkers = useMemo(
+    () => computeLoopMarkers(session.slots, mixes, tracks, effectiveTotal),
+    [session.slots, mixes, tracks, effectiveTotal],
+  );
 
   const slotIds = session.slots.map((s) => s.id);
 
@@ -231,6 +241,15 @@ export const SessionTimeline = ({
           </SortableContext>
         )}
       </Box>
+
+      {/* Loop-restart markers — where each slot's mix loops back to its start */}
+      {loopMarkers.map((marker) => (
+        <Box
+          key={marker.key}
+          sx={loopMarkerSx}
+          style={{ left: `${marker.fraction * 100}%` }}
+        />
+      ))}
 
       {/* Playhead */}
       <Box

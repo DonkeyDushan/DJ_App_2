@@ -250,22 +250,39 @@ export class AudioEngine {
     }
   }
 
+  /**
+   * Starts transport for every enabled track.
+   *
+   * @param offsetSeconds Position within the arrangement at which to begin.
+   * The transport clock is backdated by this amount so each loop starts at the
+   * phase it would occupy had playback begun from zero this many seconds ago.
+   * Used to scrub set playback so loop transitions are auditioned exactly as
+   * they will sound when the set runs from the start. Defaults to 0 (loop
+   * phase zero — identical to the previous behaviour).
+   */
   async startTransport(
     tracks: TrackDefinition[],
     trackStates: Record<string, TrackState>,
     customSounds: CustomSoundRecord[],
     globalTempo: number,
+    offsetSeconds = 0,
   ): Promise<void> {
-    await this.ensureContext();
+    const context = await this.ensureContext();
     await this.stopTransport(false);
     this.transportActive = true;
-    this.transportStartTime = this.context?.currentTime ?? 0;
+    this.transportStartTime = context.currentTime - offsetSeconds;
 
     await Promise.all(
       tracks
         .filter((track) => trackStates[track.id]?.enabled)
         .map((track) =>
-          this.startLoopTrack(track, trackStates[track.id], customSounds, globalTempo, false),
+          this.startLoopTrack(
+            track,
+            trackStates[track.id],
+            customSounds,
+            globalTempo,
+            offsetSeconds > 0,
+          ),
         ),
     );
 
