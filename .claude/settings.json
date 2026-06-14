@@ -6,7 +6,9 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\" -Recurse -Name)",
       "Bash(Remove-Item \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\\\\components\\\\set\\\\SetTab.tsx\" -Force)",
       "Bash(Remove-Item \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\\\\components\\\\set\\\\SetTab.styles.ts\" -Force)",
-      "Bash(Select-String \"src/\")"
+      "Bash(Select-String \"src/\")",
+      "Bash(echo \"=== EXIT $? ===\")",
+      "Bash(xargs wc -l)"
     ]
   }
 }
