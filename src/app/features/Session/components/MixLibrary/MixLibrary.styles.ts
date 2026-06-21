@@ -7,7 +7,6 @@ export const panelSx: SxProps<Theme> = {
   flexDirection: 'column',
   borderRight: '1px solid',
   borderColor: 'divider',
-
   overflow: 'hidden',
 };
 

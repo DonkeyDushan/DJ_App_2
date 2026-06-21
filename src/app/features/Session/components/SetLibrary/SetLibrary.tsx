@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Plus } from 'pixelarticons/react/Plus';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
@@ -12,7 +12,6 @@ import {
   headerRowSx,
   listSx,
   listWrapperSx,
-  newSetButtonSx,
   panelSx,
 } from './SetLibrary.styles';
 
@@ -38,15 +37,21 @@ const SetLibraryInner = ({
   <Box sx={panelSx} data-testid="set-library">
     <Box sx={headerRowSx}>
       <Typography sx={headerLabelSx}>{STRINGS.set.savedSessions}</Typography>
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<PixelIcon glyph={Plus} />}
-        onClick={onNewSet}
-        sx={newSetButtonSx}
-      >
-        {STRINGS.set.newSet}
-      </Button>
+
+      <Tooltip title={STRINGS.set.newSet}>
+        <IconButton
+          onClick={onNewSet}
+          size="small"
+          sx={{
+            color: 'pink.main',
+            '&:hover': {
+              color: 'pink.light',
+            },
+          }}
+        >
+          <PixelIcon glyph={Plus} />
+        </IconButton>
+      </Tooltip>
     </Box>
 
     <Box sx={listWrapperSx}>

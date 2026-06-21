@@ -11,13 +11,8 @@ export const cardSx = (
   border: 0,
   borderTop: '1px solid',
   borderBottom: '1px solid',
-  cursor: isSetPlaybackActive ? 'default' : 'pointer',
+  cursor: isSetPlaybackActive || isActive ? 'default' : 'pointer',
   borderColor: isSetPlaying || isActive ? 'primary.main' : 'transparent',
-  /*   bgcolor: isSetPlaying
-      ? 'rgba(108,255,159,0.06)'
-      : isActive
-        ? 'rgba(255,79,220,0.06)'
-        : 'transparent', */
   transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
   '&:hover': {
     borderColor: isActive || isSetPlaying ? 'undefined' : 'divider',

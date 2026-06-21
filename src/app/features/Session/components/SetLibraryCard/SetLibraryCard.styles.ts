@@ -7,23 +7,21 @@ import type { SxProps, Theme } from '@mui/material';
 export const cardSx = (
   isActive: boolean,
   isSetPlaybackActive: boolean,
-): SxProps<Theme> => {
-  const dimmed = isSetPlaybackActive && !isActive;
-
-  return {
-    px: 1.25,
-    py: 0.75,
-    borderRadius: 1.5,
-    cursor: isSetPlaybackActive ? 'default' : 'pointer',
-    opacity: dimmed ? 0.35 : 1,
-    borderColor: isActive ? 'primary.main' : 'rgba(255,255,255,0.06)',
-    bgcolor: isActive ? 'rgba(255,79,220,0.06)' : 'transparent',
-    transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
-    '&:hover': {
-      borderColor: isActive || dimmed ? undefined : 'rgba(255,255,255,0.18)',
-    },
-  };
-};
+): SxProps<Theme> => ({
+  px: 1.5,
+  py: 1,
+  borderRadius: 0,
+  border: 0,
+  borderTop: '1px solid',
+  borderBottom: '1px solid',
+  cursor: isSetPlaybackActive || isActive ? 'default' : 'pointer',
+  borderColor: isSetPlaybackActive || isActive ? 'primary.main' : 'transparent',
+  transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
+  '&:hover': {
+    borderColor: isActive || isSetPlaybackActive ? 'undefined' : 'divider',
+    bgcolor: '#000',
+  },
+});
 
 export const rowSx: SxProps<Theme> = {
   display: 'flex',

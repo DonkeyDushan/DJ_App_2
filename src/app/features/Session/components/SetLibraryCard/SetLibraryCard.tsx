@@ -31,7 +31,6 @@ const SetLibraryCardInner = ({
   onRename,
 }: SetLibraryCardProps): React.ReactElement => (
   <Paper
-    variant="outlined"
     sx={cardSx(isActive, isSetPlaybackActive)}
     onClick={isSetPlaybackActive ? undefined : onLoad}
     data-testid={`set-library-card--${session.id}`}
@@ -47,7 +46,8 @@ const SetLibraryCardInner = ({
           <Typography sx={setNameSx}>{session.name}</Typography>
         </Box>
         <Typography sx={setMetaSx}>
-          {session.slots.length} slots · {formatSlotDuration(getTotalDuration(session))}
+          {session.slots.length} slots ·{' '}
+          {formatSlotDuration(getTotalDuration(session))}
         </Typography>
       </Box>
 
@@ -72,7 +72,11 @@ const SetLibraryCardInner = ({
             e.stopPropagation();
             onDelete();
           }}
-          sx={{ p: 0.25, color: 'text.disabled', '&:hover': { color: 'error.main' } }}
+          sx={{
+            p: 0.25,
+            color: 'text.disabled',
+            '&:hover': { color: 'error.main' },
+          }}
           data-testid={`set-library-delete--${session.id}`}
         >
           <PixelIcon glyph={Trash} />

@@ -8,9 +8,6 @@ export const panelSx: SxProps<Theme> = {
   flexDirection: 'column',
   borderRight: '1px solid',
   borderColor: 'divider',
-  pl: 1.5,
-  pr: 1.5,
-  py: 1,
   overflow: 'hidden',
 };
 
@@ -18,8 +15,10 @@ export const headerRowSx: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  mb: 1,
-  flexShrink: 0,
+  borderBottom: '1px dashed',
+  borderColor: 'divider',
+  px: 1.5,
+  py: 1.5,
 };
 
 export const headerLabelSx: SxProps<Theme> = {
@@ -28,15 +27,6 @@ export const headerLabelSx: SxProps<Theme> = {
   fontWeight: 700,
   letterSpacing: '0.12em',
   color: 'text.secondary',
-};
-
-export const newSetButtonSx: SxProps<Theme> = {
-  py: 0.25,
-  px: 0.75,
-  fontSize: '0.875rem',
-  minWidth: 0,
-  letterSpacing: '0.06em',
-  fontFamily: 'Orbitron, monospace',
 };
 
 /**
@@ -57,6 +47,8 @@ export const listSx: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'column',
   gap: 0.5,
+  flex: 1,
+  pt: 1,
 };
 
 export const emptyLabelSx: SxProps<Theme> = {

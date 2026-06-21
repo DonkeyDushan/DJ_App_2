@@ -12,6 +12,7 @@ import {
   listSx,
   panelSx,
 } from './MixLibrary.styles';
+import { headerLabelSx } from '../SetLibrary/SetLibrary.styles';
 
 interface MixLibraryProps {
   mixes: SavedMix[];
@@ -36,33 +37,21 @@ const MixLibraryInner = ({
 }: MixLibraryProps): React.ReactElement => (
   <Box sx={panelSx} data-testid="mix-library">
     <Box sx={headerRowSx}>
-      <Typography
-        sx={{
-          fontFamily: 'Orbitron, monospace',
-          fontSize: '1rem',
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          color: 'text.secondary',
-        }}
-      >
-        {STRINGS.set.mixLibrary}
-      </Typography>
+      <Typography sx={headerLabelSx}>{STRINGS.set.mixLibrary}</Typography>
 
       <Tooltip title={STRINGS.mixLibrary.newMix}>
-        <span>
-          <IconButton
-            onClick={onNewMix}
-            size="small"
-            sx={{
-              color: 'pink.main',
-              '&:hover': {
-                color: 'pink.light',
-              },
-            }}
-          >
-            <PixelIcon glyph={Plus} />
-          </IconButton>
-        </span>
+        <IconButton
+          onClick={onNewMix}
+          size="small"
+          sx={{
+            color: 'pink.main',
+            '&:hover': {
+              color: 'pink.light',
+            },
+          }}
+        >
+          <PixelIcon glyph={Plus} />
+        </IconButton>
       </Tooltip>
     </Box>
 
