@@ -1,7 +1,6 @@
 import { AudioWaveform } from 'pixelarticons/react/AudioWaveform';
 import { PenSquare } from 'pixelarticons/react/PenSquare';
 import { Music } from 'pixelarticons/react/Music';
-import { Trash } from 'pixelarticons/react/Trash';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
@@ -22,8 +21,7 @@ interface MixLibraryCardProps {
   isSetPlaybackActive: boolean;
   onAdd: () => void;
   onLoad: () => void;
-  onRename: () => void;
-  onDelete: () => void;
+  onEdit: () => void;
 }
 
 export const MixLibraryCard = ({
@@ -33,8 +31,7 @@ export const MixLibraryCard = ({
   isSetPlaybackActive,
   onAdd,
   onLoad,
-  onRename,
-  onDelete,
+  onEdit,
 }: MixLibraryCardProps): React.ReactElement => {
   const trackCount = Object.values(mix.trackStates).filter(
     (ts) => ts.enabled,
@@ -61,35 +58,17 @@ export const MixLibraryCard = ({
           <Typography sx={mixMetaSx}>{trackCount} tracks</Typography>
         </Box>
 
-        <Tooltip title={STRINGS.set.renameMix}>
+        <Tooltip title={STRINGS.set.editMix}>
           <IconButton
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              onRename();
+              onEdit();
             }}
             sx={{ p: 0.25, color: 'text.disabled' }}
-            data-testid={`mix-rename--${mix.id}`}
+            data-testid={`mix-edit--${mix.id}`}
           >
             <PixelIcon glyph={PenSquare} />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title={STRINGS.set.deleteMix}>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            sx={{
-              p: 0.25,
-              color: 'text.disabled',
-              '&:hover': { color: 'error.main' },
-            }}
-            data-testid={`mix-delete--${mix.id}`}
-          >
-            <PixelIcon glyph={Trash} />
           </IconButton>
         </Tooltip>
 

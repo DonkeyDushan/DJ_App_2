@@ -4,7 +4,7 @@
 
 import type { AudioEngine } from '../../../core/audio/audioEngine';
 import type { TrackCategory, TrackDefinition, TrackSavedSettings } from '../../../core/types/trackData';
-import type { MixerSnapshot } from '../../../core/types/mixData';
+import type { MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
 
 export type MixerActions = {
   toggleTrack: (trackId: string, enabled: boolean) => Promise<void>;
@@ -36,7 +36,7 @@ export type MixerActions = {
   clearMix: () => Promise<void>;
   resetMix: () => Promise<void>;
   deleteMix: (mixId: string) => void;
-  renameMix: (mixId: string, name: string) => void;
+  updateMix: (mixId: string, patch: MixUpdate) => void;
   saveTrackPreset: (
     sourceTrackId: string,
     name: string,

@@ -71,7 +71,7 @@ export const retroTheme = createTheme({
       light: '#beffff',
     },
     yellow: {
-      main: '#beffff',
+      main: '#faae40',
       light: '#ffff9b',
     },
     orange: {

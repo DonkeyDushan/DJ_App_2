@@ -5,8 +5,12 @@
 
 // Types
 export type { TrackKind, TrackCategory, TrackSavedSettings, TrackDefinition, PreloadedAudioFile, TrackState } from './types/trackData';
-export type { CustomSoundRecord, SavedMixTrackState, SavedMix, MixerSnapshot } from './types/mixData';
+export type { CustomSoundRecord, SavedMixTrackState, SavedMix, MixUpdate, MixerSnapshot } from './types/mixData';
 export type { SessionSlot, DJSession } from './types/sessionData';
+
+// Constants
+export { MIX_COLOR_KEYS } from './constants/mixColors';
+export type { MixColorKey } from './constants/mixColors';
 
 // Audio engine
 export { AudioEngine } from './audio/audioEngine';

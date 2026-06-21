@@ -14,7 +14,7 @@ import {
 } from '../../../core/storage/customSounds';
 import { loadSavedMixes, persistSavedMixes } from '../../../core/storage/mixStorage';
 import { loadFavoriteIds, loadTrackPresets } from '../../../core/storage/trackPresets';
-import type { SavedMix, MixerSnapshot } from '../../../core/types/mixData';
+import type { SavedMix, MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
 import type { TrackDefinition } from '../../../core/types/trackData';
 import { DEFAULT_SINGLE_TRACK_VALUES, MAX_SAVED_MIXES } from '../constants/trackDefaults';
 import type { MixerActions } from '../types/mixerContext';
@@ -51,7 +51,7 @@ export type MixManagementActions = Pick<
   | 'clearMix'
   | 'resetMix'
   | 'deleteMix'
-  | 'renameMix'
+  | 'updateMix'
 >;
 
 export const buildMixManagementActions = ({
@@ -362,11 +362,23 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
   },
 
-  renameMix: (mixId: string, name: string) => {
+  updateMix: (mixId: string, patch: MixUpdate) => {
     setSnapshot((current) => {
-      const nextMixes = current.savedMixes.map((m) =>
-        m.id === mixId ? { ...m, name } : m,
-      );
+      const nextMixes = current.savedMixes.map((m) => {
+        if (m.id !== mixId) return m;
+
+        const updated: SavedMix = { ...m };
+        if (patch.name !== undefined) updated.name = patch.name;
+        if (patch.color !== undefined) {
+          if (patch.color === null) {
+            delete updated.color;
+          } else {
+            updated.color = patch.color;
+          }
+        }
+
+        return updated;
+      });
       persistSavedMixes(nextMixes);
 
       return { ...current, savedMixes: nextMixes };

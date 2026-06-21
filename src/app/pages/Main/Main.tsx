@@ -8,7 +8,9 @@ import {
   SetSection,
   SetLibrary,
   MixLibrary,
+  MixEditDialog,
 } from '../../features/Session';
+import type { MixColorKey } from '../../core';
 import { CustomSoundsDialog } from '../../features/TrackEditing';
 import {
   TopBar,
@@ -19,6 +21,7 @@ import {
 import { SaveMixDialog } from './components/SaveMixDialog/SaveMixDialog';
 import { useSetPlayback } from './hooks/useSetPlayback';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
+import type { MixEditTarget } from './types/mixEditTarget';
 
 /** Confirmation message shown for each kind of deletable library item. */
 const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
@@ -31,7 +34,6 @@ const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
 /** Dialog title shown for each kind of renameable library item. */
 const RENAME_TITLE_BY_TYPE: Record<RenameTarget['kind'], string> = {
   'custom-sound': STRINGS.renameDialog.renameSoundTitle,
-  mix: STRINGS.renameDialog.renameMixTitle,
   set: STRINGS.renameDialog.renameSetTitle,
 };
 
@@ -53,6 +55,7 @@ export const Main = (): React.ReactElement => {
   const [mixDialogInitialName, setMixDialogInitialName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
+  const [mixEditTarget, setMixEditTarget] = useState<MixEditTarget | null>(null);
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
@@ -210,14 +213,11 @@ export const Main = (): React.ReactElement => {
     });
   }, []);
 
-  const requestDeleteMix = useCallback((mixId: string) => {
+  const requestEditMix = useCallback((mixId: string) => {
     const mix = mixesLookupRef.current.find((m) => m.id === mixId);
-    setDeleteTarget({ kind: 'mix', id: mixId, name: mix?.name ?? mixId });
-  }, []);
+    if (!mix) return;
 
-  const requestRenameMix = useCallback((mixId: string) => {
-    const mix = mixesLookupRef.current.find((m) => m.id === mixId);
-    setRenameTarget({ kind: 'mix', id: mixId, name: mix?.name ?? mixId });
+    setMixEditTarget({ id: mixId, name: mix.name, color: mix.color ?? null });
   }, []);
 
   const requestDeleteSet = useCallback((sessionId: string) => {
@@ -236,6 +236,27 @@ export const Main = (): React.ReactElement => {
 
   const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
   const handleCloseRename = useCallback(() => setRenameTarget(null), []);
+  const handleCloseMixEdit = useCallback(() => setMixEditTarget(null), []);
+
+  const handleSaveMixEdit = useCallback(
+    (name: string, color: MixColorKey | null) => {
+      setMixEditTarget((current) => {
+        if (current) mixerActions.updateMix(current.id, { name, color });
+
+        return null;
+      });
+    },
+    [mixerActions],
+  );
+
+  const handleDeleteFromMixEdit = useCallback(() => {
+    setMixEditTarget((current) => {
+      if (current)
+        setDeleteTarget({ kind: 'mix', id: current.id, name: current.name });
+
+      return null;
+    });
+  }, []);
 
   const handleConfirmDelete = useCallback(() => {
     if (!deleteTarget) return;
@@ -267,9 +288,6 @@ export const Main = (): React.ReactElement => {
       switch (renameTarget.kind) {
         case 'custom-sound':
           void mixerActions.renameCustomSound(renameTarget.id, name);
-          break;
-        case 'mix':
-          mixerActions.renameMix(renameTarget.id, name);
           break;
         case 'set':
           sessionActions.renameSession(renameTarget.id, name);
@@ -303,8 +321,7 @@ export const Main = (): React.ReactElement => {
           onAddToTimeline={sessionActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
-          onRenameMix={requestRenameMix}
-          onDeleteMix={requestDeleteMix}
+          onEditMix={requestEditMix}
         />
 
         <Box
@@ -486,6 +503,15 @@ export const Main = (): React.ReactElement => {
         cancelLabel={STRINGS.renameDialog.cancel}
         onConfirm={handleConfirmRename}
         onClose={handleCloseRename}
+      />
+
+      <MixEditDialog
+        open={mixEditTarget !== null}
+        initialName={mixEditTarget?.name ?? ''}
+        initialColor={mixEditTarget?.color ?? null}
+        onSave={handleSaveMixEdit}
+        onDelete={handleDeleteFromMixEdit}
+        onClose={handleCloseMixEdit}
       />
     </Box>
   );

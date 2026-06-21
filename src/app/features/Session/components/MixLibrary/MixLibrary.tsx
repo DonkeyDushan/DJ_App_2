@@ -21,8 +21,7 @@ interface MixLibraryProps {
   onAddToTimeline: (mixId: string) => void;
   onLoadMix: (mixId: string) => void;
   onNewMix: () => void;
-  onRenameMix: (mixId: string) => void;
-  onDeleteMix: (mixId: string) => void;
+  onEditMix: (mixId: string) => void;
 }
 
 const MixLibraryInner = ({
@@ -33,8 +32,7 @@ const MixLibraryInner = ({
   onAddToTimeline,
   onLoadMix,
   onNewMix,
-  onRenameMix,
-  onDeleteMix,
+  onEditMix,
 }: MixLibraryProps): React.ReactElement => (
   <Box sx={panelSx} data-testid="mix-library">
     <Box sx={headerRowSx}>
@@ -81,8 +79,7 @@ const MixLibraryInner = ({
             isSetPlaybackActive={isSetPlaybackActive}
             onAdd={() => onAddToTimeline(mix.id)}
             onLoad={() => onLoadMix(mix.id)}
-            onRename={() => onRenameMix(mix.id)}
-            onDelete={() => onDeleteMix(mix.id)}
+            onEdit={() => onEditMix(mix.id)}
           />
         ))
       )}
