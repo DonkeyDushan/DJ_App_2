@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -30,7 +31,7 @@ interface MixerHeaderProps {
   onOpenCustomSounds: () => void;
 }
 
-export const MixerHeader = ({
+const MixerHeaderInner = ({
   isPlaying,
   globalTempo,
   activeMixId,
@@ -183,3 +184,6 @@ export const MixerHeader = ({
     </Box>
   );
 };
+
+export const MixerHeader = memo(MixerHeaderInner);
+MixerHeader.displayName = 'MixerHeader';

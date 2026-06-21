@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import {
   Button,
   Dialog,
@@ -25,7 +25,7 @@ type SaveMixDialogProps = {
   onClose: () => void;
 };
 
-export const SaveMixDialog = ({
+const SaveMixDialogInner = ({
   open,
   initialName,
   onConfirm,
@@ -87,3 +87,6 @@ export const SaveMixDialog = ({
     </Dialog>
   );
 };
+
+export const SaveMixDialog = memo(SaveMixDialogInner);
+SaveMixDialog.displayName = 'SaveMixDialog';

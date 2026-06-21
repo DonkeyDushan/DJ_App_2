@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Box } from '@mui/material';
 
 import type { SavedMix } from '../../../../core/types/mixData';
@@ -16,7 +16,7 @@ type MixLibrarySidebarProps = {
   onNewMix: () => void;
 };
 
-export const MixLibrarySidebar = ({
+const MixLibrarySidebarInner = ({
   mixes,
   activeMixId,
   playingMixId,
@@ -39,3 +39,6 @@ export const MixLibrarySidebar = ({
     />
   </Box>
 );
+
+export const MixLibrarySidebar = memo(MixLibrarySidebarInner);
+MixLibrarySidebar.displayName = 'MixLibrarySidebar';

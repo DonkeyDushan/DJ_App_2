@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SaveIcon from '@mui/icons-material/Save';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -13,7 +14,7 @@ interface TopBarProps {
   hasUnsavedChanges: boolean;
 }
 
-export const TopBar = ({
+const TopBarInner = ({
   onSaveSet,
   onLoadSet,
   onResetSet,
@@ -83,3 +84,6 @@ export const TopBar = ({
     </Box>
   </Box>
 );
+
+export const TopBar = memo(TopBarInner);
+TopBar.displayName = 'TopBar';

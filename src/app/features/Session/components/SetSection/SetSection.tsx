@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   type DragEndEvent,
@@ -40,7 +40,7 @@ interface SetSectionProps {
   onSeekSlot?: (seconds: number) => void;
 }
 
-export const SetSection = ({
+const SetSectionInner = ({
   activeSession,
   mixes,
   tracks,
@@ -190,3 +190,6 @@ export const SetSection = ({
     </DndContext>
   );
 };
+
+export const SetSection = memo(SetSectionInner);
+SetSection.displayName = 'SetSection';

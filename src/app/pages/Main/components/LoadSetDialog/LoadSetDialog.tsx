@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Button,
   Dialog,
@@ -21,7 +21,7 @@ type LoadSetDialogProps = {
   onClose: () => void;
 };
 
-export const LoadSetDialog = ({
+const LoadSetDialogInner = ({
   open,
   sessions,
   onLoad,
@@ -53,3 +53,6 @@ export const LoadSetDialog = ({
     </DialogActions>
   </Dialog>
 );
+
+export const LoadSetDialog = memo(LoadSetDialogInner);
+LoadSetDialog.displayName = 'LoadSetDialog';

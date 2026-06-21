@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
@@ -37,6 +37,8 @@ export const Main = (): React.ReactElement => {
   } | null>(null);
   const actionsRef = useRef(mixerActions);
   actionsRef.current = mixerActions;
+  const activeMixIdRef = useRef(activeMixId);
+  activeMixIdRef.current = activeMixId;
 
   useEffect(() => {
     if (!pendingActionsRef.current) return;
@@ -60,32 +62,47 @@ export const Main = (): React.ReactElement => {
     sessionActions,
   });
 
-  const handleSave = () => {
-    if (activeMixId) {
-      mixerActions.overwriteMix(activeMixId);
+  const handleSave = useCallback(() => {
+    const mixId = activeMixIdRef.current;
+    if (mixId) {
+      mixerActions.overwriteMix(mixId);
     } else {
       setMixDialogInitialName('');
       setSaveNewMixOpen(true);
     }
-  };
+  }, []);
 
-  const handleSaveNew = () => {
+  const handleSaveNew = useCallback(() => {
     setMixDialogInitialName(STRINGS.saveLoadManager.defaultMixName);
     setSaveNewMixOpen(true);
-  };
+  }, []);
 
-  const handleConfirmSaveNew = (name: string) => {
+  const handleConfirmSaveNew = useCallback((name: string) => {
     if (name.trim()) {
       mixerActions.saveMix(name.trim());
     }
     setSaveNewMixOpen(false);
-  };
+  }, []);
+
+  const handleOpenLoadSet = useCallback(() => setLoadSetOpen(true), []);
+  const handleCloseLoadSet = useCallback(() => setLoadSetOpen(false), []);
+  const handleCloseSaveMixDialog = useCallback(() => setSaveNewMixOpen(false), []);
+  const handleOpenCustomSounds = useCallback(() => setCustomSoundsOpen(true), []);
+  const handleCloseCustomSounds = useCallback(() => setCustomSoundsOpen(false), []);
+
+  const handleLoadMix = useCallback((mixId: string) => void mixerActions.loadMix(mixId), []);
+  const handleNewMix = useCallback(() => void mixerActions.clearMix(), []);
+  const handleToggleTransport = useCallback(() => void mixerActions.toggleTransport(), []);
+  const handleTempoChange = useCallback((tempo: number) => mixerActions.setGlobalTempo(tempo), []);
+  const handleResetMix = useCallback(() => void mixerActions.resetMix(), []);
+  const handleUploadSound = useCallback((file: File) => void mixerActions.addCustomSound(file), []);
+  const handleDeleteSound = useCallback((soundId: string) => mixerActions.deleteCustomSound(soundId), []);
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <TopBar
         onSaveSet={sessionActions.saveSession}
-        onLoadSet={() => setLoadSetOpen(true)}
+        onLoadSet={handleOpenLoadSet}
         onResetSet={sessionActions.resetSession}
         hasUnsavedChanges={hasUnsavedChanges}
       />
@@ -98,8 +115,8 @@ export const Main = (): React.ReactElement => {
           isSetPlaybackActive={setIsPlaying}
           onToggleFavorite={mixerActions.toggleMixFavorite}
           onAddToTimeline={sessionActions.addSlot}
-          onLoadMix={(mixId) => void mixerActions.loadMix(mixId)}
-          onNewMix={() => void mixerActions.clearMix()}
+          onLoadMix={handleLoadMix}
+          onNewMix={handleNewMix}
         />
 
         <Box
@@ -110,12 +127,12 @@ export const Main = (): React.ReactElement => {
             globalTempo={snapshot.globalTempo}
             activeMixId={activeMixId}
             isLocked={setIsPlaying}
-            onToggleTransport={() => void mixerActions.toggleTransport()}
-            onTempoChange={(tempo) => mixerActions.setGlobalTempo(tempo)}
-            onReset={() => void mixerActions.resetMix()}
+            onToggleTransport={handleToggleTransport}
+            onTempoChange={handleTempoChange}
+            onReset={handleResetMix}
             onSave={handleSave}
             onSaveNew={handleSaveNew}
-            onOpenCustomSounds={() => setCustomSoundsOpen(true)}
+            onOpenCustomSounds={handleOpenCustomSounds}
           />
 
           <Box
@@ -205,16 +222,16 @@ export const Main = (): React.ReactElement => {
       <CustomSoundsDialog
         open={customSoundsOpen}
         sounds={snapshot.customSounds}
-        onClose={() => setCustomSoundsOpen(false)}
-        onUpload={(file) => void mixerActions.addCustomSound(file)}
-        onDelete={(soundId) => void mixerActions.deleteCustomSound(soundId)}
+        onClose={handleCloseCustomSounds}
+        onUpload={handleUploadSound}
+        onDelete={handleDeleteSound}
       />
 
       <SaveMixDialog
         open={saveNewMixOpen}
         initialName={mixDialogInitialName}
         onConfirm={handleConfirmSaveNew}
-        onClose={() => setSaveNewMixOpen(false)}
+        onClose={handleCloseSaveMixDialog}
       />
 
       <LoadSetDialog
@@ -223,7 +240,7 @@ export const Main = (): React.ReactElement => {
         onLoad={sessionActions.loadSession}
         onDelete={sessionActions.deleteSession}
         onToggleFavorite={sessionActions.toggleSessionFavorite}
-        onClose={() => setLoadSetOpen(false)}
+        onClose={handleCloseLoadSet}
       />
 
       {/* Legacy SaveLoadManager kept for mix load only */}

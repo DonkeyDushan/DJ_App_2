@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -32,7 +32,7 @@ type CustomSoundsDialogProps = {
 
 const S = STRINGS.customSoundsDialog;
 
-export const CustomSoundsDialog = ({
+const CustomSoundsDialogInner = ({
   open,
   sounds,
   onClose,
@@ -108,3 +108,6 @@ export const CustomSoundsDialog = ({
     </Dialog>
   );
 };
+
+export const CustomSoundsDialog = memo(CustomSoundsDialogInner);
+CustomSoundsDialog.displayName = 'CustomSoundsDialog';

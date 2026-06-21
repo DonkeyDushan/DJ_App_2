@@ -3,7 +3,7 @@
  * stops transport at end of set, and provides seek/play-pause handlers.
  */
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import type { DJSession } from '../../../core/types/sessionData';
 import type { MixerActions } from '../../../features/Mixer/types/mixerContext';
@@ -77,7 +77,7 @@ export const useSetPlayback = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
 
-  const handleSeek = (seconds: number): void => {
+  const handleSeek = useCallback((seconds: number): void => {
     if (!setIsPlaying) return;
     const slots = activeSession.slots;
     let cumulative = 0;
@@ -89,9 +89,9 @@ export const useSetPlayback = ({
       }
       cumulative += slots[i].durationSeconds;
     }
-  };
+  }, [setIsPlaying, activeSession.slots, sessionActions]);
 
-  const handleSetPlayPause = (): void => {
+  const handleSetPlayPause = useCallback((): void => {
     if (setIsPlaying) {
       sessionActions.stopSetPlayback();
       void mixerActions.toggleTransport();
@@ -100,7 +100,7 @@ export const useSetPlayback = ({
     }
     if (activeSession.slots.length === 0) return;
     sessionActions.startSetPlayback();
-  };
+  }, [setIsPlaying, activeSession.slots, sessionActions, mixerActions]);
 
   return { handleSeek, handleSetPlayPause };
 };
