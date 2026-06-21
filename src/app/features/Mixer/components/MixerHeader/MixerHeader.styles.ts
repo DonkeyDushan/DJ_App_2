@@ -6,7 +6,8 @@ export const headerRootSx: SxProps<Theme> = {
   gap: 1.5,
   px: 1.5,
   py: 1,
-  borderBottom: '1px solid rgba(255,255,255,0.06)',
+  borderBottom: '1px dashed',
+  borderColor: 'divider',
   flexShrink: 0,
   position: 'relative',
 };

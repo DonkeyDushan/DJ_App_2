@@ -1,12 +1,12 @@
 import { memo } from 'react';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import SaveIcon from '@mui/icons-material/Save';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { Play } from 'pixelarticons/react/Play';
+import { Reload } from 'pixelarticons/react/Reload';
+import { Save } from 'pixelarticons/react/Save';
+import { Upload } from 'pixelarticons/react/Upload';
 import { Box, Button, IconButton, Slider, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
+import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import {
   bpmLabelSx,
   bpmValueSx,
@@ -80,9 +80,9 @@ const MixerHeaderInner = ({
           }}
         >
           {isPlaying ? (
-            <PauseIcon sx={{ fontSize: 18 }} />
+            <PixelIcon glyph={PausePixelGlyph} />
           ) : (
-            <PlayArrowIcon sx={{ fontSize: 18 }} />
+            <PixelIcon glyph={Play} />
           )}
         </IconButton>
       </Tooltip>
@@ -120,7 +120,7 @@ const MixerHeaderInner = ({
                 '&.Mui-disabled': { opacity: 0.3 },
               }}
             >
-              <RefreshIcon sx={{ fontSize: 16 }} />
+              <PixelIcon glyph={Reload} />
             </IconButton>
           </span>
         </Tooltip>
@@ -128,7 +128,7 @@ const MixerHeaderInner = ({
         <Button
           size="small"
           variant="outlined"
-          startIcon={<SaveIcon sx={{ fontSize: '0.75rem !important' }} />}
+          startIcon={<PixelIcon glyph={Save} />}
           onClick={onSave}
           disabled={isLocked || !activeMixId}
           sx={{
@@ -146,7 +146,7 @@ const MixerHeaderInner = ({
         <Button
           size="small"
           variant="contained"
-          startIcon={<SaveIcon sx={{ fontSize: '0.75rem !important' }} />}
+          startIcon={<PixelIcon glyph={Save} />}
           onClick={onSaveNew}
           disabled={isLocked}
           sx={{
@@ -176,7 +176,7 @@ const MixerHeaderInner = ({
                 '&.Mui-disabled': { opacity: 0.3 },
               }}
             >
-              <CloudUploadIcon sx={{ fontSize: 16 }} />
+              <PixelIcon glyph={Upload} />
             </IconButton>
           </span>
         </Tooltip>

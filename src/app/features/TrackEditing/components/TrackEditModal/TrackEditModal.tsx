@@ -8,8 +8,8 @@ import {
   Stack,
   Tooltip,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import RestoreIcon from '@mui/icons-material/Restore';
+import { Close } from 'pixelarticons/react/Close';
+import { Undo } from 'pixelarticons/react/Undo';
 
 import type {
   TrackCategory,
@@ -18,6 +18,7 @@ import type {
   TrackState,
 } from '../../../../core/types/trackData';
 import { STRINGS } from '../../../../strings';
+import { PixelIcon } from '../../../../components';
 import { useTrackEditState } from '../../hooks/useTrackEditState';
 import { TrackSlidersContent } from './components/TrackSlidersContent/TrackSlidersContent';
 import { PresetNameField } from './components/PresetNameField/PresetNameField';
@@ -226,11 +227,11 @@ export const TrackEditModal = ({
         {S.title}
         <Tooltip title={S.discardChanges}>
           <IconButton size="small" onClick={handleDiscardChanges} sx={discardButtonSx}>
-            <RestoreIcon fontSize="small" />
+            <PixelIcon glyph={Undo} />
           </IconButton>
         </Tooltip>
         <IconButton size="small" onClick={handleCancel} sx={closeButtonSx}>
-          <CloseIcon fontSize="small" />
+          <PixelIcon glyph={Close} />
         </IconButton>
       </DialogTitle>
 

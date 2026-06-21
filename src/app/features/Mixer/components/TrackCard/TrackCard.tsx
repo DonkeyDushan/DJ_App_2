@@ -1,10 +1,8 @@
 import React from 'react';
 
-import EditIcon from '@mui/icons-material/Edit';
-import PauseCircleIcon from '@mui/icons-material/PauseCircle';
-import PlayCircleIcon from '@mui/icons-material/PlayCircle';
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { PenSquare } from 'pixelarticons/react/PenSquare';
+import { Play } from 'pixelarticons/react/Play';
+import { Star } from 'pixelarticons/react/Star';
 import {
   Box,
   Checkbox,
@@ -20,6 +18,7 @@ import type {
   TrackState,
 } from '../../../../core/types/trackData';
 import { STRINGS } from '../../../../strings';
+import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import {
   editButtonSx,
   favButtonSx,
@@ -111,9 +110,9 @@ const TrackCardInner = ({
                 data-testid={`track-preview--${track.id}`}
               >
                 {trackState.isPreviewPlaying ? (
-                  <PauseCircleIcon sx={{ fontSize: '18px' }} />
+                  <PixelIcon glyph={PausePixelGlyph} />
                 ) : (
-                  <PlayCircleIcon sx={{ fontSize: '18px' }} />
+                  <PixelIcon glyph={Play} />
                 )}
               </IconButton>
             </Tooltip>
@@ -131,11 +130,7 @@ const TrackCardInner = ({
                 sx={favButtonSx(track.isFavorite ?? false)}
                 data-testid={`track-favorite--${track.id}`}
               >
-                {track.isFavorite ? (
-                  <StarIcon sx={{ fontSize: '16px' }} />
-                ) : (
-                  <StarBorderIcon sx={{ fontSize: '16px' }} />
-                )}
+                <PixelIcon glyph={Star} />
               </IconButton>
             </Tooltip>
 
@@ -146,7 +141,7 @@ const TrackCardInner = ({
                 sx={editButtonSx}
                 data-testid={`track-edit--${track.id}`}
               >
-                <EditIcon sx={{ fontSize: '16px' }} />
+                <PixelIcon glyph={PenSquare} />
               </IconButton>
             </Tooltip>
           </Stack>

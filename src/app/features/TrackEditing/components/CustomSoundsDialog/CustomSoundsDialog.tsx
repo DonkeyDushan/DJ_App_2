@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { PenSquare } from 'pixelarticons/react/PenSquare';
+import { Trash } from 'pixelarticons/react/Trash';
+import { Upload } from 'pixelarticons/react/Upload';
 import {
   Avatar,
   Box,
@@ -22,6 +22,7 @@ import {
 
 import type { CustomSoundRecord } from '../../../../core/types/mixData';
 import { STRINGS } from '../../../../strings';
+import { PixelIcon } from '../../../../components';
 import { emptyStateSx, listItemSx } from './CustomSoundsDialog.styles';
 
 type CustomSoundsDialogProps = {
@@ -59,7 +60,7 @@ const CustomSoundsDialogInner = ({
           <Button
             component="label"
             variant="contained"
-            startIcon={<UploadFileIcon />}
+            startIcon={<PixelIcon glyph={Upload} />}
           >
             {S.uploadSound}
             <input
@@ -88,7 +89,7 @@ const CustomSoundsDialogInner = ({
                           onClick={() => onRename(sound.id)}
                           data-testid={`rename-sound--${sound.id}`}
                         >
-                          <DriveFileRenameOutlineIcon />
+                          <PixelIcon glyph={PenSquare} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title={S.deleteSound}>
@@ -98,7 +99,7 @@ const CustomSoundsDialogInner = ({
                           onClick={() => onDelete(sound.id)}
                           data-testid={`delete-sound--${sound.id}`}
                         >
-                          <DeleteForeverIcon />
+                          <PixelIcon glyph={Trash} />
                         </IconButton>
                       </Tooltip>
                     </>

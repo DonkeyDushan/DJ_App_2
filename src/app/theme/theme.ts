@@ -145,5 +145,22 @@ export const retroTheme = createTheme({
         },
       },
     },
+    MuiTooltip: {
+      defaultProps: {
+        arrow: true,
+      },
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: '#000',
+          color: '#fff',
+          fontSize: '0.875rem',
+          borderRadius: 0,
+          border: '1px solid #fff',
+        },
+        arrow: {
+          color: '#fff',
+        },
+      },
+    },
   },
 });

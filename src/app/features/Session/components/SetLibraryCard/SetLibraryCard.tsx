@@ -1,10 +1,11 @@
 import { memo } from 'react';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import GraphicEqIcon from '@mui/icons-material/GraphicEq';
+import { AudioWaveform } from 'pixelarticons/react/AudioWaveform';
+import { PenSquare } from 'pixelarticons/react/PenSquare';
+import { Trash } from 'pixelarticons/react/Trash';
 import { IconButton, Paper, Tooltip, Typography, Box } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
+import { PixelIcon } from '../../../../components';
 import type { DJSession } from '../../../../core/types/sessionData';
 import { formatSlotDuration } from '../../utils/timelineFormatters';
 import { cardSx, rowSx, setMetaSx, setNameSx } from './SetLibraryCard.styles';
@@ -39,7 +40,9 @@ const SetLibraryCardInner = ({
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           {isActive && (
-            <GraphicEqIcon sx={{ fontSize: 10, color: 'primary.main' }} />
+            <Box sx={{ display: 'inline-flex', color: 'primary.main' }}>
+              <PixelIcon glyph={AudioWaveform} />
+            </Box>
           )}
           <Typography sx={setNameSx}>{session.name}</Typography>
         </Box>
@@ -58,7 +61,7 @@ const SetLibraryCardInner = ({
           sx={{ p: 0.25, color: 'text.disabled' }}
           data-testid={`set-library-rename--${session.id}`}
         >
-          <DriveFileRenameOutlineIcon sx={{ fontSize: 14 }} />
+          <PixelIcon glyph={PenSquare} />
         </IconButton>
       </Tooltip>
 
@@ -72,7 +75,7 @@ const SetLibraryCardInner = ({
           sx={{ p: 0.25, color: 'text.disabled', '&:hover': { color: 'error.main' } }}
           data-testid={`set-library-delete--${session.id}`}
         >
-          <DeleteIcon sx={{ fontSize: 14 }} />
+          <PixelIcon glyph={Trash} />
         </IconButton>
       </Tooltip>
     </Box>

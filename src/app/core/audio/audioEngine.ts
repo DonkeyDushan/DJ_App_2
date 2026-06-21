@@ -6,8 +6,11 @@
 import type { TrackDefinition, TrackState } from '../types/trackData';
 import type { CustomSoundRecord, MixerSnapshot } from '../types/mixData';
 import { createImpulseResponse } from './synthesis';
-import type { PlaybackHandle } from './audioTypes';
-import type { PlaybackListener, PlaybackState } from './audioTypes';
+import type {
+  PlaybackListener,
+  PlaybackState,
+  PlaybackHandle,
+} from './audioTypes';
 import {
   DELAY_FEEDBACK_GAIN,
   DELAY_FILTER_FREQ_HZ,
@@ -42,8 +45,10 @@ export type { PlaybackState, PlaybackListener };
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
-const getEffectiveRate = (trackState: TrackState, globalTempo: number): number =>
-  trackState.followsGlobalTempo ? globalTempo : trackState.speed;
+const getEffectiveRate = (
+  trackState: TrackState,
+  globalTempo: number,
+): number => (trackState.followsGlobalTempo ? globalTempo : trackState.speed);
 
 export class AudioEngine {
   private context: AudioContext | null = null;

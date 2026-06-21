@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import SaveIcon from '@mui/icons-material/Save';
+import { Save } from 'pixelarticons/react/Save';
+import { Trash } from 'pixelarticons/react/Trash';
 import {
   Box,
   Button,
@@ -19,6 +19,7 @@ import {
 
 import type { SavedMix } from '../../../app/core/types/mixData';
 import { STRINGS } from '../../../strings';
+import { PixelIcon } from '../PixelIcon/PixelIcon';
 import { emptyStateSx, listItemSx } from './SaveLoadManager.styles';
 
 interface SaveLoadManagerProps {
@@ -72,7 +73,7 @@ export const SaveLoadManager = ({
           <Button onClick={onClose}>{S.cancel}</Button>
           <Button
             variant="contained"
-            startIcon={<SaveIcon />}
+            startIcon={<PixelIcon glyph={Save} />}
             onClick={() => {
               onSave(mixName.trim() || S.defaultMixName);
               onClose();
@@ -97,7 +98,7 @@ export const SaveLoadManager = ({
                   key={mix.id}
                   secondaryAction={
                     <IconButton edge="end" onClick={() => onDelete(mix.id)}>
-                      <DeleteForeverIcon />
+                      <PixelIcon glyph={Trash} />
                     </IconButton>
                   }
                   sx={listItemSx}

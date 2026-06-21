@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'pixelarticons/react/Plus';
 import {
   Box,
   Button,
@@ -11,6 +11,7 @@ import {
 import { STRINGS } from '../../../../strings';
 import type { SavedMix } from '../../../../core/types/mixData';
 import { MixLibraryCard } from '../MixLibraryCard/MixLibraryCard';
+import { PixelIcon } from '../../../../components';
 import {
   emptyLabelSx,
   filterRowSx,
@@ -67,7 +68,7 @@ const MixLibraryInner = ({
         <Button
           size="small"
           variant="outlined"
-          startIcon={<AddIcon sx={{ fontSize: '0.875rem !important' }} />}
+          startIcon={<PixelIcon glyph={Plus} />}
           onClick={onNewMix}
           sx={newMixButtonSx}
         >

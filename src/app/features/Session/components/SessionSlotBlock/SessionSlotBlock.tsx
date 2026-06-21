@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import CloseIcon from '@mui/icons-material/Close';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import DragHandleIcon from '@mui/icons-material/DragHandle';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Close } from 'pixelarticons/react/Close';
+import { Copy } from 'pixelarticons/react/Copy';
+import { Menu as MenuGlyph } from 'pixelarticons/react/Menu';
+import { MoreVertical } from 'pixelarticons/react/MoreVertical';
 import {
   Box,
   IconButton,
@@ -17,6 +17,7 @@ import {
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { SessionSlot } from '../../../../core/types/sessionData';
 import { STRINGS } from '../../../../strings';
+import { PixelIcon } from '../../../../components';
 import {
   ACTIONS_MIN_WIDTH_PX,
   MIN_SLOT_DURATION_SECONDS,
@@ -81,7 +82,7 @@ export const SessionSlotBlock = ({
     });
     observer.observe(el);
 
-    return () => observer.disconnect();
+    observer.disconnect();
   }, []);
 
   const style: React.CSSProperties = {
@@ -123,7 +124,7 @@ export const SessionSlotBlock = ({
       data-testid={`slot-block--${slot.id}`}
     >
       <Box {...attributes} {...listeners} sx={dragHandleSx}>
-        <DragHandleIcon sx={{ fontSize: 14 }} />
+        <PixelIcon glyph={MenuGlyph} />
       </Box>
 
       <Box sx={slotContentSx}>
@@ -146,7 +147,7 @@ export const SessionSlotBlock = ({
             }}
             sx={{ p: 0.25, color: 'text.disabled' }}
           >
-            <MoreVertIcon sx={{ fontSize: '0.875rem' }} />
+            <PixelIcon glyph={MoreVertical} />
           </IconButton>
           <Menu
             anchorEl={menuAnchor}
@@ -162,7 +163,7 @@ export const SessionSlotBlock = ({
               }}
               sx={{ gap: 1, fontSize: '1rem' }}
             >
-              <ContentCopyIcon sx={{ fontSize: 14 }} />
+              <PixelIcon glyph={Copy} />
               {STRINGS.set.duplicateSlot}
             </MenuItem>
             <MenuItem
@@ -173,7 +174,7 @@ export const SessionSlotBlock = ({
               }}
               sx={{ gap: 1, fontSize: '1rem', color: 'error.main' }}
             >
-              <CloseIcon sx={{ fontSize: 14 }} />
+              <PixelIcon glyph={Close} />
               {STRINGS.set.removeSlot}
             </MenuItem>
           </Menu>
@@ -186,7 +187,7 @@ export const SessionSlotBlock = ({
               onClick={onDuplicate}
               sx={{ p: 0.25, color: 'text.disabled' }}
             >
-              <ContentCopyIcon sx={{ fontSize: 10 }} />
+              <PixelIcon glyph={Copy} />
             </IconButton>
           </Tooltip>
           <Tooltip title={STRINGS.set.removeSlot} placement="top">
@@ -195,7 +196,7 @@ export const SessionSlotBlock = ({
               onClick={onRemove}
               sx={{ p: 0.25, color: 'text.disabled' }}
             >
-              <CloseIcon sx={{ fontSize: 10 }} />
+              <PixelIcon glyph={Close} />
             </IconButton>
           </Tooltip>
         </Box>

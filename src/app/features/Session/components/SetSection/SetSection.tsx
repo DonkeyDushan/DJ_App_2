@@ -1,10 +1,9 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import SaveIcon from '@mui/icons-material/Save';
+import { Play } from 'pixelarticons/react/Play';
+import { Reload } from 'pixelarticons/react/Reload';
+import { Save } from 'pixelarticons/react/Save';
 import {
   Box,
   Button,
@@ -15,6 +14,7 @@ import {
 } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
+import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { TrackDefinition } from '../../../../core/types/trackData';
@@ -130,9 +130,9 @@ const SetSectionInner = ({
                 }}
               >
                 {isSetPlaying ? (
-                  <PauseIcon sx={{ fontSize: 18 }} />
+                  <PixelIcon glyph={PausePixelGlyph} />
                 ) : (
-                  <PlayArrowIcon sx={{ fontSize: 18 }} />
+                  <PixelIcon glyph={Play} />
                 )}
               </IconButton>
             </span>
@@ -173,9 +173,7 @@ const SetSectionInner = ({
                 <Button
                   size="small"
                   variant="outlined"
-                  startIcon={
-                    <RestartAltIcon sx={{ fontSize: '0.75rem !important' }} />
-                  }
+                  startIcon={<PixelIcon glyph={Reload} />}
                   onClick={onResetSet}
                   disabled={isSetPlaying || !hasUnsavedChanges}
                   data-testid="set-reset"
@@ -202,7 +200,7 @@ const SetSectionInner = ({
             <Button
               size="small"
               variant="contained"
-              startIcon={<SaveIcon sx={{ fontSize: '0.75rem !important' }} />}
+              startIcon={<PixelIcon glyph={Save} />}
               onClick={onSaveSet}
               disabled={isSetPlaying}
               data-testid="set-save"

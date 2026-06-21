@@ -1,10 +1,11 @@
 import { memo } from 'react';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'pixelarticons/react/Plus';
 import { Box, Button, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import { SetLibraryCard } from '../SetLibraryCard/SetLibraryCard';
+import { PixelIcon } from '../../../../components';
 import {
   emptyLabelSx,
   headerLabelSx,
@@ -40,7 +41,7 @@ const SetLibraryInner = ({
       <Button
         size="small"
         variant="outlined"
-        startIcon={<AddIcon sx={{ fontSize: '0.7rem !important' }} />}
+        startIcon={<PixelIcon glyph={Plus} />}
         onClick={onNewSet}
         sx={newSetButtonSx}
       >
