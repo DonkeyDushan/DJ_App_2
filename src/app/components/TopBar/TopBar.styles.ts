@@ -5,7 +5,8 @@ export const rootSx: SxProps<Theme> = {
   alignItems: 'center',
   px: 2,
   py: 0.75,
-  borderBottom: '1px solid rgba(255,255,255,0.08)',
+  borderBottom: '1px solid',
+  borderColor: 'divider',
   flexShrink: 0,
   gap: 1,
 };

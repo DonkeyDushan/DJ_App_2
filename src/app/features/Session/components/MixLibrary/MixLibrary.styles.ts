@@ -5,9 +5,11 @@ export const panelSx: SxProps<Theme> = {
   flexShrink: 0,
   display: 'flex',
   flexDirection: 'column',
-  borderRight: '1px solid rgba(255,255,255,0.06)',
+  borderRight: '1px solid',
+  borderColor: 'divider',
+  pl: 1.5,
   pr: 1.5,
-  mr: 1.5,
+  py: 1,
   overflow: 'hidden',
 };
 

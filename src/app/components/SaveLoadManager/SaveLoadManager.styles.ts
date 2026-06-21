@@ -7,5 +7,6 @@ export const emptyStateSx: SxProps<Theme> = {
 };
 
 export const listItemSx: SxProps<Theme> = {
-  borderBottom: '1px solid rgba(255,255,255,0.06)',
+  borderBottom: '1px solid',
+  borderColor: 'divider',
 };

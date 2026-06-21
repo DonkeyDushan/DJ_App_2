@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
@@ -33,7 +33,7 @@ interface MixLibraryProps {
   onDeleteMix: (mixId: string) => void;
 }
 
-export const MixLibrary = ({
+const MixLibraryInner = ({
   mixes,
   activeMixId,
   playingMixId,
@@ -121,3 +121,6 @@ export const MixLibrary = ({
     </Box>
   );
 };
+
+export const MixLibrary = memo(MixLibraryInner);
+MixLibrary.displayName = 'MixLibrary';

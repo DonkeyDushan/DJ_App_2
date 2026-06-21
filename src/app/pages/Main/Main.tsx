@@ -3,7 +3,12 @@ import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
 import { useMixer, MixerHeader, TrackGrid } from '../../features/Mixer';
-import { useSession, SetSection, SetLibrary } from '../../features/Session';
+import {
+  useSession,
+  SetSection,
+  SetLibrary,
+  MixLibrary,
+} from '../../features/Session';
 import { CustomSoundsDialog } from '../../features/TrackEditing';
 import {
   TopBar,
@@ -12,7 +17,6 @@ import {
   NameInputDialog,
 } from '../../components';
 import { SaveMixDialog } from './components/SaveMixDialog/SaveMixDialog';
-import { MixLibrarySidebar } from './components/MixLibrarySidebar/MixLibrarySidebar';
 import { useSetPlayback } from './hooks/useSetPlayback';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
 
@@ -291,7 +295,7 @@ export const Main = (): React.ReactElement => {
       <TopBar />
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <MixLibrarySidebar
+        <MixLibrary
           mixes={snapshot.savedMixes}
           activeMixId={activeMixId}
           playingMixId={playingMixId}
@@ -402,7 +406,8 @@ export const Main = (): React.ReactElement => {
         sx={{
           display: 'flex',
           flex: 0.6,
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <SetLibrary

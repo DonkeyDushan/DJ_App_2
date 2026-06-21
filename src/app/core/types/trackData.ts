@@ -30,7 +30,6 @@ export interface TrackDefinition {
   name: string;
   kind: TrackKind;
   category: TrackCategory;
-  color: string;
   loopLengthSeconds: number;
   isFavorite?: boolean;
   savedSettings?: TrackSavedSettings;
