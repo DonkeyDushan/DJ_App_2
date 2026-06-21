@@ -1,6 +1,6 @@
 import { AudioWaveform } from 'pixelarticons/react/AudioWaveform';
 import { PenSquare } from 'pixelarticons/react/PenSquare';
-import { Plus } from 'pixelarticons/react/Plus';
+import { Music } from 'pixelarticons/react/Music';
 import { Trash } from 'pixelarticons/react/Trash';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 
@@ -39,10 +39,6 @@ export const MixLibraryCard = ({
   const trackCount = Object.values(mix.trackStates).filter(
     (ts) => ts.enabled,
   ).length;
-  const date = new Date(mix.createdAt).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-  });
 
   return (
     <Paper
@@ -62,24 +58,8 @@ export const MixLibraryCard = ({
             )}
             <Typography sx={mixNameSx}>{mix.name}</Typography>
           </Box>
-          <Typography sx={mixMetaSx}>
-            {trackCount} tracks · {date}
-          </Typography>
+          <Typography sx={mixMetaSx}>{trackCount} tracks</Typography>
         </Box>
-
-        <Tooltip title={STRINGS.set.addToTimeline}>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAdd();
-            }}
-            sx={{ p: 0.25, color: 'primary.main' }}
-            data-testid={`mix-add-to-timeline--${mix.id}`}
-          >
-            <PixelIcon glyph={Plus} />
-          </IconButton>
-        </Tooltip>
 
         <Tooltip title={STRINGS.set.renameMix}>
           <IconButton
@@ -102,10 +82,32 @@ export const MixLibraryCard = ({
               e.stopPropagation();
               onDelete();
             }}
-            sx={{ p: 0.25, color: 'text.disabled', '&:hover': { color: 'error.main' } }}
+            sx={{
+              p: 0.25,
+              color: 'text.disabled',
+              '&:hover': { color: 'error.main' },
+            }}
             data-testid={`mix-delete--${mix.id}`}
           >
             <PixelIcon glyph={Trash} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title={STRINGS.set.addToTimeline}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAdd();
+            }}
+            sx={{
+              p: 0.25,
+              color: 'primary.main',
+              '&:hover': { color: 'primary.light' },
+            }}
+            data-testid={`mix-add-to-timeline--${mix.id}`}
+          >
+            <PixelIcon glyph={Music} />
           </IconButton>
         </Tooltip>
       </Box>

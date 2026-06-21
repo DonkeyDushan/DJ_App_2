@@ -2,7 +2,7 @@ import React from 'react';
 
 import { PenSquare } from 'pixelarticons/react/PenSquare';
 import { Play } from 'pixelarticons/react/Play';
-import { Star } from 'pixelarticons/react/Star';
+import { Sparkle } from 'pixelarticons/react/Sparkle';
 import {
   Box,
   Checkbox,
@@ -52,7 +52,7 @@ const TrackCardInner = ({
   return (
     <Paper
       variant="outlined"
-      sx={paperSx(track.color, isActive)}
+      sx={paperSx(isActive)}
       data-testid={`track-card--${track.id}`}
     >
       <Box sx={rowSx}>
@@ -81,7 +81,7 @@ const TrackCardInner = ({
         >
           <Typography
             variant="body2"
-            sx={trackNameSx(track.color, isActive)}
+            sx={trackNameSx(isActive)}
             title={track.name}
             minWidth="80px"
             overflow="hidden"
@@ -106,7 +106,7 @@ const TrackCardInner = ({
               <IconButton
                 size="small"
                 onClick={() => onPlay(track.id)}
-                sx={playButtonSx(track.color, trackState.isPreviewPlaying)}
+                sx={playButtonSx(trackState.isPreviewPlaying)}
                 data-testid={`track-preview--${track.id}`}
               >
                 {trackState.isPreviewPlaying ? (
@@ -130,7 +130,7 @@ const TrackCardInner = ({
                 sx={favButtonSx(track.isFavorite ?? false)}
                 data-testid={`track-favorite--${track.id}`}
               >
-                <PixelIcon glyph={Star} />
+                <PixelIcon glyph={Sparkle} />
               </IconButton>
             </Tooltip>
 

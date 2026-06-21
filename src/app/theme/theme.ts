@@ -46,9 +46,11 @@ export const retroTheme = createTheme({
     divider: '#fff',
     primary: {
       main: '#e51c84',
+      light: '#ff82e9',
     },
     secondary: {
       main: '#f1531c',
+      light: '#ffae82',
     },
     success: {
       main: '#00ffff',

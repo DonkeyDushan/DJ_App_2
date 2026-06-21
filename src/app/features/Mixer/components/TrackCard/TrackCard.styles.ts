@@ -1,15 +1,12 @@
 import type { SxProps, Theme } from '@mui/material';
 
-export const paperSx = (color: string, isActive: boolean): SxProps<Theme> => ({
+export const paperSx = (isActive: boolean): SxProps<Theme> => ({
   px: 1.5,
   py: 1,
   borderRadius: 2,
-  borderColor: isActive ? color : 'rgba(255,255,255,0.08)',
-  boxShadow: isActive ? `0 0 14px ${color}44` : 'none',
+  borderColor: isActive ? 'primary.main' : 'rgba(255,255,255,0.08)',
+  boxShadow: isActive ? `0 0 14px primary.main` : 'none',
   transition: 'box-shadow 0.2s, border-color 0.2s',
-  background: isActive
-    ? `linear-gradient(135deg, ${color}14 0%, transparent 60%)`
-    : undefined,
 });
 
 export const rowSx: SxProps<Theme> = {
@@ -18,13 +15,10 @@ export const rowSx: SxProps<Theme> = {
   gridTemplateColumns: 'min-content auto',
 };
 
-export const trackNameSx = (
-  color: string,
-  isActive: boolean,
-): SxProps<Theme> => ({
+export const trackNameSx = (isActive: boolean): SxProps<Theme> => ({
   flex: 1,
   fontFamily: 'Orbitron, monospace',
-  color: isActive ? color : 'text.primary',
+  color: isActive ? 'primary.main' : 'text.primary',
   fontSize: '1rem',
   letterSpacing: '0.06em',
   overflow: 'hidden',
@@ -40,11 +34,8 @@ export const starBadgeSx: SxProps<Theme> = {
   fontFamily: 'inherit',
 };
 
-export const playButtonSx = (
-  color: string,
-  isPreviewPlaying: boolean,
-): SxProps<Theme> => ({
-  color: isPreviewPlaying ? color : 'text.secondary',
+export const playButtonSx = (isPreviewPlaying: boolean): SxProps<Theme> => ({
+  color: isPreviewPlaying ? 'primary.main' : 'text.secondary',
   p: 0.5,
 });
 
