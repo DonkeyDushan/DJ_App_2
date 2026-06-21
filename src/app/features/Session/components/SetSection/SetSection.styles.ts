@@ -3,8 +3,8 @@ import type { SxProps, Theme } from '@mui/material';
 export const rootSx: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'column',
-  borderTop: '1px solid rgba(255,255,255,0.08)',
-  flexShrink: 0,
+  flex: 1,
+  minWidth: 0,
   px: 1.5,
   py: 1,
   gap: 0.75,

@@ -12,7 +12,6 @@ export const STRINGS = {
   },
   topBar: {
     saveSet: 'SAVE SET',
-    loadSet: 'LOAD SET',
     resetSet: 'RESET',
   },
   mixLibrary: {
@@ -110,6 +109,7 @@ export const STRINGS = {
     addToFavourites: 'Add to favourites',
     sessionNamePlaceholder: 'Set name…',
     newSession: 'NEW',
+    newSet: 'NEW SET',
     saveSession: 'SAVE',
     totalDuration: 'Total',
     minutes: 'min',

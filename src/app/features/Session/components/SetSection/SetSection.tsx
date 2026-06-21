@@ -7,7 +7,9 @@ import {
 import { arrayMove } from '@dnd-kit/sortable';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Box, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import SaveIcon from '@mui/icons-material/Save';
+import { Box, Button, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
@@ -29,7 +31,10 @@ interface SetSectionProps {
   tracks: TrackDefinition[];
   isSetPlaying: boolean;
   currentSlotIndex: number | null;
+  hasUnsavedChanges: boolean;
   onPlayPause: () => void;
+  onSaveSet: () => void;
+  onResetSet: () => void;
   onSetSessionName: (name: string) => void;
   onSetTotalDuration: (seconds: number) => void;
   onRemoveSlot: (slotId: string) => void;
@@ -46,7 +51,10 @@ const SetSectionInner = ({
   tracks,
   isSetPlaying,
   currentSlotIndex,
+  hasUnsavedChanges,
   onPlayPause,
+  onSaveSet,
+  onResetSet,
   onSetSessionName,
   onSetTotalDuration,
   onRemoveSlot,
@@ -158,19 +166,66 @@ const SetSectionInner = ({
             </Typography>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
-            <Typography sx={durationLabelSx}>{STRINGS.set.totalDuration}</Typography>
-            <InputBase
-              value={totalMinutes}
-              onChange={(e) => {
-                const val = parseInt(e.target.value, 10);
-                if (!Number.isNaN(val) && val > 0) onSetTotalDuration(val * 60);
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, ml: 'auto' }}>
+            <Tooltip title={STRINGS.topBar.resetSet}>
+              <span>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<RestartAltIcon sx={{ fontSize: '0.75rem !important' }} />}
+                  onClick={onResetSet}
+                  disabled={isSetPlaying || !hasUnsavedChanges}
+                  data-testid="set-reset"
+                  sx={{
+                    py: 0.25,
+                    px: 1.25,
+                    fontSize: '0.6rem',
+                    fontFamily: 'Orbitron, monospace',
+                    letterSpacing: '0.08em',
+                    color: 'warning.main',
+                    borderColor: 'warning.main',
+                    '&:hover': { borderColor: 'warning.light', bgcolor: 'rgba(255,143,79,0.08)' },
+                    '&.Mui-disabled': { opacity: 0.3 },
+                  }}
+                >
+                  {STRINGS.topBar.resetSet}
+                </Button>
+              </span>
+            </Tooltip>
+
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<SaveIcon sx={{ fontSize: '0.75rem !important' }} />}
+              onClick={onSaveSet}
+              disabled={isSetPlaying}
+              data-testid="set-save"
+              sx={{
+                py: 0.25,
+                px: 1.25,
+                fontSize: '0.6rem',
+                fontFamily: 'Orbitron, monospace',
+                letterSpacing: '0.08em',
+                '&.Mui-disabled': { opacity: 0.3 },
               }}
-              type="number"
-              inputProps={{ min: 1, max: 180 }}
-              sx={durationInputSx}
-            />
-            <Typography sx={durationLabelSx}>{STRINGS.set.minutes}</Typography>
+            >
+              {STRINGS.topBar.saveSet}
+            </Button>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography sx={durationLabelSx}>{STRINGS.set.totalDuration}</Typography>
+              <InputBase
+                value={totalMinutes}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!Number.isNaN(val) && val > 0) onSetTotalDuration(val * 60);
+                }}
+                type="number"
+                inputProps={{ min: 1, max: 180 }}
+                sx={durationInputSx}
+              />
+              <Typography sx={durationLabelSx}>{STRINGS.set.minutes}</Typography>
+            </Box>
           </Box>
         </Box>
 

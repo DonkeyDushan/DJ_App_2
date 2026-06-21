@@ -1,0 +1,71 @@
+import { memo } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Button, Typography } from '@mui/material';
+
+import { STRINGS } from '../../../../strings';
+import type { DJSession } from '../../../../core/types/sessionData';
+import { SetLibraryCard } from '../SetLibraryCard/SetLibraryCard';
+import {
+  emptyLabelSx,
+  headerLabelSx,
+  headerRowSx,
+  listSx,
+  listWrapperSx,
+  newSetButtonSx,
+  panelSx,
+} from './SetLibrary.styles';
+
+interface SetLibraryProps {
+  sessions: DJSession[];
+  activeSessionId: string;
+  isSetPlaybackActive: boolean;
+  onLoad: (sessionId: string) => void;
+  onDelete: (sessionId: string) => void;
+  onNewSet: () => void;
+}
+
+const SetLibraryInner = ({
+  sessions,
+  activeSessionId,
+  isSetPlaybackActive,
+  onLoad,
+  onDelete,
+  onNewSet,
+}: SetLibraryProps): React.ReactElement => (
+  <Box sx={panelSx} data-testid="set-library">
+    <Box sx={headerRowSx}>
+      <Typography sx={headerLabelSx}>{STRINGS.set.savedSessions}</Typography>
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<AddIcon sx={{ fontSize: '0.7rem !important' }} />}
+        onClick={onNewSet}
+        sx={newSetButtonSx}
+      >
+        {STRINGS.set.newSet}
+      </Button>
+    </Box>
+
+    <Box sx={listWrapperSx}>
+      <Box sx={listSx}>
+        {sessions.length === 0 ? (
+          <Typography sx={emptyLabelSx}>{STRINGS.set.noSessions}</Typography>
+        ) : (
+          sessions.map((session) => (
+            <SetLibraryCard
+              key={session.id}
+              session={session}
+              isActive={activeSessionId === session.id}
+              isSetPlaybackActive={isSetPlaybackActive}
+              onLoad={() => onLoad(session.id)}
+              onDelete={() => onDelete(session.id)}
+            />
+          ))
+        )}
+      </Box>
+    </Box>
+  </Box>
+);
+
+export const SetLibrary = memo(SetLibraryInner);
+SetLibrary.displayName = 'SetLibrary';

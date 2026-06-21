@@ -3,11 +3,10 @@ import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
 import { useMixer, MixerHeader, TrackGrid } from '../../features/Mixer';
-import { useSession, SetSection } from '../../features/Session';
+import { useSession, SetSection, SetLibrary } from '../../features/Session';
 import { CustomSoundsDialog } from '../../features/TrackEditing';
 import { TopBar, SaveLoadManager } from '../../components';
 import { SaveMixDialog } from './components/SaveMixDialog/SaveMixDialog';
-import { LoadSetDialog } from './components/LoadSetDialog/LoadSetDialog';
 import { MixLibrarySidebar } from './components/MixLibrarySidebar/MixLibrarySidebar';
 import { useSetPlayback } from './hooks/useSetPlayback';
 
@@ -27,7 +26,6 @@ export const Main = (): React.ReactElement => {
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveNewMixOpen, setSaveNewMixOpen] = useState(false);
   const [mixDialogInitialName, setMixDialogInitialName] = useState('');
-  const [loadSetOpen, setLoadSetOpen] = useState(false);
 
   const pendingActionsRef = useRef<{
     presetId: string;
@@ -84,8 +82,6 @@ export const Main = (): React.ReactElement => {
     setSaveNewMixOpen(false);
   }, []);
 
-  const handleOpenLoadSet = useCallback(() => setLoadSetOpen(true), []);
-  const handleCloseLoadSet = useCallback(() => setLoadSetOpen(false), []);
   const handleCloseSaveMixDialog = useCallback(() => setSaveNewMixOpen(false), []);
   const handleOpenCustomSounds = useCallback(() => setCustomSoundsOpen(true), []);
   const handleCloseCustomSounds = useCallback(() => setCustomSoundsOpen(false), []);
@@ -100,12 +96,7 @@ export const Main = (): React.ReactElement => {
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <TopBar
-        onSaveSet={sessionActions.saveSession}
-        onLoadSet={handleOpenLoadSet}
-        onResetSet={sessionActions.resetSession}
-        hasUnsavedChanges={hasUnsavedChanges}
-      />
+      <TopBar />
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <MixLibrarySidebar
@@ -199,24 +190,44 @@ export const Main = (): React.ReactElement => {
               onSaveToTrack={mixerActions.saveTrackOverride}
             />
           </Box>
-
-          <SetSection
-            activeSession={activeSession}
-            mixes={snapshot.savedMixes}
-            tracks={tracks}
-            isSetPlaying={setIsPlaying}
-            currentSlotIndex={currentSlotIndex}
-            onPlayPause={handleSetPlayPause}
-            onSetSessionName={sessionActions.setSessionName}
-            onSetTotalDuration={sessionActions.setTotalDuration}
-            onRemoveSlot={sessionActions.removeSlot}
-            onDuplicateSlot={sessionActions.duplicateSlot}
-            onSetSlotDuration={sessionActions.setSlotDuration}
-            onAddSlot={sessionActions.addSlot}
-            onReorderSlots={sessionActions.reorderSlots}
-            onSeekSlot={handleSeek}
-          />
         </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexShrink: 0,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}
+      >
+        <SetLibrary
+          sessions={sessions}
+          activeSessionId={activeSession.id}
+          isSetPlaybackActive={setIsPlaying}
+          onLoad={sessionActions.loadSession}
+          onDelete={sessionActions.deleteSession}
+          onNewSet={sessionActions.newSession}
+        />
+
+        <SetSection
+          activeSession={activeSession}
+          mixes={snapshot.savedMixes}
+          tracks={tracks}
+          isSetPlaying={setIsPlaying}
+          currentSlotIndex={currentSlotIndex}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onPlayPause={handleSetPlayPause}
+          onSaveSet={sessionActions.saveSession}
+          onResetSet={sessionActions.resetSession}
+          onSetSessionName={sessionActions.setSessionName}
+          onSetTotalDuration={sessionActions.setTotalDuration}
+          onRemoveSlot={sessionActions.removeSlot}
+          onDuplicateSlot={sessionActions.duplicateSlot}
+          onSetSlotDuration={sessionActions.setSlotDuration}
+          onAddSlot={sessionActions.addSlot}
+          onReorderSlots={sessionActions.reorderSlots}
+          onSeekSlot={handleSeek}
+        />
       </Box>
 
       <CustomSoundsDialog
@@ -232,15 +243,6 @@ export const Main = (): React.ReactElement => {
         initialName={mixDialogInitialName}
         onConfirm={handleConfirmSaveNew}
         onClose={handleCloseSaveMixDialog}
-      />
-
-      <LoadSetDialog
-        open={loadSetOpen}
-        sessions={sessions}
-        onLoad={sessionActions.loadSession}
-        onDelete={sessionActions.deleteSession}
-        onToggleFavorite={sessionActions.toggleSessionFavorite}
-        onClose={handleCloseLoadSet}
       />
 
       {/* Legacy SaveLoadManager kept for mix load only */}
