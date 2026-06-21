@@ -1,5 +1,37 @@
 import { createTheme } from '@mui/material/styles';
 
+/**
+ * A named palette color in the retro/neon system, exposing only the two tones
+ * the design uses: `main` (full neon saturation) and `light` (a softer tint
+ * used for hovers, glows, and secondary accents).
+ */
+type NeonPaletteColor = {
+  main: string;
+  light: string;
+};
+
+declare module '@mui/material/styles' {
+  interface Palette {
+    blue: NeonPaletteColor;
+    teal: NeonPaletteColor;
+    yellow: NeonPaletteColor;
+    orange: NeonPaletteColor;
+    red: NeonPaletteColor;
+    pink: NeonPaletteColor;
+    purple: NeonPaletteColor;
+  }
+
+  interface PaletteOptions {
+    blue: NeonPaletteColor;
+    teal: NeonPaletteColor;
+    yellow: NeonPaletteColor;
+    orange: NeonPaletteColor;
+    red: NeonPaletteColor;
+    pink: NeonPaletteColor;
+    purple: NeonPaletteColor;
+  }
+}
+
 export const retroTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -7,21 +39,54 @@ export const retroTheme = createTheme({
       default: '#090812',
       paper: '#120f1f',
     },
+    text: {
+      primary: '#fff',
+      secondary: '#979EA6',
+    },
+    divider: '#fff',
     primary: {
-      main: '#ff4fd8',
+      main: '#e51c84',
     },
     secondary: {
-      main: '#40d9ff',
+      main: '#f1531c',
     },
     success: {
-      main: '#6cff9f',
+      main: '#00ffff',
+      dark: '#0000ff',
     },
     warning: {
-      main: '#ff8f4f',
+      main: '#beffff',
     },
-    text: {
-      primary: '#f8f4ff',
-      secondary: '#b7a8db',
+    error: {
+      main: '#d81f40',
+    },
+    blue: {
+      main: '#6149f5',
+      light: '#bea4ff',
+    },
+    teal: {
+      main: '#61c1fb',
+      light: '#beffff',
+    },
+    yellow: {
+      main: '#beffff',
+      light: '#ffff9b',
+    },
+    orange: {
+      main: '#f1531c',
+      light: '#ffae82',
+    },
+    red: {
+      main: '#d81f40',
+      light: '#ff839b',
+    },
+    pink: {
+      main: '#e51c84',
+      light: '#ff82e9',
+    },
+    purple: {
+      main: '#993cff',
+      light: '#ff98ff',
     },
   },
   typography: {
@@ -52,9 +117,7 @@ export const retroTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage:
-            'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01)), linear-gradient(135deg, rgba(255,79,216,0.06), rgba(64,217,255,0.04))',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid #fff',
           boxShadow:
             '0 0 0 1px rgba(255, 79, 216, 0.06), 0 20px 60px rgba(0, 0, 0, 0.42), 0 0 32px rgba(64, 217, 255, 0.08)',
         },

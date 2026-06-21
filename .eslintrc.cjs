@@ -53,6 +53,7 @@ module.exports = {
     'no-continue': 'off',
     'react/require-default-props': 'off',
     'no-nested-ternary': 'off',
+    'react/jsx-props-no-spreading': 'off',
     'react/function-component-definition': [
       'error',
       {

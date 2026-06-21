@@ -3,14 +3,14 @@
 :root {
   color-scheme: dark;
   font-family: 'Mozilla Headline', monospace;
-  background:
+  /* background:
     radial-gradient(circle at top, rgba(255, 79, 216, 0.18), transparent 28%),
     radial-gradient(
       circle at 80% 0%,
       rgba(64, 217, 255, 0.16),
       transparent 24%
     ),
-    linear-gradient(180deg, #151022 0%, #090812 58%, #05050c 100%);
+    linear-gradient(180deg, #151022 0%, #090812 58%, #05050c 100%); */
   color: #f6f2ff;
 }
 
@@ -28,14 +28,14 @@ body,
 
 body {
   overflow: hidden;
-  background:
+  /*  background:
     linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(180deg, #171226 0%, #090812 58%, #05050c 100%);
+    linear-gradient(180deg, #171226 0%, #090812 58%, #05050c 100%); 
   background-size:
     32px 32px,
     32px 32px,
-    auto;
+    auto;*/
 }
 
 a,
