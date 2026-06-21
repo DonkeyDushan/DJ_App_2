@@ -1,15 +1,18 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import {
-  DndContext,
-  type DragEndEvent,
-  closestCenter,
-} from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SaveIcon from '@mui/icons-material/Save';
-import { Box, Button, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  InputBase,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
@@ -75,6 +78,13 @@ const SetSectionInner = ({
   const totalMinutes = Math.round(activeSession.totalDurationSeconds / 60);
   const hasSlots = activeSession.slots.length > 0;
 
+  let playPauseTooltipTitle: string = STRINGS.set.noSlots;
+  if (isSetPlaying) {
+    playPauseTooltipTitle = STRINGS.setSection.stopSet;
+  } else if (hasSlots) {
+    playPauseTooltipTitle = STRINGS.setSection.playSet;
+  }
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -96,15 +106,7 @@ const SetSectionInner = ({
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <Box sx={rootSx} data-testid="set-section">
         <Box sx={controlsRowSx}>
-          <Tooltip
-            title={
-              isSetPlaying
-                ? STRINGS.setSection.stopSet
-                : hasSlots
-                  ? STRINGS.setSection.playSet
-                  : STRINGS.set.noSlots
-            }
-          >
+          <Tooltip title={playPauseTooltipTitle}>
             <span>
               <IconButton
                 onClick={onPlayPause}
@@ -158,13 +160,22 @@ const SetSectionInner = ({
             </Typography>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, ml: 'auto' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              ml: 'auto',
+            }}
+          >
             <Tooltip title={STRINGS.topBar.resetSet}>
               <span>
                 <Button
                   size="small"
                   variant="outlined"
-                  startIcon={<RestartAltIcon sx={{ fontSize: '0.75rem !important' }} />}
+                  startIcon={
+                    <RestartAltIcon sx={{ fontSize: '0.75rem !important' }} />
+                  }
                   onClick={onResetSet}
                   disabled={isSetPlaying || !hasUnsavedChanges}
                   data-testid="set-reset"
@@ -176,7 +187,10 @@ const SetSectionInner = ({
                     letterSpacing: '0.08em',
                     color: 'warning.main',
                     borderColor: 'warning.main',
-                    '&:hover': { borderColor: 'warning.light', bgcolor: 'rgba(255,143,79,0.08)' },
+                    '&:hover': {
+                      borderColor: 'warning.light',
+                      bgcolor: 'rgba(255,143,79,0.08)',
+                    },
                     '&.Mui-disabled': { opacity: 0.3 },
                   }}
                 >
@@ -205,18 +219,23 @@ const SetSectionInner = ({
             </Button>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={durationLabelSx}>{STRINGS.set.totalDuration}</Typography>
+              <Typography sx={durationLabelSx}>
+                {STRINGS.set.totalDuration}
+              </Typography>
               <InputBase
                 value={totalMinutes}
                 onChange={(e) => {
                   const val = parseInt(e.target.value, 10);
-                  if (!Number.isNaN(val) && val > 0) onSetTotalDuration(val * 60);
+                  if (!Number.isNaN(val) && val > 0)
+                    onSetTotalDuration(val * 60);
                 }}
                 type="number"
                 inputProps={{ min: 1, max: 180 }}
                 sx={durationInputSx}
               />
-              <Typography sx={durationLabelSx}>{STRINGS.set.minutes}</Typography>
+              <Typography sx={durationLabelSx}>
+                {STRINGS.set.minutes}
+              </Typography>
             </Box>
           </Box>
         </Box>
@@ -231,7 +250,10 @@ const SetSectionInner = ({
           onRemoveSlot={onRemoveSlot}
           onDuplicateSlot={onDuplicateSlot}
           onSetSlotDuration={onSetSlotDuration}
-          onSeek={(seconds) => { setPlayheadSeconds(seconds); onSeekSlot?.(seconds); }}
+          onSeek={(seconds) => {
+            setPlayheadSeconds(seconds);
+            onSeekSlot?.(seconds);
+          }}
         />
       </Box>
     </DndContext>

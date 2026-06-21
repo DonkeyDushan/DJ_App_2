@@ -13,9 +13,9 @@ export const paperSx = (color: string, isActive: boolean): SxProps<Theme> => ({
 });
 
 export const rowSx: SxProps<Theme> = {
-  display: 'flex',
-  alignItems: 'center',
   gap: 0.25,
+  display: 'grid',
+  gridTemplateColumns: 'min-content auto',
 };
 
 export const trackNameSx = (
