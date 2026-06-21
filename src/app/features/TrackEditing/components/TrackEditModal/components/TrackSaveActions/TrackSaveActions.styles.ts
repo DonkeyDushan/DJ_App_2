@@ -25,3 +25,18 @@ export const backButtonSx: SxProps<Theme> = {
   color: 'text.disabled',
   mr: 'auto',
 };
+
+/** Rename button — leftmost destructive-adjacent action for non-original tracks. */
+export const renameButtonSx: SxProps<Theme> = {
+  fontSize: '0.7rem',
+  fontFamily: 'Orbitron, monospace',
+  color: 'text.secondary',
+};
+
+/** Delete button — destructive action for non-original tracks. */
+export const deleteButtonSx: SxProps<Theme> = {
+  fontSize: '0.7rem',
+  fontFamily: 'Orbitron, monospace',
+  color: 'error.main',
+  mr: 'auto',
+};

@@ -5,10 +5,26 @@ import { STRINGS } from '../../../strings';
 import { useMixer, MixerHeader, TrackGrid } from '../../features/Mixer';
 import { useSession, SetSection, SetLibrary } from '../../features/Session';
 import { CustomSoundsDialog } from '../../features/TrackEditing';
-import { TopBar, SaveLoadManager } from '../../components';
+import { TopBar, SaveLoadManager, ConfirmDialog, NameInputDialog } from '../../components';
 import { SaveMixDialog } from './components/SaveMixDialog/SaveMixDialog';
 import { MixLibrarySidebar } from './components/MixLibrarySidebar/MixLibrarySidebar';
 import { useSetPlayback } from './hooks/useSetPlayback';
+import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
+
+/** Confirmation message shown for each kind of deletable library item. */
+const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
+  'track-preset': STRINGS.confirmDialog.deleteTrack,
+  'custom-sound': STRINGS.confirmDialog.deleteSound,
+  mix: STRINGS.confirmDialog.deleteMix,
+  set: STRINGS.confirmDialog.deleteSet,
+};
+
+/** Dialog title shown for each kind of renameable library item. */
+const RENAME_TITLE_BY_TYPE: Record<RenameTarget['kind'], string> = {
+  'custom-sound': STRINGS.renameDialog.renameSoundTitle,
+  mix: STRINGS.renameDialog.renameMixTitle,
+  set: STRINGS.renameDialog.renameSetTitle,
+};
 
 export const Main = (): React.ReactElement => {
   const { snapshot, tracks, activeMixId, actions: mixerActions } = useMixer();
@@ -26,6 +42,19 @@ export const Main = (): React.ReactElement => {
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveNewMixOpen, setSaveNewMixOpen] = useState(false);
   const [mixDialogInitialName, setMixDialogInitialName] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
+
+  // Lookup refs keep the request handlers referentially stable so memoized
+  // library/grid subtrees do not re-render when unrelated snapshot state changes.
+  const tracksLookupRef = useRef(tracks);
+  tracksLookupRef.current = tracks;
+  const soundsLookupRef = useRef(snapshot.customSounds);
+  soundsLookupRef.current = snapshot.customSounds;
+  const mixesLookupRef = useRef(snapshot.savedMixes);
+  mixesLookupRef.current = snapshot.savedMixes;
+  const sessionsLookupRef = useRef(sessions);
+  sessionsLookupRef.current = sessions;
 
   const pendingActionsRef = useRef<{
     presetId: string;
@@ -92,7 +121,115 @@ export const Main = (): React.ReactElement => {
   const handleTempoChange = useCallback((tempo: number) => mixerActions.setGlobalTempo(tempo), []);
   const handleResetMix = useCallback(() => void mixerActions.resetMix(), []);
   const handleUploadSound = useCallback((file: File) => void mixerActions.addCustomSound(file), []);
-  const handleDeleteSound = useCallback((soundId: string) => mixerActions.deleteCustomSound(soundId), []);
+
+  const requestDeleteTrack = useCallback((trackId: string) => {
+    const track = tracksLookupRef.current.find((t) => t.id === trackId);
+    if (!track) return;
+
+    if (track.sourceTrackId != null) {
+      setDeleteTarget({ kind: 'track-preset', id: track.id, name: track.name });
+
+      return;
+    }
+
+    if (track.kind === 'custom') {
+      const soundId = track.customSoundId ?? track.id;
+      const sound = soundsLookupRef.current.find((s) => s.id === soundId);
+      setDeleteTarget({ kind: 'custom-sound', id: soundId, name: sound?.name ?? track.name });
+    }
+  }, []);
+
+  const handleRenameTrack = useCallback((trackId: string, name: string) => {
+    const track = tracksLookupRef.current.find((t) => t.id === trackId);
+    if (!track) return;
+
+    if (track.sourceTrackId != null) {
+      mixerActions.renameTrackPreset(track.id, name);
+
+      return;
+    }
+
+    if (track.kind === 'custom') {
+      const soundId = track.customSoundId ?? track.id;
+      void mixerActions.renameCustomSound(soundId, name);
+    }
+  }, [mixerActions]);
+
+  const requestDeleteSound = useCallback((soundId: string) => {
+    const sound = soundsLookupRef.current.find((s) => s.id === soundId);
+    setDeleteTarget({ kind: 'custom-sound', id: soundId, name: sound?.name ?? soundId });
+  }, []);
+
+  const requestRenameSound = useCallback((soundId: string) => {
+    const sound = soundsLookupRef.current.find((s) => s.id === soundId);
+    setRenameTarget({ kind: 'custom-sound', id: soundId, name: sound?.name ?? soundId });
+  }, []);
+
+  const requestDeleteMix = useCallback((mixId: string) => {
+    const mix = mixesLookupRef.current.find((m) => m.id === mixId);
+    setDeleteTarget({ kind: 'mix', id: mixId, name: mix?.name ?? mixId });
+  }, []);
+
+  const requestRenameMix = useCallback((mixId: string) => {
+    const mix = mixesLookupRef.current.find((m) => m.id === mixId);
+    setRenameTarget({ kind: 'mix', id: mixId, name: mix?.name ?? mixId });
+  }, []);
+
+  const requestDeleteSet = useCallback((sessionId: string) => {
+    const session = sessionsLookupRef.current.find((s) => s.id === sessionId);
+    setDeleteTarget({ kind: 'set', id: sessionId, name: session?.name ?? sessionId });
+  }, []);
+
+  const requestRenameSet = useCallback((sessionId: string) => {
+    const session = sessionsLookupRef.current.find((s) => s.id === sessionId);
+    setRenameTarget({ kind: 'set', id: sessionId, name: session?.name ?? '' });
+  }, []);
+
+  const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
+  const handleCloseRename = useCallback(() => setRenameTarget(null), []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!deleteTarget) return;
+
+    switch (deleteTarget.kind) {
+      case 'track-preset':
+        mixerActions.deleteTrackPreset(deleteTarget.id);
+        break;
+      case 'custom-sound':
+        void mixerActions.deleteCustomSound(deleteTarget.id);
+        break;
+      case 'mix':
+        mixerActions.deleteMix(deleteTarget.id);
+        break;
+      case 'set':
+        sessionActions.deleteSession(deleteTarget.id);
+        break;
+      default:
+        break;
+    }
+
+    setDeleteTarget(null);
+  }, [deleteTarget, mixerActions, sessionActions]);
+
+  const handleConfirmRename = useCallback((name: string) => {
+    if (!renameTarget) return;
+
+    switch (renameTarget.kind) {
+      case 'custom-sound':
+        void mixerActions.renameCustomSound(renameTarget.id, name);
+        break;
+      case 'mix':
+        mixerActions.renameMix(renameTarget.id, name);
+        break;
+      case 'set':
+        sessionActions.renameSession(renameTarget.id, name);
+        break;
+      default:
+        break;
+    }
+
+    setRenameTarget(null);
+  }, [renameTarget, mixerActions, sessionActions]);
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -108,6 +245,8 @@ export const Main = (): React.ReactElement => {
           onAddToTimeline={sessionActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
+          onRenameMix={requestRenameMix}
+          onDeleteMix={requestDeleteMix}
         />
 
         <Box
@@ -188,6 +327,8 @@ export const Main = (): React.ReactElement => {
               }
               onRestoreChanges={mixerActions.restoreTrackSettings}
               onSaveToTrack={mixerActions.saveTrackOverride}
+              onRenameTrack={handleRenameTrack}
+              onDeleteTrack={requestDeleteTrack}
             />
           </Box>
         </Box>
@@ -205,7 +346,8 @@ export const Main = (): React.ReactElement => {
           activeSessionId={activeSession.id}
           isSetPlaybackActive={setIsPlaying}
           onLoad={sessionActions.loadSession}
-          onDelete={sessionActions.deleteSession}
+          onDelete={requestDeleteSet}
+          onRename={requestRenameSet}
           onNewSet={sessionActions.newSession}
         />
 
@@ -234,7 +376,8 @@ export const Main = (): React.ReactElement => {
         sounds={snapshot.customSounds}
         onClose={handleCloseCustomSounds}
         onUpload={handleUploadSound}
-        onDelete={handleDeleteSound}
+        onDelete={requestDeleteSound}
+        onRename={requestRenameSound}
       />
 
       <SaveMixDialog
@@ -253,6 +396,28 @@ export const Main = (): React.ReactElement => {
         onSave={(name) => mixerActions.saveMix(name)}
         onLoad={(mixId) => void mixerActions.loadMix(mixId)}
         onDelete={(mixId) => mixerActions.deleteMix(mixId)}
+      />
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={STRINGS.confirmDialog.deleteTitle}
+        message={deleteTarget ? DELETE_MESSAGE_BY_TYPE[deleteTarget.kind] : ''}
+        itemName={deleteTarget?.name}
+        confirmLabel={STRINGS.confirmDialog.confirm}
+        cancelLabel={STRINGS.confirmDialog.cancel}
+        onConfirm={handleConfirmDelete}
+        onClose={handleCloseDelete}
+      />
+
+      <NameInputDialog
+        open={renameTarget !== null}
+        title={renameTarget ? RENAME_TITLE_BY_TYPE[renameTarget.kind] : ''}
+        initialName={renameTarget?.name ?? ''}
+        placeholder={STRINGS.renameDialog.placeholder}
+        confirmLabel={STRINGS.renameDialog.save}
+        cancelLabel={STRINGS.renameDialog.cancel}
+        onConfirm={handleConfirmRename}
+        onClose={handleCloseRename}
       />
     </Box>
   );

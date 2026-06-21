@@ -21,6 +21,7 @@ interface SetLibraryProps {
   isSetPlaybackActive: boolean;
   onLoad: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
+  onRename: (sessionId: string) => void;
   onNewSet: () => void;
 }
 
@@ -30,6 +31,7 @@ const SetLibraryInner = ({
   isSetPlaybackActive,
   onLoad,
   onDelete,
+  onRename,
   onNewSet,
 }: SetLibraryProps): React.ReactElement => (
   <Box sx={panelSx} data-testid="set-library">
@@ -59,6 +61,7 @@ const SetLibraryInner = ({
               isSetPlaybackActive={isSetPlaybackActive}
               onLoad={() => onLoad(session.id)}
               onDelete={() => onDelete(session.id)}
+              onRename={() => onRename(session.id)}
             />
           ))
         )}

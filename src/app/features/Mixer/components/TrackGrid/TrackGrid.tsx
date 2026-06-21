@@ -88,6 +88,8 @@ type TrackGridProps = {
     trackId: string,
     settings: TrackSavedSettings,
   ) => void;
+  onRenameTrack: (trackId: string, name: string) => void;
+  onDeleteTrack: (trackId: string) => void;
 };
 
 type VirtualTrackColumnProps = {
@@ -193,6 +195,8 @@ export const TrackGrid = ({
   onSaveOver,
   onRestoreChanges,
   onSaveToTrack,
+  onRenameTrack,
+  onDeleteTrack,
 }: TrackGridProps): React.ReactElement => {
   const [editTrackId, setEditTrackId] = useState<string | null>(null);
 
@@ -266,6 +270,8 @@ export const TrackGrid = ({
         onSaveAsNew={onSaveAsNew}
         onSaveOver={onSaveOver}
         onRestoreChanges={onRestoreChanges}
+        onRenameTrack={onRenameTrack}
+        onRequestDelete={onDeleteTrack}
         onVolumeChange={onVolumeChange}
         onSaveToTrack={onSaveToTrack}
         onSpeedChange={onSpeedChange}

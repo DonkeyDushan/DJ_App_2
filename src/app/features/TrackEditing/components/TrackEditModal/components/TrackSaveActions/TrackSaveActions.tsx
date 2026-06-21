@@ -1,49 +1,116 @@
 import React from 'react';
-import { Button, DialogActions, Tooltip } from '@mui/material';
+import { Button, DialogActions, IconButton, Tooltip } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import SaveIcon from '@mui/icons-material/Save';
 
 import { STRINGS } from '../../../../../../strings';
-import { backButtonSx, saveButtonSx, saveNewButtonSx } from './TrackSaveActions.styles';
+import {
+  backButtonSx,
+  deleteButtonSx,
+  renameButtonSx,
+  saveButtonSx,
+  saveNewButtonSx,
+} from './TrackSaveActions.styles';
 
 type TrackSaveActionsProps = {
   trackColor: string;
   isPreset: boolean;
+  isModifiable: boolean;
   saveNewMode: boolean;
+  renameMode: boolean;
   presetNameValid: boolean;
   onSave: () => void;
   onSaveNewClick: () => void;
   onConfirmSaveNew: () => void;
   onBack: () => void;
+  onRenameClick: () => void;
+  onConfirmRename: () => void;
+  onRenameBack: () => void;
+  onDelete: () => void;
 };
 
 export const TrackSaveActions = ({
   trackColor,
   isPreset,
+  isModifiable,
   saveNewMode,
+  renameMode,
   presetNameValid,
   onSave,
   onSaveNewClick,
   onConfirmSaveNew,
   onBack,
+  onRenameClick,
+  onConfirmRename,
+  onRenameBack,
+  onDelete,
 }: TrackSaveActionsProps): React.ReactElement => {
   const S = STRINGS.trackEditModal;
 
-  return (
-    <DialogActions sx={{ px: 2, pb: 2, gap: 1, flexWrap: 'wrap' }}>
-      {saveNewMode && (
+  if (renameMode) {
+    return (
+      <DialogActions sx={{ px: 2, pb: 2, gap: 1, flexWrap: 'wrap' }}>
         <Button
           size="small"
           variant="text"
-          onClick={onBack}
+          onClick={onRenameBack}
           sx={backButtonSx}
         >
           {S.back}
         </Button>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<DriveFileRenameOutlineIcon />}
+          onClick={onConfirmRename}
+          disabled={!presetNameValid}
+          sx={saveNewButtonSx(trackColor)}
+          data-testid="track-edit-confirm-rename"
+        >
+          {S.confirm}
+        </Button>
+      </DialogActions>
+    );
+  }
+
+  return (
+    <DialogActions sx={{ px: 2, pb: 2, gap: 1, flexWrap: 'wrap' }}>
+      {saveNewMode && (
+        <Button size="small" variant="text" onClick={onBack} sx={backButtonSx}>
+          {S.back}
+        </Button>
+      )}
+
+      {!saveNewMode && isModifiable && (
+        <Tooltip title={STRINGS.trackCard.deleteTrack}>
+          <IconButton
+            onClick={onDelete}
+            sx={deleteButtonSx}
+            data-testid="track-edit-delete"
+          >
+            <DeleteOutlineIcon />
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {!saveNewMode && isModifiable && (
+        <Tooltip title={STRINGS.trackCard.renameTrack}>
+          <IconButton
+            onClick={onRenameClick}
+            sx={renameButtonSx}
+            data-testid="track-edit-rename"
+          >
+            <DriveFileRenameOutlineIcon />
+          </IconButton>
+        </Tooltip>
       )}
 
       {!saveNewMode && (
-        <Tooltip title={isPreset ? S.overwritePresetTooltip : S.saveToTrackTooltip}>
+        <Tooltip
+          title={isPreset ? S.overwritePresetTooltip : S.saveToTrackTooltip}
+        >
           <Button
             variant="outlined"
             size="small"

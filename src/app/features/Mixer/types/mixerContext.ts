@@ -29,12 +29,14 @@ export type MixerActions = {
   loadInitialData: () => Promise<void>;
   addCustomSound: (file: File) => Promise<void>;
   deleteCustomSound: (soundId: string) => Promise<void>;
+  renameCustomSound: (soundId: string, name: string) => Promise<void>;
   saveMix: (name: string) => void;
   loadMix: (mixId: string) => Promise<void>;
   overwriteMix: (mixId: string) => void;
   clearMix: () => Promise<void>;
   resetMix: () => Promise<void>;
   deleteMix: (mixId: string) => void;
+  renameMix: (mixId: string, name: string) => void;
   saveTrackPreset: (
     sourceTrackId: string,
     name: string,
@@ -47,6 +49,7 @@ export type MixerActions = {
     settings: TrackSavedSettings,
   ) => void;
   deleteTrackPreset: (presetId: string) => void;
+  renameTrackPreset: (presetId: string, name: string) => void;
   toggleFavorite: (trackId: string) => void;
   saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => void;
   toggleMixFavorite: (mixId: string) => void;

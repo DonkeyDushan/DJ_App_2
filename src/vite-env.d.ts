@@ -19,6 +19,10 @@ interface Window {
     sounds?: {
       list: () => Promise<SoundMeta[]>;
       add: (meta: Omit<SoundMeta, 'id'>, data: Uint8Array) => Promise<SoundMeta>;
+      update: (
+        id: string,
+        patch: Partial<Omit<SoundMeta, 'id'>>,
+      ) => Promise<SoundMeta | null>;
       remove: (id: string) => Promise<void>;
       read: (id: string) => Promise<Uint8Array | null>;
     };

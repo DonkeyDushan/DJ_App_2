@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import { IconButton, Paper, Tooltip, Typography, Box } from '@mui/material';
 
@@ -14,6 +15,7 @@ interface SetLibraryCardProps {
   isSetPlaybackActive: boolean;
   onLoad: () => void;
   onDelete: () => void;
+  onRename: () => void;
 }
 
 const getTotalDuration = (session: DJSession): number =>
@@ -25,6 +27,7 @@ const SetLibraryCardInner = ({
   isSetPlaybackActive,
   onLoad,
   onDelete,
+  onRename,
 }: SetLibraryCardProps): React.ReactElement => (
   <Paper
     variant="outlined"
@@ -45,6 +48,20 @@ const SetLibraryCardInner = ({
         </Typography>
       </Box>
 
+      <Tooltip title={STRINGS.set.renameSession}>
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRename();
+          }}
+          sx={{ p: 0.25, color: 'text.disabled' }}
+          data-testid={`set-library-rename--${session.id}`}
+        >
+          <DriveFileRenameOutlineIcon sx={{ fontSize: 14 }} />
+        </IconButton>
+      </Tooltip>
+
       <Tooltip title={STRINGS.set.deleteSession}>
         <IconButton
           size="small"
@@ -52,7 +69,7 @@ const SetLibraryCardInner = ({
             e.stopPropagation();
             onDelete();
           }}
-          sx={{ p: 0.25, color: 'text.disabled' }}
+          sx={{ p: 0.25, color: 'text.disabled', '&:hover': { color: 'error.main' } }}
           data-testid={`set-library-delete--${session.id}`}
         >
           <DeleteIcon sx={{ fontSize: 14 }} />

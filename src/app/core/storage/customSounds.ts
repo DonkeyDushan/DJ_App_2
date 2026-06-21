@@ -41,6 +41,13 @@ export const addCustomSound = async (file: File): Promise<CustomSoundRecord> => 
   return { ...meta, blob: file };
 };
 
+export const renameCustomSound = async (
+  soundId: string,
+  name: string,
+): Promise<void> => {
+  await sounds().update(soundId, { name });
+};
+
 export const removeCustomSound = async (soundId: string): Promise<void> => {
   await sounds().remove(soundId);
 };

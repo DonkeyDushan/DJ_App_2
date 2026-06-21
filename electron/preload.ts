@@ -21,6 +21,10 @@ contextBridge.exposeInMainWorld('djApp', {
     list: (): Promise<SoundMeta[]> => ipcRenderer.invoke('sounds:list'),
     add: (meta: Omit<SoundMeta, 'id'>, data: Uint8Array): Promise<SoundMeta> =>
       ipcRenderer.invoke('sounds:add', meta, data),
+    update: (
+      id: string,
+      patch: Partial<Omit<SoundMeta, 'id'>>,
+    ): Promise<SoundMeta | null> => ipcRenderer.invoke('sounds:update', id, patch),
     remove: (id: string): Promise<void> => ipcRenderer.invoke('sounds:remove', id),
     read: (id: string): Promise<Uint8Array | null> => ipcRenderer.invoke('sounds:read', id),
   },

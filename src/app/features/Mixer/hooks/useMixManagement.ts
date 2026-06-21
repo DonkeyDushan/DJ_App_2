@@ -10,6 +10,7 @@ import {
   addCustomSound,
   loadCustomSounds,
   removeCustomSound,
+  renameCustomSound as renameCustomSoundStorage,
 } from '../../../core/storage/customSounds';
 import { loadSavedMixes, persistSavedMixes } from '../../../core/storage/mixStorage';
 import { loadFavoriteIds, loadTrackPresets } from '../../../core/storage/trackPresets';
@@ -43,12 +44,14 @@ export type MixManagementActions = Pick<
   | 'loadInitialData'
   | 'addCustomSound'
   | 'deleteCustomSound'
+  | 'renameCustomSound'
   | 'saveMix'
   | 'loadMix'
   | 'overwriteMix'
   | 'clearMix'
   | 'resetMix'
   | 'deleteMix'
+  | 'renameMix'
   | 'toggleMixFavorite'
 >;
 
@@ -187,6 +190,23 @@ export const buildMixManagementActions = ({
       { ...DEFAULT_SINGLE_TRACK_VALUES, volume: 0 },
       currentSnapshot.customSounds,
       currentSnapshot.globalTempo,
+    );
+  },
+
+  renameCustomSound: async (soundId: string, name: string) => {
+    await renameCustomSoundStorage(soundId, name);
+    setSnapshot((current) => ({
+      ...current,
+      customSounds: current.customSounds.map((sound) =>
+        sound.id === soundId ? { ...sound, name } : sound,
+      ),
+    }));
+    setTracks((current) =>
+      current.map((track) =>
+        track.customSoundId === soundId && track.kind === 'custom'
+          ? { ...track, name: name.toUpperCase() }
+          : track,
+      ),
     );
   },
 
@@ -341,6 +361,17 @@ export const buildMixManagementActions = ({
     );
     persistSavedMixes(nextMixes);
     setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
+  },
+
+  renameMix: (mixId: string, name: string) => {
+    setSnapshot((current) => {
+      const nextMixes = current.savedMixes.map((m) =>
+        m.id === mixId ? { ...m, name } : m,
+      );
+      persistSavedMixes(nextMixes);
+
+      return { ...current, savedMixes: nextMixes };
+    });
   },
 
   toggleMixFavorite: (mixId: string) => {

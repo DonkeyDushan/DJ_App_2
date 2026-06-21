@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   Avatar,
@@ -15,6 +16,7 @@ import {
   ListItemAvatar,
   ListItemText,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
@@ -28,6 +30,7 @@ type CustomSoundsDialogProps = {
   onClose: () => void;
   onUpload: (file: File) => void;
   onDelete: (soundId: string) => void;
+  onRename: (soundId: string) => void;
 };
 
 const S = STRINGS.customSoundsDialog;
@@ -38,6 +41,7 @@ const CustomSoundsDialogInner = ({
   onClose,
   onUpload,
   onDelete,
+  onRename,
 }: CustomSoundsDialogProps): React.ReactElement => {
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
@@ -76,14 +80,28 @@ const CustomSoundsDialogInner = ({
                 <ListItem
                   key={sound.id}
                   secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => onDelete(sound.id)}
-                      data-testid={`delete-sound--${sound.id}`}
-                    >
-                      <DeleteForeverIcon />
-                    </IconButton>
+                    <>
+                      <Tooltip title={S.renameSound}>
+                        <IconButton
+                          edge="end"
+                          aria-label="rename"
+                          onClick={() => onRename(sound.id)}
+                          data-testid={`rename-sound--${sound.id}`}
+                        >
+                          <DriveFileRenameOutlineIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={S.deleteSound}>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => onDelete(sound.id)}
+                          data-testid={`delete-sound--${sound.id}`}
+                        >
+                          <DeleteForeverIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </>
                   }
                   sx={listItemSx}
                   data-testid={`sound-item--${sound.id}`}

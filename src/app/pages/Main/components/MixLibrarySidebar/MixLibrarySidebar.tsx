@@ -14,6 +14,8 @@ type MixLibrarySidebarProps = {
   onAddToTimeline: (mixId: string) => void;
   onLoadMix: (mixId: string) => void;
   onNewMix: () => void;
+  onRenameMix: (mixId: string) => void;
+  onDeleteMix: (mixId: string) => void;
 };
 
 const MixLibrarySidebarInner = ({
@@ -25,6 +27,8 @@ const MixLibrarySidebarInner = ({
   onAddToTimeline,
   onLoadMix,
   onNewMix,
+  onRenameMix,
+  onDeleteMix,
 }: MixLibrarySidebarProps): React.ReactElement => (
   <Box sx={sidebarSx}>
     <MixLibrary
@@ -36,6 +40,8 @@ const MixLibrarySidebarInner = ({
       onAddToTimeline={onAddToTimeline}
       onLoadMix={onLoadMix}
       onNewMix={onNewMix}
+      onRenameMix={onRenameMix}
+      onDeleteMix={onDeleteMix}
     />
   </Box>
 );

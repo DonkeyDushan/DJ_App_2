@@ -21,6 +21,7 @@ export type TrackEditLocalState = {
   delaySend: number;
   presetNameValid: boolean;
   saveNewMode: boolean;
+  renameMode: boolean;
 };
 
 export type TrackEditStateActions = {
@@ -33,6 +34,7 @@ export type TrackEditStateActions = {
   setDelaySend: (v: number) => void;
   setPresetNameValid: (valid: boolean) => void;
   setSaveNewMode: (active: boolean) => void;
+  setRenameMode: (active: boolean) => void;
   presetNameRef: React.MutableRefObject<string>;
   originalSettingsRef: React.MutableRefObject<TrackSavedSettings | null>;
   originalIsPreviewPlayingRef: React.MutableRefObject<boolean>;
@@ -53,6 +55,7 @@ export const useTrackEditState = (
   const [delaySend, setDelaySend] = useState(0);
   const [presetNameValid, setPresetNameValid] = useState(false);
   const [saveNewMode, setSaveNewMode] = useState(false);
+  const [renameMode, setRenameMode] = useState(false);
 
   const presetNameRef = useRef('');
   const originalSettingsRef = useRef<TrackSavedSettings | null>(null);
@@ -93,14 +96,15 @@ export const useTrackEditState = (
     presetNameRef.current = track.name;
     setPresetNameValid(!!track.name.trim());
     setSaveNewMode(false);
+    setRenameMode(false);
   }, [open, track, track?.id, trackState]);
 
-  // Auto-select the name input when entering save-new mode.
+  // Auto-select the name input when entering save-new or rename mode.
   useEffect(() => {
-    if (saveNewMode) {
+    if (saveNewMode || renameMode) {
       setTimeout(() => nameInputRef.current?.select(), NAME_SELECT_DELAY_MS);
     }
-  }, [saveNewMode]);
+  }, [saveNewMode, renameMode]);
 
   const state: TrackEditLocalState = {
     volume,
@@ -112,6 +116,7 @@ export const useTrackEditState = (
     delaySend,
     presetNameValid,
     saveNewMode,
+    renameMode,
   };
 
   const stateActions: TrackEditStateActions = {
@@ -124,6 +129,7 @@ export const useTrackEditState = (
     setDelaySend,
     setPresetNameValid,
     setSaveNewMode,
+    setRenameMode,
     presetNameRef,
     originalSettingsRef,
     originalIsPreviewPlayingRef,

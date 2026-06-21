@@ -1,4 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
@@ -22,6 +24,8 @@ interface MixLibraryCardProps {
   onToggleFavorite: () => void;
   onAdd: () => void;
   onLoad: () => void;
+  onRename: () => void;
+  onDelete: () => void;
 }
 
 export const MixLibraryCard = ({
@@ -32,6 +36,8 @@ export const MixLibraryCard = ({
   onToggleFavorite,
   onAdd,
   onLoad,
+  onRename,
+  onDelete,
 }: MixLibraryCardProps): React.ReactElement => {
   const trackCount = Object.values(mix.trackStates).filter(
     (ts) => ts.enabled,
@@ -97,6 +103,34 @@ export const MixLibraryCard = ({
             data-testid={`mix-add-to-timeline--${mix.id}`}
           >
             <AddIcon sx={{ fontSize: 14 }} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title={STRINGS.set.renameMix}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRename();
+            }}
+            sx={{ p: 0.25, color: 'text.disabled' }}
+            data-testid={`mix-rename--${mix.id}`}
+          >
+            <DriveFileRenameOutlineIcon sx={{ fontSize: 14 }} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title={STRINGS.set.deleteMix}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            sx={{ p: 0.25, color: 'text.disabled', '&:hover': { color: 'error.main' } }}
+            data-testid={`mix-delete--${mix.id}`}
+          >
+            <DeleteOutlineIcon sx={{ fontSize: 14 }} />
           </IconButton>
         </Tooltip>
       </Box>

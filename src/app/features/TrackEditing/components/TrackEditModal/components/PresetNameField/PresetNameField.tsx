@@ -6,6 +6,7 @@ import { dividerSx, nameLabelSx, nameFieldSx } from './PresetNameField.styles';
 
 type PresetNameFieldProps = {
   trackColor: string;
+  label: string;
   initialName: string;
   nameRef: React.MutableRefObject<string>;
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -16,6 +17,7 @@ type PresetNameFieldProps = {
 
 export const PresetNameField = ({
   trackColor,
+  label,
   initialName,
   nameRef,
   inputRef,
@@ -43,7 +45,7 @@ export const PresetNameField = ({
       <Divider sx={dividerSx(trackColor)} />
       <Box>
         <Typography variant="caption" sx={nameLabelSx(trackColor)}>
-          {S.nameNewPreset}
+          {label}
         </Typography>
         <TextField
           inputRef={inputRef}

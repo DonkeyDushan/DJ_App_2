@@ -1,10 +1,10 @@
 /**
- * Styles for the SaveMixDialog component.
+ * Styles for the shared NameInputDialog component.
  */
 
 import type { SxProps, Theme } from '@mui/material';
 
-/** Paper background and minimum width for the save-mix dialog. */
+/** Paper background and minimum width for the dialog. */
 export const paperSx: SxProps<Theme> = {
   bgcolor: 'background.paper',
   minWidth: '20rem',
@@ -17,7 +17,7 @@ export const titleSx: SxProps<Theme> = {
   letterSpacing: '0.1em',
 };
 
-/** Monospace input for the mix name field. */
+/** Monospace input for the name field. */
 export const inputSx: SxProps<Theme> = {
   fontFamily: 'Share Tech Mono, monospace',
   fontSize: '0.85rem',
@@ -29,7 +29,7 @@ export const inputSx: SxProps<Theme> = {
   width: '100%',
 };
 
-/** Helper text below the mix name input. */
+/** Helper text below the input. */
 export const helperTextSx: SxProps<Theme> = {
   fontFamily: 'Share Tech Mono, monospace',
   fontSize: '0.6rem',

@@ -51,6 +51,8 @@ type TrackEditModalProps = {
   ) => void;
   onSaveToTrack: (trackId: string, settings: TrackSavedSettings) => void;
   onRestoreChanges: (trackId: string, settings: TrackSavedSettings) => void;
+  onRenameTrack: (trackId: string, name: string) => void;
+  onRequestDelete: (trackId: string) => void;
   onVolumeChange: (trackId: string, volume: number) => void;
   onSpeedChange: (trackId: string, speed: number) => void;
   onEqChange: (
@@ -75,6 +77,8 @@ export const TrackEditModal = ({
   onSaveOver,
   onSaveToTrack,
   onRestoreChanges,
+  onRenameTrack,
+  onRequestDelete,
   onVolumeChange,
   onSpeedChange,
   onEqChange,
@@ -92,6 +96,7 @@ export const TrackEditModal = ({
     delaySend,
     presetNameValid,
     saveNewMode,
+    renameMode,
   } = state;
 
   const {
@@ -104,6 +109,7 @@ export const TrackEditModal = ({
     setDelaySend,
     setPresetNameValid,
     setSaveNewMode,
+    setRenameMode,
     presetNameRef,
     originalSettingsRef,
     originalIsPreviewPlayingRef,
@@ -113,6 +119,9 @@ export const TrackEditModal = ({
   if (!track || !trackState) return <Box />;
 
   const isPreset = track.sourceTrackId != null;
+
+  // Non-original tracks (user presets and custom audio) can be renamed/deleted.
+  const isModifiable = isPreset || track.kind === 'custom';
 
   const currentSettings: TrackSavedSettings = {
     volume,
@@ -144,6 +153,24 @@ export const TrackEditModal = ({
     }
     setSaveNewMode(false);
     onClose();
+  };
+
+  const handleRenameClick = () => {
+    presetNameRef.current = track.name;
+    setPresetNameValid(!!track.name.trim());
+    setRenameMode(true);
+  };
+
+  const confirmRename = () => {
+    const name = presetNameRef.current.trim();
+    if (!name) return;
+    onRenameTrack(track.id, name);
+    setRenameMode(false);
+  };
+
+  const handleRequestDelete = () => {
+    handleCancel();
+    onRequestDelete(track.id);
   };
 
   const handleSaveOver = () => {
@@ -230,6 +257,7 @@ export const TrackEditModal = ({
           {saveNewMode && (
             <PresetNameField
               trackColor={track.color}
+              label={S.nameNewPreset}
               initialName={presetNameRef.current}
               nameRef={presetNameRef}
               inputRef={nameInputRef}
@@ -238,18 +266,37 @@ export const TrackEditModal = ({
               onCancel={() => setSaveNewMode(false)}
             />
           )}
+
+          {renameMode && (
+            <PresetNameField
+              trackColor={track.color}
+              label={S.renameLabel}
+              initialName={track.name}
+              nameRef={presetNameRef}
+              inputRef={nameInputRef}
+              onValidChange={setPresetNameValid}
+              onConfirm={confirmRename}
+              onCancel={() => setRenameMode(false)}
+            />
+          )}
         </Stack>
       </DialogContent>
 
       <TrackSaveActions
         trackColor={track.color}
         isPreset={isPreset}
+        isModifiable={isModifiable}
         saveNewMode={saveNewMode}
+        renameMode={renameMode}
         presetNameValid={presetNameValid}
         onSave={isPreset ? handleSaveOver : handleSaveToTrack}
         onSaveNewClick={() => setSaveNewMode(true)}
         onConfirmSaveNew={confirmSaveNew}
         onBack={() => setSaveNewMode(false)}
+        onRenameClick={handleRenameClick}
+        onConfirmRename={confirmRename}
+        onRenameBack={() => setRenameMode(false)}
+        onDelete={handleRequestDelete}
       />
     </Dialog>
   );

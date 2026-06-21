@@ -24,6 +24,7 @@ type SessionActions = {
   saveSession: () => void;
   resetSession: () => void;
   deleteSession: (sessionId: string) => void;
+  renameSession: (sessionId: string, name: string) => void;
   toggleSessionFavorite: (sessionId: string) => void;
   addSlot: (mixId: string) => void;
   removeSlot: (slotId: string) => void;
@@ -128,6 +129,17 @@ export const SessionProvider = ({
 
           return next;
         });
+      },
+      renameSession: (sessionId: string, name: string) => {
+        setSessions((prev) => {
+          const next = prev.map((s) => (s.id === sessionId ? { ...s, name } : s));
+          persistSessions(next);
+
+          return next;
+        });
+        setActiveSession((current) =>
+          current.id === sessionId ? { ...current, name } : current,
+        );
       },
       toggleSessionFavorite: (sessionId: string) => {
         setSessions((prev) => {

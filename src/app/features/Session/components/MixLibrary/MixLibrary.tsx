@@ -23,6 +23,8 @@ interface MixLibraryProps {
   onAddToTimeline: (mixId: string) => void;
   onLoadMix: (mixId: string) => void;
   onNewMix: () => void;
+  onRenameMix: (mixId: string) => void;
+  onDeleteMix: (mixId: string) => void;
 }
 
 export const MixLibrary = ({
@@ -34,6 +36,8 @@ export const MixLibrary = ({
   onAddToTimeline,
   onLoadMix,
   onNewMix,
+  onRenameMix,
+  onDeleteMix,
 }: MixLibraryProps): React.ReactElement => {
   const [filter, setFilter] = useState<'all' | 'favourites'>('all');
 
@@ -94,6 +98,8 @@ export const MixLibrary = ({
               onToggleFavorite={() => onToggleFavorite(mix.id)}
               onAdd={() => onAddToTimeline(mix.id)}
               onLoad={() => onLoadMix(mix.id)}
+              onRename={() => onRenameMix(mix.id)}
+              onDelete={() => onDeleteMix(mix.id)}
             />
           ))
         )}

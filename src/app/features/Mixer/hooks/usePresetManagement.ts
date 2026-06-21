@@ -38,6 +38,7 @@ export type PresetManagementActions = Pick<
   | 'saveTrackPreset'
   | 'restoreTrackSettings'
   | 'deleteTrackPreset'
+  | 'renameTrackPreset'
   | 'toggleFavorite'
   | 'saveTrackOverride'
 >;
@@ -163,6 +164,20 @@ export const buildPresetManagementActions = ({
 
         return { ...s, trackStates: nextStates };
       });
+
+      return next;
+    });
+  },
+
+  renameTrackPreset: (presetId: string, name: string) => {
+    setPresets((current) => {
+      const next = current.map((p) =>
+        p.id === presetId ? { ...p, name } : p,
+      );
+      persistTrackPresets(next);
+      setTracks((currentTracks2) =>
+        currentTracks2.map((t) => (t.id === presetId ? { ...t, name } : t)),
+      );
 
       return next;
     });
