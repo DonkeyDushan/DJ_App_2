@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
-import { useMixer, MixerHeader, TrackGrid } from '../../features/Mixer';
 import {
-  useSession,
-  SetSection,
-  SetLibrary,
+  useMixer,
+  MixerHeader,
+  TrackGrid,
   MixLibrary,
   MixEditDialog,
-} from '../../features/Session';
+} from '../../features/Mixer';
+import { useSession, SetSection, SetLibrary } from '../../features/Session';
 import type { MixColorKey } from '../../core';
 import { CustomSoundsDialog } from '../../features/TrackEditing';
 import {
@@ -55,7 +55,9 @@ export const Main = (): React.ReactElement => {
   const [mixDialogInitialName, setMixDialogInitialName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
-  const [mixEditTarget, setMixEditTarget] = useState<MixEditTarget | null>(null);
+  const [mixEditTarget, setMixEditTarget] = useState<MixEditTarget | null>(
+    null,
+  );
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.

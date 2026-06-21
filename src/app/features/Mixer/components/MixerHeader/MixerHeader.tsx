@@ -85,63 +85,55 @@ const MixerHeaderInner = ({
 
       <Box sx={{ display: 'flex', gap: 0.75, ml: 'auto' }}>
         <Tooltip title={STRINGS.globalControls.customSounds}>
-          <span>
-            <IconButton
-              onClick={onOpenCustomSounds}
-              disabled={isLocked}
-              size="small"
-            >
-              <PixelIcon glyph={Upload} />
-            </IconButton>
-          </span>
+          <IconButton
+            onClick={onOpenCustomSounds}
+            disabled={isLocked}
+            size="small"
+          >
+            <PixelIcon glyph={Upload} />
+          </IconButton>
         </Tooltip>
         <Tooltip title={STRINGS.mixerHeader.reset}>
-          <span>
-            <IconButton
-              onClick={onReset}
-              disabled={isLocked || !activeMixId}
-              size="small"
-            >
-              <PixelIcon glyph={Reload} />
-            </IconButton>
-          </span>
+          <IconButton
+            onClick={onReset}
+            disabled={isLocked || !activeMixId}
+            size="small"
+          >
+            <PixelIcon glyph={Reload} />
+          </IconButton>
         </Tooltip>
 
         <Tooltip title={STRINGS.mixerHeader.save}>
-          <span>
-            <IconButton
-              onClick={onSave}
-              disabled={isLocked || !activeMixId}
-              size="small"
-              sx={{
-                color: 'pink.main',
-                '&:hover': {
-                  color: 'pink.light',
-                },
-              }}
-            >
-              <PixelIcon glyph={Save} />
-            </IconButton>
-          </span>
+          <IconButton
+            onClick={onSave}
+            disabled={isLocked || !activeMixId}
+            size="small"
+            sx={{
+              color: 'pink.main',
+              '&:hover': {
+                color: 'pink.light',
+              },
+            }}
+          >
+            <PixelIcon glyph={Save} />
+          </IconButton>
         </Tooltip>
 
         <Tooltip title={STRINGS.mixerHeader.saveNew}>
-          <span>
-            <IconButton
-              onClick={onSaveNew}
-              disabled={isLocked}
-              size="small"
-              sx={{
-                color: 'pink.main',
-                '&:hover': {
-                  color: 'pink.light',
-                },
-              }}
-            >
-              <PixelIcon glyph={Save} />
-              <PixelIcon glyph={Plus} />
-            </IconButton>
-          </span>
+          <IconButton
+            onClick={onSaveNew}
+            disabled={isLocked}
+            size="small"
+            sx={{
+              color: 'pink.main',
+              '&:hover': {
+                color: 'pink.light',
+              },
+            }}
+          >
+            <PixelIcon glyph={Save} />
+            <PixelIcon glyph={Plus} />
+          </IconButton>
         </Tooltip>
       </Box>
     </Box>

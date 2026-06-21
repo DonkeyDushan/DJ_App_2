@@ -3,7 +3,7 @@ import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Reload } from 'pixelarticons/react/Reload';
 import { Save } from 'pixelarticons/react/Save';
-import { Box, Button, InputBase, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import { PixelIcon, PlayButton } from '../../../../components';
@@ -13,9 +13,9 @@ import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
 import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
 import {
-  controlsRowSx,
   durationInputSx,
   durationLabelSx,
+  headerRootSx,
   nameInputSx,
   rootSx,
 } from './SetSection.styles';
@@ -90,7 +90,7 @@ const SetSectionInner = ({
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <Box sx={rootSx} data-testid="set-section">
-        <Box sx={controlsRowSx}>
+        <Box sx={headerRootSx}>
           <PlayButton
             isPlaying={isSetPlaying}
             onToggleTransport={onPlayPause}
@@ -127,54 +127,6 @@ const SetSectionInner = ({
               ml: 'auto',
             }}
           >
-            <Tooltip title={STRINGS.topBar.resetSet}>
-              <span>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PixelIcon glyph={Reload} />}
-                  onClick={onResetSet}
-                  disabled={isSetPlaying || !hasUnsavedChanges}
-                  data-testid="set-reset"
-                  sx={{
-                    py: 0.25,
-                    px: 1.25,
-                    fontSize: '1rem',
-                    fontFamily: 'Orbitron, monospace',
-                    letterSpacing: '0.08em',
-                    color: 'warning.main',
-                    borderColor: 'warning.main',
-                    '&:hover': {
-                      borderColor: 'warning.light',
-                      bgcolor: 'rgba(255,143,79,0.08)',
-                    },
-                    '&.Mui-disabled': { opacity: 0.3 },
-                  }}
-                >
-                  {STRINGS.topBar.resetSet}
-                </Button>
-              </span>
-            </Tooltip>
-
-            <Button
-              size="small"
-              variant="contained"
-              startIcon={<PixelIcon glyph={Save} />}
-              onClick={onSaveSet}
-              disabled={isSetPlaying}
-              data-testid="set-save"
-              sx={{
-                py: 0.25,
-                px: 1.25,
-                fontSize: '1rem',
-                fontFamily: 'Orbitron, monospace',
-                letterSpacing: '0.08em',
-                '&.Mui-disabled': { opacity: 0.3 },
-              }}
-            >
-              {STRINGS.topBar.saveSet}
-            </Button>
-
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Typography sx={durationLabelSx}>
                 {STRINGS.set.totalDuration}
@@ -194,6 +146,30 @@ const SetSectionInner = ({
                 {STRINGS.set.minutes}
               </Typography>
             </Box>
+            <Tooltip title={STRINGS.topBar.resetSet}>
+              <IconButton
+                onClick={onResetSet}
+                disabled={isSetPlaying || !hasUnsavedChanges}
+                size="small"
+              >
+                <PixelIcon glyph={Reload} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={STRINGS.topBar.saveSet}>
+              <IconButton
+                onClick={onSaveSet}
+                disabled={isSetPlaying}
+                size="small"
+                sx={{
+                  color: 'pink.main',
+                  '&:hover': {
+                    color: 'pink.light',
+                  },
+                }}
+              >
+                <PixelIcon glyph={Save} />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 

@@ -5,28 +5,29 @@ export const rootSx: SxProps<Theme> = {
   flexDirection: 'column',
   flex: 1,
   minWidth: 0,
-  px: 1.5,
-  py: 1,
   gap: 0.75,
 };
 
-export const controlsRowSx: SxProps<Theme> = {
+export const headerRootSx: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
-  gap: 1,
+  gap: 1.5,
+  px: 1.5,
+  py: 1.5,
+  borderBottom: '1px dashed',
+  borderColor: 'divider',
   flexShrink: 0,
 };
 
 export const nameInputSx: SxProps<Theme> = {
   flex: 1,
   fontFamily: 'Orbitron, monospace',
-  fontSize: '1rem',
+  fontSize: '1.2rem',
   fontWeight: 700,
   letterSpacing: '0.06em',
   color: 'text.primary',
   bgcolor: 'transparent',
   border: 'none',
-  borderBottom: '1px solid rgba(255,255,255,0.12)',
   outline: 'none',
   p: 0,
   pb: 0.25,
