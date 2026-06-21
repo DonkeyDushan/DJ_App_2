@@ -2,9 +2,10 @@ import { memo, useState } from 'react';
 import { Plus } from 'pixelarticons/react/Plus';
 import {
   Box,
-  Button,
+  IconButton,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
@@ -17,7 +18,6 @@ import {
   filterRowSx,
   headerRowSx,
   listSx,
-  newMixButtonSx,
   panelSx,
 } from './MixLibrary.styles';
 
@@ -65,15 +65,23 @@ const MixLibraryInner = ({
         >
           {STRINGS.set.mixLibrary}
         </Typography>
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<PixelIcon glyph={Plus} />}
-          onClick={onNewMix}
-          sx={newMixButtonSx}
-        >
-          {STRINGS.mixLibrary.newMix}
-        </Button>
+
+        <Tooltip title={STRINGS.mixLibrary.newMix}>
+          <span>
+            <IconButton
+              onClick={onNewMix}
+              size="small"
+              sx={{
+                color: 'pink.main',
+                '&:hover': {
+                  color: 'pink.light',
+                },
+              }}
+            >
+              <PixelIcon glyph={Plus} />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
 
       <Box sx={filterRowSx}>

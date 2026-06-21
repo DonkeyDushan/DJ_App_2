@@ -7,9 +7,7 @@ export const panelSx: SxProps<Theme> = {
   flexDirection: 'column',
   borderRight: '1px solid',
   borderColor: 'divider',
-  pl: 1.5,
-  pr: 1.5,
-  py: 1,
+
   overflow: 'hidden',
 };
 
@@ -17,7 +15,10 @@ export const headerRowSx: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  mb: 1,
+  borderBottom: '1px dashed',
+  borderColor: 'divider',
+  px: 1.5,
+  py: 1.5,
 };
 
 export const filterRowSx: SxProps<Theme> = {
@@ -41,13 +42,4 @@ export const emptyLabelSx: SxProps<Theme> = {
   textAlign: 'center',
   mt: 2,
   whiteSpace: 'pre-line',
-};
-
-export const newMixButtonSx: SxProps<Theme> = {
-  py: 0.25,
-  px: 0.75,
-  fontSize: '0.875rem',
-  minWidth: 0,
-  letterSpacing: '0.06em',
-  fontFamily: 'Orbitron, monospace',
 };
