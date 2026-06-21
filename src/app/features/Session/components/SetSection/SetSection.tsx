@@ -16,7 +16,7 @@ import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
-import { SessionTimeline, TIMELINE_DROPPABLE_ID } from '../SessionTimeline/SessionTimeline';
+import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
 import {
   controlsRowSx,
   durationInputSx,
@@ -40,7 +40,6 @@ interface SetSectionProps {
   onRemoveSlot: (slotId: string) => void;
   onDuplicateSlot: (slotId: string) => void;
   onSetSlotDuration: (slotId: string, durationSeconds: number) => void;
-  onAddSlot: (mixId: string) => void;
   onReorderSlots: (slots: DJSession['slots']) => void;
   onSeekSlot?: (seconds: number) => void;
 }
@@ -60,7 +59,6 @@ const SetSectionInner = ({
   onRemoveSlot,
   onDuplicateSlot,
   onSetSlotDuration,
-  onAddSlot,
   onReorderSlots,
   onSeekSlot,
 }: SetSectionProps): React.ReactElement => {
@@ -83,13 +81,7 @@ const SetSectionInner = ({
 
     const type = active.data.current?.type as string | undefined;
 
-    if (type === 'library-mix') {
-      const mixId = active.data.current?.mixId as string;
-      const overIsTimeline =
-        over.id === TIMELINE_DROPPABLE_ID ||
-        activeSession.slots.some((s) => s.id === over.id);
-      if (overIsTimeline) onAddSlot(mixId);
-    } else if (type === 'slot') {
+    if (type === 'slot') {
       if (active.id !== over.id) {
         const oldIdx = activeSession.slots.findIndex((s) => s.id === active.id);
         const newIdx = activeSession.slots.findIndex((s) => s.id === over.id);

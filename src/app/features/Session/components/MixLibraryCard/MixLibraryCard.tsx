@@ -1,4 +1,3 @@
-import { useDraggable } from '@dnd-kit/core';
 import AddIcon from '@mui/icons-material/Add';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import StarIcon from '@mui/icons-material/Star';
@@ -34,11 +33,6 @@ export const MixLibraryCard = ({
   onAdd,
   onLoad,
 }: MixLibraryCardProps): React.ReactElement => {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `lib-${mix.id}`,
-    data: { type: 'library-mix', mixId: mix.id },
-  });
-
   const trackCount = Object.values(mix.trackStates).filter(
     (ts) => ts.enabled,
   ).length;
@@ -49,13 +43,10 @@ export const MixLibraryCard = ({
 
   return (
     <Paper
-      ref={setNodeRef}
       variant="outlined"
-      sx={cardSx(!!mix.isFavorite, isDragging, isActive, isSetPlaying, isSetPlaybackActive)}
+      sx={cardSx(!!mix.isFavorite, isActive, isSetPlaying, isSetPlaybackActive)}
       onClick={isSetPlaybackActive ? undefined : onLoad}
       data-testid={`mix-library-card--${mix.id}`}
-      {...attributes}
-      {...listeners}
     >
       <Box sx={rowSx}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -80,7 +71,6 @@ export const MixLibraryCard = ({
         >
           <IconButton
             size="small"
-            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               onToggleFavorite();
@@ -99,7 +89,6 @@ export const MixLibraryCard = ({
         <Tooltip title={STRINGS.set.addToTimeline}>
           <IconButton
             size="small"
-            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               onAdd();

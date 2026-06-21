@@ -224,7 +224,6 @@ export const Main = (): React.ReactElement => {
           onRemoveSlot={sessionActions.removeSlot}
           onDuplicateSlot={sessionActions.duplicateSlot}
           onSetSlotDuration={sessionActions.setSlotDuration}
-          onAddSlot={sessionActions.addSlot}
           onReorderSlots={sessionActions.reorderSlots}
           onSeekSlot={handleSeek}
         />

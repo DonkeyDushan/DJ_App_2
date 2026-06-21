@@ -2,7 +2,6 @@ import type { SxProps, Theme } from '@mui/material';
 
 export const cardSx = (
   isFavorite: boolean,
-  isDragging: boolean,
   isActive: boolean,
   isSetPlaying: boolean,
   isSetPlaybackActive: boolean,
@@ -13,8 +12,8 @@ export const cardSx = (
     px: 1.25,
     py: 0.75,
     borderRadius: 1.5,
-    cursor: isSetPlaybackActive ? 'default' : 'grab',
-    opacity: isDragging ? 0.4 : dimmed ? 0.35 : 1,
+    cursor: isSetPlaybackActive ? 'default' : 'pointer',
+    opacity: dimmed ? 0.35 : 1,
     borderColor: isSetPlaying
       ? 'success.main'
       : isActive
@@ -31,7 +30,6 @@ export const cardSx = (
     '&:hover': {
       borderColor: isActive || isSetPlaying || dimmed ? undefined : 'rgba(255,255,255,0.18)',
     },
-    '&:active': { cursor: isSetPlaybackActive ? 'default' : 'grabbing' },
   };
 };
 
