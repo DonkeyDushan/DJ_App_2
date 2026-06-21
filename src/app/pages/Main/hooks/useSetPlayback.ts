@@ -58,9 +58,9 @@ export const useSetPlayback = ({
   // Schedule advancement to the next slot based on the time remaining in the
   // current slot. Reruns on seek so the timer reflects the new playhead offset.
   useEffect(() => {
-    if (!setIsPlaying || currentSlotIndex === null) return;
+    if (!setIsPlaying || currentSlotIndex === null) return undefined;
     const slot = activeSession.slots[currentSlotIndex];
-    if (!slot) return;
+    if (!slot) return undefined;
 
     const remaining = Math.max(0, slot.durationSeconds - slotOffsetSeconds);
     const timer = setTimeout(() => {
@@ -77,19 +77,22 @@ export const useSetPlayback = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
 
-  const handleSeek = useCallback((seconds: number): void => {
-    if (!setIsPlaying) return;
-    const slots = activeSession.slots;
-    let cumulative = 0;
-    for (let i = 0; i < slots.length; i++) {
-      if (seconds < cumulative + slots[i].durationSeconds) {
-        sessionActions.seekToSlot(i, seconds - cumulative);
+  const handleSeek = useCallback(
+    (seconds: number): void => {
+      if (!setIsPlaying) return;
+      const { slots } = activeSession;
+      let cumulative = 0;
+      for (let i = 0; i < slots.length; i++) {
+        if (seconds < cumulative + slots[i].durationSeconds) {
+          sessionActions.seekToSlot(i, seconds - cumulative);
 
-        return;
+          return;
+        }
+        cumulative += slots[i].durationSeconds;
       }
-      cumulative += slots[i].durationSeconds;
-    }
-  }, [setIsPlaying, activeSession.slots, sessionActions]);
+    },
+    [setIsPlaying, activeSession.slots, sessionActions],
+  );
 
   const handleSetPlayPause = useCallback((): void => {
     if (setIsPlaying) {
