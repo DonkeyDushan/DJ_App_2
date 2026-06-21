@@ -22,6 +22,8 @@ type PixelIconProps = {
   glyph: PixelGlyph;
   /** Optional class for layout-only overrides; colour comes from `currentColor`. */
   className?: string;
+  /** The size of the icon, in pixels. */
+  size?: number;
 };
 
 /**
@@ -31,10 +33,11 @@ type PixelIconProps = {
 export const PixelIcon = ({
   glyph: Glyph,
   className,
+  size = PIXEL_ICON_SIZE_PX,
 }: PixelIconProps): React.ReactElement => (
   <Glyph
-    width={PIXEL_ICON_SIZE_PX}
-    height={PIXEL_ICON_SIZE_PX}
+    width={size}
+    height={size}
     className={className}
     aria-hidden
     focusable={false}

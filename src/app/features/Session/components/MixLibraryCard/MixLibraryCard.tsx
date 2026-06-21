@@ -39,7 +39,6 @@ export const MixLibraryCard = ({
 
   return (
     <Paper
-      variant="outlined"
       sx={cardSx(isActive, isSetPlaying, isSetPlaybackActive)}
       onClick={isSetPlaybackActive ? undefined : onLoad}
       data-testid={`mix-library-card--${mix.id}`}
@@ -49,7 +48,13 @@ export const MixLibraryCard = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {isSetPlaying && <Box sx={playingDotSx} />}
             {isActive && !isSetPlaying && (
-              <Box sx={{ display: 'inline-flex', color: 'primary.main' }}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  color: 'primary.main',
+                  mt: '-4px',
+                }}
+              >
                 <PixelIcon glyph={AudioWaveform} />
               </Box>
             )}

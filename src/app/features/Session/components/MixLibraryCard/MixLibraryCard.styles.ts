@@ -4,34 +4,26 @@ export const cardSx = (
   isActive: boolean,
   isSetPlaying: boolean,
   isSetPlaybackActive: boolean,
-): SxProps<Theme> => {
-  const dimmed = isSetPlaybackActive && !isSetPlaying;
-
-  return {
-    px: 1.25,
-    py: 0.75,
-    borderRadius: 1.5,
-    cursor: isSetPlaybackActive ? 'default' : 'pointer',
-    opacity: dimmed ? 0.35 : 1,
-    borderColor: isSetPlaying
-      ? 'success.main'
-      : isActive
-        ? 'primary.main'
-        : 'rgba(255,255,255,0.06)',
-    bgcolor: isSetPlaying
+): SxProps<Theme> => ({
+  px: 1.5,
+  py: 1,
+  borderRadius: 0,
+  border: 0,
+  borderTop: '1px solid',
+  borderBottom: '1px solid',
+  cursor: isSetPlaybackActive ? 'default' : 'pointer',
+  borderColor: isSetPlaying || isActive ? 'primary.main' : 'transparent',
+  /*   bgcolor: isSetPlaying
       ? 'rgba(108,255,159,0.06)'
       : isActive
         ? 'rgba(255,79,220,0.06)'
-        : 'transparent',
-    transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
-    '&:hover': {
-      borderColor:
-        isActive || isSetPlaying || dimmed
-          ? undefined
-          : 'rgba(255,255,255,0.18)',
-    },
-  };
-};
+        : 'transparent', */
+  transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
+  '&:hover': {
+    borderColor: isActive || isSetPlaying ? 'undefined' : 'divider',
+    bgcolor: '#000',
+  },
+});
 
 export const rowSx: SxProps<Theme> = {
   display: 'flex',
