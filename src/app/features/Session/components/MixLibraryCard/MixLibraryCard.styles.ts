@@ -28,7 +28,10 @@ export const cardSx = (
         : 'transparent',
     transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
     '&:hover': {
-      borderColor: isActive || isSetPlaying || dimmed ? undefined : 'rgba(255,255,255,0.18)',
+      borderColor:
+        isActive || isSetPlaying || dimmed
+          ? undefined
+          : 'rgba(255,255,255,0.18)',
     },
   };
 };
@@ -41,7 +44,7 @@ export const rowSx: SxProps<Theme> = {
 
 export const mixNameSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.65rem',
+  fontSize: '0.875rem',
   fontWeight: 700,
   letterSpacing: '0.05em',
   color: 'text.primary',
@@ -51,8 +54,8 @@ export const mixNameSx: SxProps<Theme> = {
 };
 
 export const mixMetaSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.55rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
   color: 'text.secondary',
 };
 

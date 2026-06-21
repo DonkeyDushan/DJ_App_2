@@ -33,7 +33,7 @@ export const rowSx: SxProps<Theme> = {
 
 export const setNameSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.65rem',
+  fontSize: '0.875rem',
   fontWeight: 700,
   letterSpacing: '0.05em',
   color: 'text.primary',
@@ -43,7 +43,7 @@ export const setNameSx: SxProps<Theme> = {
 };
 
 export const setMetaSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.55rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
   color: 'text.secondary',
 };

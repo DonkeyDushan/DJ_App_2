@@ -5,12 +5,22 @@ import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Box, IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { SessionSlot } from '../../../../core/types/sessionData';
 import { STRINGS } from '../../../../strings';
-import { ACTIONS_MIN_WIDTH_PX, MIN_SLOT_DURATION_SECONDS } from '../../constants/timelineLayout';
+import {
+  ACTIONS_MIN_WIDTH_PX,
+  MIN_SLOT_DURATION_SECONDS,
+} from '../../constants/timelineLayout';
 import { formatSlotDuration } from '../../utils/timelineFormatters';
 import {
   actionsSx,
@@ -121,17 +131,22 @@ export const SessionSlotBlock = ({
         <Typography sx={slotDurationSx}>
           {formatSlotDuration(slot.durationSeconds)}
         </Typography>
-        <Typography sx={slotTransitionSx}>↗ {slot.transitionDuration}s</Typography>
+        <Typography sx={slotTransitionSx}>
+          ↗ {slot.transitionDuration}s
+        </Typography>
       </Box>
 
       {isNarrow ? (
         <Box sx={narrowActionsSx}>
           <IconButton
             size="small"
-            onClick={(e) => { e.stopPropagation(); setMenuAnchor(e.currentTarget); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuAnchor(e.currentTarget);
+            }}
             sx={{ p: 0.25, color: 'text.disabled' }}
           >
-            <MoreVertIcon sx={{ fontSize: 10 }} />
+            <MoreVertIcon sx={{ fontSize: '0.875rem' }} />
           </IconButton>
           <Menu
             anchorEl={menuAnchor}
@@ -141,16 +156,22 @@ export const SessionSlotBlock = ({
           >
             <MenuItem
               dense
-              onClick={() => { onDuplicate(); setMenuAnchor(null); }}
-              sx={{ gap: 1, fontSize: '0.75rem' }}
+              onClick={() => {
+                onDuplicate();
+                setMenuAnchor(null);
+              }}
+              sx={{ gap: 1, fontSize: '1rem' }}
             >
               <ContentCopyIcon sx={{ fontSize: 14 }} />
               {STRINGS.set.duplicateSlot}
             </MenuItem>
             <MenuItem
               dense
-              onClick={() => { onRemove(); setMenuAnchor(null); }}
-              sx={{ gap: 1, fontSize: '0.75rem', color: 'error.main' }}
+              onClick={() => {
+                onRemove();
+                setMenuAnchor(null);
+              }}
+              sx={{ gap: 1, fontSize: '1rem', color: 'error.main' }}
             >
               <CloseIcon sx={{ fontSize: 14 }} />
               {STRINGS.set.removeSlot}

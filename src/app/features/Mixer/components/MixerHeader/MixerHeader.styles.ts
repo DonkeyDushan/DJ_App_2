@@ -19,7 +19,7 @@ export const tempoGroupSx: SxProps<Theme> = {
 
 export const bpmLabelSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.55rem',
+  fontSize: '0.875rem',
   fontWeight: 700,
   letterSpacing: '0.1em',
   color: 'text.secondary',
@@ -27,8 +27,8 @@ export const bpmLabelSx: SxProps<Theme> = {
 };
 
 export const bpmValueSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.85rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   color: 'primary.main',
   minWidth: '2.2rem',
   userSelect: 'none',

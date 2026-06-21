@@ -8,7 +8,7 @@ import type { SxProps, Theme } from '@mui/material';
 export const nameLabelSx = (color: string): SxProps<Theme> => ({
   fontFamily: 'Orbitron, monospace',
   color,
-  fontSize: '0.6rem',
+  fontSize: '1rem',
   letterSpacing: '0.1em',
 });
 
@@ -17,7 +17,7 @@ export const nameFieldSx = (color: string): SxProps<Theme> => ({
   mt: 0.75,
   '& .MuiInputBase-input': {
     fontFamily: 'Orbitron, monospace',
-    fontSize: '0.8rem',
+    fontSize: '1.2rem',
   },
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: `${color}66`,

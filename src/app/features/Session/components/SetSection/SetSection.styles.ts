@@ -20,7 +20,7 @@ export const controlsRowSx: SxProps<Theme> = {
 export const nameInputSx: SxProps<Theme> = {
   flex: 1,
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   fontWeight: 700,
   letterSpacing: '0.06em',
   color: 'text.primary',
@@ -35,16 +35,16 @@ export const nameInputSx: SxProps<Theme> = {
 };
 
 export const durationLabelSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.6rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   color: 'text.secondary',
   whiteSpace: 'nowrap',
 };
 
 export const durationInputSx: SxProps<Theme> = {
   width: '2.5rem',
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.65rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
   color: 'text.primary',
   bgcolor: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.1)',

@@ -15,7 +15,7 @@ export const gridSx: SxProps<Theme> = {
 export const columnHeaderSx = (color: string): SxProps<Theme> => ({
   display: 'block',
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.6rem',
+  fontSize: '1rem',
   letterSpacing: '0.15em',
   color,
   mb: 1,
@@ -25,7 +25,7 @@ export const columnHeaderSx = (color: string): SxProps<Theme> => ({
 });
 
 export const columnCountSx: SxProps<Theme> = {
-  fontSize: '0.55rem',
+  fontSize: '0.875rem',
   color: 'text.disabled',
   ml: 0.75,
   fontFamily: 'inherit',
@@ -33,6 +33,6 @@ export const columnCountSx: SxProps<Theme> = {
 
 export const emptyColumnSx: SxProps<Theme> = {
   color: 'text.disabled',
-  fontSize: '0.65rem',
+  fontSize: '0.875rem',
   pl: 0.5,
 };

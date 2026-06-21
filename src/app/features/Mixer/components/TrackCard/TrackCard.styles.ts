@@ -25,7 +25,7 @@ export const trackNameSx = (
   flex: 1,
   fontFamily: 'Orbitron, monospace',
   color: isActive ? color : 'text.primary',
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   letterSpacing: '0.06em',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -34,7 +34,7 @@ export const trackNameSx = (
 });
 
 export const starBadgeSx: SxProps<Theme> = {
-  fontSize: '0.6rem',
+  fontSize: '1rem',
   color: 'text.disabled',
   ml: 0.5,
   fontFamily: 'inherit',

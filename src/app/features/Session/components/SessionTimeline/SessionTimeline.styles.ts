@@ -61,8 +61,8 @@ export const loopMarkerSx: SxProps<Theme> = {
 };
 
 export const tickLabelSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.55rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
   color: 'text.disabled',
   userSelect: 'none',
   lineHeight: 1,
@@ -92,8 +92,8 @@ export const emptyTimelineSx: SxProps<Theme> = {
 };
 
 export const emptyLabelSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.7rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   color: 'text.disabled',
   textAlign: 'center',
 };

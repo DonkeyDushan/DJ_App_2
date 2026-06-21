@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { SavedMix } from '../../../../core/types/mixData';
@@ -50,7 +56,7 @@ export const MixLibrary = ({
         <Typography
           sx={{
             fontFamily: 'Orbitron, monospace',
-            fontSize: '0.6rem',
+            fontSize: '1rem',
             fontWeight: 700,
             letterSpacing: '0.12em',
             color: 'text.secondary',
@@ -61,7 +67,7 @@ export const MixLibrary = ({
         <Button
           size="small"
           variant="outlined"
-          startIcon={<AddIcon sx={{ fontSize: '0.7rem !important' }} />}
+          startIcon={<AddIcon sx={{ fontSize: '0.875rem !important' }} />}
           onClick={onNewMix}
           sx={newMixButtonSx}
         >
@@ -73,9 +79,17 @@ export const MixLibrary = ({
         <ToggleButtonGroup
           value={filter}
           exclusive
-          onChange={(_, v) => { if (v) setFilter(v as 'all' | 'favourites'); }}
+          onChange={(_, v) => {
+            if (v) setFilter(v as 'all' | 'favourites');
+          }}
           size="small"
-          sx={{ '& .MuiToggleButton-root': { py: 0.25, px: 1, fontSize: '0.6rem' } }}
+          sx={{
+            '& .MuiToggleButton-root': {
+              py: 0.25,
+              px: 1,
+              fontSize: '0.875rem',
+            },
+          }}
         >
           <ToggleButton value="all">{STRINGS.set.allMixes}</ToggleButton>
           <ToggleButton value="favourites">

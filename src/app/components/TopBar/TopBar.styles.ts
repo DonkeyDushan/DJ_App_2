@@ -12,7 +12,7 @@ export const rootSx: SxProps<Theme> = {
 
 export const titleSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.75rem',
+  fontSize: '1rem',
   fontWeight: 900,
   letterSpacing: '0.18em',
   color: 'primary.main',

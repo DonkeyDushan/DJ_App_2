@@ -149,8 +149,8 @@ const SetSectionInner = ({
           {isSetPlaying && currentSlotIndex !== null && (
             <Typography
               sx={{
-                fontFamily: 'Share Tech Mono, monospace',
-                fontSize: '0.6rem',
+                fontFamily: 'Mozilla Headline, monospace',
+                fontSize: '1rem',
                 color: 'success.main',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
@@ -182,7 +182,7 @@ const SetSectionInner = ({
                   sx={{
                     py: 0.25,
                     px: 1.25,
-                    fontSize: '0.6rem',
+                    fontSize: '1rem',
                     fontFamily: 'Orbitron, monospace',
                     letterSpacing: '0.08em',
                     color: 'warning.main',
@@ -209,7 +209,7 @@ const SetSectionInner = ({
               sx={{
                 py: 0.25,
                 px: 1.25,
-                fontSize: '0.6rem',
+                fontSize: '1rem',
                 fontFamily: 'Orbitron, monospace',
                 letterSpacing: '0.08em',
                 '&.Mui-disabled': { opacity: 0.3 },

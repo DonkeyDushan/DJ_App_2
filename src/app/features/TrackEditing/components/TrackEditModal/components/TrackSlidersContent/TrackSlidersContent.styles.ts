@@ -14,6 +14,6 @@ export const dividerSx: SxProps<Theme> = {
 export const sectionLabelSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
   color: 'text.disabled',
-  fontSize: '0.6rem',
+  fontSize: '1rem',
   letterSpacing: '0.1em',
 };

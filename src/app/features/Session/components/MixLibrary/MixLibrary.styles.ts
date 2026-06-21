@@ -33,8 +33,8 @@ export const listSx: SxProps<Theme> = {
 };
 
 export const emptyLabelSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.65rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
   color: 'text.disabled',
   textAlign: 'center',
   mt: 2,
@@ -44,7 +44,7 @@ export const emptyLabelSx: SxProps<Theme> = {
 export const newMixButtonSx: SxProps<Theme> = {
   py: 0.25,
   px: 0.75,
-  fontSize: '0.55rem',
+  fontSize: '0.875rem',
   minWidth: 0,
   letterSpacing: '0.06em',
   fontFamily: 'Orbitron, monospace',

@@ -52,7 +52,7 @@ const MixerHeaderInner = ({
           <Typography
             sx={{
               fontFamily: 'Orbitron, monospace',
-              fontSize: '0.6rem',
+              fontSize: '1rem',
               letterSpacing: '0.1em',
               color: 'warning.main',
             }}
@@ -134,7 +134,7 @@ const MixerHeaderInner = ({
           sx={{
             py: 0.25,
             px: 1,
-            fontSize: '0.6rem',
+            fontSize: '1rem',
             minWidth: 0,
             fontFamily: 'Orbitron, monospace',
             letterSpacing: '0.06em',
@@ -152,7 +152,7 @@ const MixerHeaderInner = ({
           sx={{
             py: 0.25,
             px: 1,
-            fontSize: '0.6rem',
+            fontSize: '1rem',
             minWidth: 0,
             fontFamily: 'Orbitron, monospace',
             letterSpacing: '0.06em',

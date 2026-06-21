@@ -52,6 +52,7 @@ module.exports = {
     'no-await-in-loop': 'off',
     'no-continue': 'off',
     'react/require-default-props': 'off',
+    'no-nested-ternary': 'off',
     'react/function-component-definition': [
       'error',
       {

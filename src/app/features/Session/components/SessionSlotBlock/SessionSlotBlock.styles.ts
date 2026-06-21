@@ -39,7 +39,7 @@ export const slotContentSx: SxProps<Theme> = {
 
 export const slotNameSx = (color: string): SxProps<Theme> => ({
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.6rem',
+  fontSize: '1rem',
   fontWeight: 700,
   color,
   letterSpacing: '0.05em',
@@ -49,15 +49,15 @@ export const slotNameSx = (color: string): SxProps<Theme> => ({
 });
 
 export const slotDurationSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.55rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
   color: 'text.secondary',
   whiteSpace: 'nowrap',
 };
 
 export const slotTransitionSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.5rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   color: 'text.disabled',
   whiteSpace: 'nowrap',
 };

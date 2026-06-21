@@ -25,7 +25,7 @@ export const retroTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: ['Share Tech Mono', 'monospace'].join(','),
+    fontFamily: ['Mozilla Headline', 'monospace'].join(','),
     h1: {
       fontFamily: ['Orbitron', 'sans-serif'].join(','),
       fontWeight: 800,

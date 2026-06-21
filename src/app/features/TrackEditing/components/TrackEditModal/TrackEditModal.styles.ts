@@ -20,7 +20,7 @@ export const dialogTitleSx = (color: string): SxProps<Theme> => ({
   gap: 1,
   pb: 1,
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.9rem',
+  fontSize: '1.2rem',
   color,
 });
 
