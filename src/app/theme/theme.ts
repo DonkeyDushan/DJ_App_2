@@ -147,7 +147,7 @@ export const retroTheme = createTheme({
     },
     MuiTooltip: {
       defaultProps: {
-        arrow: true,
+        /* arrow: true, */
       },
       styleOverrides: {
         tooltip: {
@@ -160,6 +160,19 @@ export const retroTheme = createTheme({
         arrow: {
           color: '#fff',
         },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          color: theme.palette.text.secondary,
+          padding: '0.5rem',
+          '&:hover': {
+            color: theme.palette.teal.light,
+            backgroundColor: 'transparent',
+          },
+          '&.Mui-disabled': { opacity: 0.3 },
+        }),
       },
     },
   },

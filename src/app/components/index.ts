@@ -4,3 +4,4 @@ export { ConfirmDialog } from './ConfirmDialog/ConfirmDialog';
 export { NameInputDialog } from './NameInputDialog/NameInputDialog';
 export { PixelIcon } from './PixelIcon/PixelIcon';
 export { PausePixelGlyph } from './PixelIcon/PausePixelGlyph';
+export { PlayButton } from './PlayButton/PlayButton';

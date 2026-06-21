@@ -1,20 +1,12 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { Play } from 'pixelarticons/react/Play';
 import { Reload } from 'pixelarticons/react/Reload';
 import { Save } from 'pixelarticons/react/Save';
-import {
-  Box,
-  Button,
-  IconButton,
-  InputBase,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Box, Button, InputBase, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
-import { PixelIcon, PausePixelGlyph } from '../../../../components';
+import { PixelIcon, PlayButton } from '../../../../components';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { TrackDefinition } from '../../../../core/types/trackData';
@@ -78,13 +70,6 @@ const SetSectionInner = ({
   const totalMinutes = Math.round(activeSession.totalDurationSeconds / 60);
   const hasSlots = activeSession.slots.length > 0;
 
-  let playPauseTooltipTitle: string = STRINGS.set.noSlots;
-  if (isSetPlaying) {
-    playPauseTooltipTitle = STRINGS.setSection.stopSet;
-  } else if (hasSlots) {
-    playPauseTooltipTitle = STRINGS.setSection.playSet;
-  }
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -106,37 +91,11 @@ const SetSectionInner = ({
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <Box sx={rootSx} data-testid="set-section">
         <Box sx={controlsRowSx}>
-          <Tooltip title={playPauseTooltipTitle}>
-            <span>
-              <IconButton
-                onClick={onPlayPause}
-                disabled={!hasSlots && !isSetPlaying}
-                data-testid="set-play-pause"
-                sx={{
-                  color: isSetPlaying ? 'warning.main' : 'success.main',
-                  bgcolor: isSetPlaying
-                    ? 'rgba(255,143,79,0.12)'
-                    : 'rgba(108,255,159,0.1)',
-                  border: '1px solid',
-                  borderColor: isSetPlaying ? 'warning.main' : 'success.main',
-                  borderRadius: 1,
-                  p: 0.5,
-                  '&:hover': {
-                    bgcolor: isSetPlaying
-                      ? 'rgba(255,143,79,0.22)'
-                      : 'rgba(108,255,159,0.2)',
-                  },
-                  '&.Mui-disabled': { opacity: 0.3 },
-                }}
-              >
-                {isSetPlaying ? (
-                  <PixelIcon glyph={PausePixelGlyph} />
-                ) : (
-                  <PixelIcon glyph={Play} />
-                )}
-              </IconButton>
-            </span>
-          </Tooltip>
+          <PlayButton
+            isPlaying={isSetPlaying}
+            onToggleTransport={onPlayPause}
+            disabled={!hasSlots}
+          />
 
           <SessionNameInput
             key={activeSession.id}

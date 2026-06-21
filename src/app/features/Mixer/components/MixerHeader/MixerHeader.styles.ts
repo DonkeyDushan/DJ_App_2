@@ -5,7 +5,7 @@ export const headerRootSx: SxProps<Theme> = {
   alignItems: 'center',
   gap: 1.5,
   px: 1.5,
-  py: 1,
+  py: 1.5,
   borderBottom: '1px dashed',
   borderColor: 'divider',
   flexShrink: 0,
