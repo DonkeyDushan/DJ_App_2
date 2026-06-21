@@ -52,7 +52,6 @@ export type MixManagementActions = Pick<
   | 'resetMix'
   | 'deleteMix'
   | 'renameMix'
-  | 'toggleMixFavorite'
 >;
 
 export const buildMixManagementActions = ({
@@ -367,17 +366,6 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => {
       const nextMixes = current.savedMixes.map((m) =>
         m.id === mixId ? { ...m, name } : m,
-      );
-      persistSavedMixes(nextMixes);
-
-      return { ...current, savedMixes: nextMixes };
-    });
-  },
-
-  toggleMixFavorite: (mixId: string) => {
-    setSnapshot((current) => {
-      const nextMixes = current.savedMixes.map((m) =>
-        m.id === mixId ? { ...m, isFavorite: !m.isFavorite } : m,
       );
       persistSavedMixes(nextMixes);
 

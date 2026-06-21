@@ -1,13 +1,6 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { Plus } from 'pixelarticons/react/Plus';
-import {
-  Box,
-  IconButton,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { SavedMix } from '../../../../core/types/mixData';
@@ -15,7 +8,6 @@ import { MixLibraryCard } from '../MixLibraryCard/MixLibraryCard';
 import { PixelIcon } from '../../../../components';
 import {
   emptyLabelSx,
-  filterRowSx,
   headerRowSx,
   listSx,
   panelSx,
@@ -26,7 +18,6 @@ interface MixLibraryProps {
   activeMixId: string | null;
   playingMixId: string | null;
   isSetPlaybackActive: boolean;
-  onToggleFavorite: (mixId: string) => void;
   onAddToTimeline: (mixId: string) => void;
   onLoadMix: (mixId: string) => void;
   onNewMix: () => void;
@@ -39,97 +30,65 @@ const MixLibraryInner = ({
   activeMixId,
   playingMixId,
   isSetPlaybackActive,
-  onToggleFavorite,
   onAddToTimeline,
   onLoadMix,
   onNewMix,
   onRenameMix,
   onDeleteMix,
-}: MixLibraryProps): React.ReactElement => {
-  const [filter, setFilter] = useState<'all' | 'favourites'>('all');
+}: MixLibraryProps): React.ReactElement => (
+  <Box sx={panelSx} data-testid="mix-library">
+    <Box sx={headerRowSx}>
+      <Typography
+        sx={{
+          fontFamily: 'Orbitron, monospace',
+          fontSize: '1rem',
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          color: 'text.secondary',
+        }}
+      >
+        {STRINGS.set.mixLibrary}
+      </Typography>
 
-  const visible =
-    filter === 'favourites' ? mixes.filter((m) => m.isFavorite) : mixes;
-
-  return (
-    <Box sx={panelSx} data-testid="mix-library">
-      <Box sx={headerRowSx}>
-        <Typography
-          sx={{
-            fontFamily: 'Orbitron, monospace',
-            fontSize: '1rem',
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            color: 'text.secondary',
-          }}
-        >
-          {STRINGS.set.mixLibrary}
-        </Typography>
-
-        <Tooltip title={STRINGS.mixLibrary.newMix}>
-          <span>
-            <IconButton
-              onClick={onNewMix}
-              size="small"
-              sx={{
-                color: 'pink.main',
-                '&:hover': {
-                  color: 'pink.light',
-                },
-              }}
-            >
-              <PixelIcon glyph={Plus} />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </Box>
-
-      <Box sx={filterRowSx}>
-        <ToggleButtonGroup
-          value={filter}
-          exclusive
-          onChange={(_, v) => {
-            if (v) setFilter(v as 'all' | 'favourites');
-          }}
-          size="small"
-          sx={{
-            '& .MuiToggleButton-root': {
-              py: 0.25,
-              px: 1,
-              fontSize: '0.875rem',
-            },
-          }}
-        >
-          <ToggleButton value="all">{STRINGS.set.allMixes}</ToggleButton>
-          <ToggleButton value="favourites">
-            ★ {STRINGS.set.favouritesOnly}
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      <Box sx={listSx}>
-        {visible.length === 0 ? (
-          <Typography sx={emptyLabelSx}>{STRINGS.set.noMixes}</Typography>
-        ) : (
-          visible.map((mix) => (
-            <MixLibraryCard
-              key={mix.id}
-              mix={mix}
-              isActive={activeMixId === mix.id}
-              isSetPlaying={playingMixId === mix.id}
-              isSetPlaybackActive={isSetPlaybackActive}
-              onToggleFavorite={() => onToggleFavorite(mix.id)}
-              onAdd={() => onAddToTimeline(mix.id)}
-              onLoad={() => onLoadMix(mix.id)}
-              onRename={() => onRenameMix(mix.id)}
-              onDelete={() => onDeleteMix(mix.id)}
-            />
-          ))
-        )}
-      </Box>
+      <Tooltip title={STRINGS.mixLibrary.newMix}>
+        <span>
+          <IconButton
+            onClick={onNewMix}
+            size="small"
+            sx={{
+              color: 'pink.main',
+              '&:hover': {
+                color: 'pink.light',
+              },
+            }}
+          >
+            <PixelIcon glyph={Plus} />
+          </IconButton>
+        </span>
+      </Tooltip>
     </Box>
-  );
-};
+
+    <Box sx={listSx}>
+      {mixes.length === 0 ? (
+        <Typography sx={emptyLabelSx}>{STRINGS.set.noMixes}</Typography>
+      ) : (
+        mixes.map((mix) => (
+          <MixLibraryCard
+            key={mix.id}
+            mix={mix}
+            isActive={activeMixId === mix.id}
+            isSetPlaying={playingMixId === mix.id}
+            isSetPlaybackActive={isSetPlaybackActive}
+            onAdd={() => onAddToTimeline(mix.id)}
+            onLoad={() => onLoadMix(mix.id)}
+            onRename={() => onRenameMix(mix.id)}
+            onDelete={() => onDeleteMix(mix.id)}
+          />
+        ))
+      )}
+    </Box>
+  </Box>
+);
 
 export const MixLibrary = memo(MixLibraryInner);
 MixLibrary.displayName = 'MixLibrary';

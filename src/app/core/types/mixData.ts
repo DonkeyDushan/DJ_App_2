@@ -31,7 +31,6 @@ export interface SavedMix {
   createdAt: number;
   globalTempo: number;
   trackStates: Record<string, SavedMixTrackState>;
-  isFavorite?: boolean;
 }
 
 export interface MixerSnapshot {

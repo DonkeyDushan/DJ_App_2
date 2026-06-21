@@ -21,18 +21,13 @@ export const headerRowSx: SxProps<Theme> = {
   py: 1.5,
 };
 
-export const filterRowSx: SxProps<Theme> = {
-  display: 'flex',
-  gap: 0.5,
-  mb: 1,
-};
-
 export const listSx: SxProps<Theme> = {
   flex: 1,
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
   gap: 0.5,
+  pt: 1,
 };
 
 export const emptyLabelSx: SxProps<Theme> = {

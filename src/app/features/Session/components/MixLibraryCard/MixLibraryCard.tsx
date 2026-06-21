@@ -1,7 +1,6 @@
 import { AudioWaveform } from 'pixelarticons/react/AudioWaveform';
 import { PenSquare } from 'pixelarticons/react/PenSquare';
 import { Plus } from 'pixelarticons/react/Plus';
-import { Star } from 'pixelarticons/react/Star';
 import { Trash } from 'pixelarticons/react/Trash';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 
@@ -21,7 +20,6 @@ interface MixLibraryCardProps {
   isActive: boolean;
   isSetPlaying: boolean;
   isSetPlaybackActive: boolean;
-  onToggleFavorite: () => void;
   onAdd: () => void;
   onLoad: () => void;
   onRename: () => void;
@@ -33,7 +31,6 @@ export const MixLibraryCard = ({
   isActive,
   isSetPlaying,
   isSetPlaybackActive,
-  onToggleFavorite,
   onAdd,
   onLoad,
   onRename,
@@ -50,7 +47,7 @@ export const MixLibraryCard = ({
   return (
     <Paper
       variant="outlined"
-      sx={cardSx(!!mix.isFavorite, isActive, isSetPlaying, isSetPlaybackActive)}
+      sx={cardSx(isActive, isSetPlaying, isSetPlaybackActive)}
       onClick={isSetPlaybackActive ? undefined : onLoad}
       data-testid={`mix-library-card--${mix.id}`}
     >
@@ -69,26 +66,6 @@ export const MixLibraryCard = ({
             {trackCount} tracks · {date}
           </Typography>
         </Box>
-
-        <Tooltip
-          title={
-            mix.isFavorite
-              ? STRINGS.set.removeFromFavourites
-              : STRINGS.set.addToFavourites
-          }
-        >
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite();
-            }}
-            sx={{ p: 0.25, color: mix.isFavorite ? '#ffd84f' : 'text.disabled' }}
-            data-testid={`mix-favorite--${mix.id}`}
-          >
-            <PixelIcon glyph={Star} />
-          </IconButton>
-        </Tooltip>
 
         <Tooltip title={STRINGS.set.addToTimeline}>
           <IconButton

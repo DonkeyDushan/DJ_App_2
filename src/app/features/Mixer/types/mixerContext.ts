@@ -52,7 +52,6 @@ export type MixerActions = {
   renameTrackPreset: (presetId: string, name: string) => void;
   toggleFavorite: (trackId: string) => void;
   saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => void;
-  toggleMixFavorite: (mixId: string) => void;
 };
 
 export type MixerContextValue = {

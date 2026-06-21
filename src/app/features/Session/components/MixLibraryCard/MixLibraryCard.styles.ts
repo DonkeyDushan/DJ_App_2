@@ -1,7 +1,6 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export const cardSx = (
-  isFavorite: boolean,
   isActive: boolean,
   isSetPlaying: boolean,
   isSetPlaybackActive: boolean,
@@ -18,9 +17,7 @@ export const cardSx = (
       ? 'success.main'
       : isActive
         ? 'primary.main'
-        : isFavorite
-          ? '#ffd84f44'
-          : 'rgba(255,255,255,0.06)',
+        : 'rgba(255,255,255,0.06)',
     bgcolor: isSetPlaying
       ? 'rgba(108,255,159,0.06)'
       : isActive

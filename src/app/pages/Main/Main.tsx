@@ -300,7 +300,6 @@ export const Main = (): React.ReactElement => {
           activeMixId={activeMixId}
           playingMixId={playingMixId}
           isSetPlaybackActive={setIsPlaying}
-          onToggleFavorite={mixerActions.toggleMixFavorite}
           onAddToTimeline={sessionActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
