@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Dialog,
@@ -20,23 +20,29 @@ import {
 
 type SaveMixDialogProps = {
   open: boolean;
-  mixName: string;
-  onMixNameChange: (name: string) => void;
-  onConfirm: () => void;
+  initialName: string;
+  onConfirm: (name: string) => void;
   onClose: () => void;
 };
 
 export const SaveMixDialog = ({
   open,
-  mixName,
-  onMixNameChange,
+  initialName,
   onConfirm,
   onClose,
 }: SaveMixDialogProps): React.ReactElement => {
+  const [localName, setLocalName] = useState(initialName);
+
+  useEffect(() => {
+    if (open) setLocalName(initialName);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const S = STRINGS.saveLoadManager;
 
+  const handleConfirm = () => onConfirm(localName);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') onConfirm();
+    if (e.key === 'Enter') handleConfirm();
   };
 
   return (
@@ -53,8 +59,8 @@ export const SaveMixDialog = ({
         <InputBase
           autoFocus
           fullWidth
-          value={mixName}
-          onChange={(e) => onMixNameChange(e.target.value)}
+          value={localName}
+          onChange={(e) => setLocalName(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={S.mixNameLabel}
           sx={inputSx}
@@ -71,8 +77,8 @@ export const SaveMixDialog = ({
         <Button
           size="small"
           variant="contained"
-          onClick={onConfirm}
-          disabled={!mixName.trim()}
+          onClick={handleConfirm}
+          disabled={!localName.trim()}
           sx={buttonSx}
         >
           {S.save}

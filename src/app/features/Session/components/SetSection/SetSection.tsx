@@ -13,6 +13,7 @@ import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { TrackDefinition } from '../../../../core/types/trackData';
+import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
 import { SessionTimeline, TIMELINE_DROPPABLE_ID } from '../SessionTimeline/SessionTimeline';
 import {
   controlsRowSx,
@@ -135,12 +136,12 @@ export const SetSection = ({
             </span>
           </Tooltip>
 
-          <InputBase
-            value={activeSession.name}
-            onChange={(e) => onSetSessionName(e.target.value)}
+          <SessionNameInput
+            key={activeSession.id}
+            initialName={activeSession.name}
+            onCommit={onSetSessionName}
             placeholder={STRINGS.set.sessionNamePlaceholder}
             sx={nameInputSx}
-            inputProps={{ spellCheck: false }}
           />
 
           {isSetPlaying && currentSlotIndex !== null && (

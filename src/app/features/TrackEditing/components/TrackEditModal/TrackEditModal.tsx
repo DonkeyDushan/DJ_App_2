@@ -90,7 +90,7 @@ export const TrackEditModal = ({
     eqHigh,
     reverbSend,
     delaySend,
-    presetName,
+    presetNameValid,
     saveNewMode,
   } = state;
 
@@ -102,8 +102,9 @@ export const TrackEditModal = ({
     setEqHigh,
     setReverbSend,
     setDelaySend,
-    setPresetName,
+    setPresetNameValid,
     setSaveNewMode,
+    presetNameRef,
     originalSettingsRef,
     originalIsPreviewPlayingRef,
     nameInputRef,
@@ -146,8 +147,8 @@ export const TrackEditModal = ({
   };
 
   const handleSaveOver = () => {
-    if (!presetName.trim()) return;
-    onSaveOver(track.id, presetName.trim(), track.category, currentSettings);
+    if (!presetNameRef.current.trim()) return;
+    onSaveOver(track.id, presetNameRef.current.trim(), track.category, currentSettings);
     setSaveNewMode(false);
     onClose();
   };
@@ -159,12 +160,12 @@ export const TrackEditModal = ({
   };
 
   const confirmSaveNew = () => {
-    if (!presetName.trim()) return;
+    if (!presetNameRef.current.trim()) return;
     const original = originalSettingsRef.current;
     if (!original) return;
     onSaveAsNew(
       track.id,
-      presetName.trim(),
+      presetNameRef.current.trim(),
       track.category,
       currentSettings,
       original,
@@ -229,9 +230,10 @@ export const TrackEditModal = ({
           {saveNewMode && (
             <PresetNameField
               trackColor={track.color}
-              value={presetName}
+              initialName={presetNameRef.current}
+              nameRef={presetNameRef}
               inputRef={nameInputRef}
-              onChange={setPresetName}
+              onValidChange={setPresetNameValid}
               onConfirm={confirmSaveNew}
               onCancel={() => setSaveNewMode(false)}
             />
@@ -243,7 +245,7 @@ export const TrackEditModal = ({
         trackColor={track.color}
         isPreset={isPreset}
         saveNewMode={saveNewMode}
-        presetNameValid={!!presetName.trim()}
+        presetNameValid={presetNameValid}
         onSave={isPreset ? handleSaveOver : handleSaveToTrack}
         onSaveNewClick={() => setSaveNewMode(true)}
         onConfirmSaveNew={confirmSaveNew}

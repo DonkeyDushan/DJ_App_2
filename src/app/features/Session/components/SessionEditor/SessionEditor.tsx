@@ -1,12 +1,20 @@
 import type { DragEndEvent } from '@dnd-kit/core';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Box, Button, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  InputBase,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { TrackDefinition } from '../../../../core/types/trackData';
+import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
 import { SessionList } from '../SessionList/SessionList';
 import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
 import {
@@ -62,19 +70,18 @@ export const SessionEditor = ({
 }: SessionEditorProps): React.ReactElement => {
   const totalMinutes = Math.round(activeSession.totalDurationSeconds / 60);
   const hasSlots = activeSession.slots.length > 0;
+  let playPauseTooltipTitle: string = STRINGS.set.noSlots;
+
+  if (isPlaying) {
+    playPauseTooltipTitle = STRINGS.setSection.stopSet;
+  } else if (hasSlots) {
+    playPauseTooltipTitle = STRINGS.setSection.playSet;
+  }
 
   return (
     <Box sx={editorRootSx} data-testid="session-editor">
       <Box sx={controlsRowSx}>
-        <Tooltip
-          title={
-            isPlaying
-              ? STRINGS.setSection.stopSet
-              : hasSlots
-                ? STRINGS.setSection.playSet
-                : STRINGS.set.noSlots
-          }
-        >
+        <Tooltip title={playPauseTooltipTitle}>
           <span>
             <IconButton
               onClick={onPlayPause}
@@ -106,16 +113,18 @@ export const SessionEditor = ({
           </span>
         </Tooltip>
 
-        <InputBase
-          value={activeSession.name}
-          onChange={(e) => onSetSessionName(e.target.value)}
+        <SessionNameInput
+          key={activeSession.id}
+          initialName={activeSession.name}
+          onCommit={onSetSessionName}
           placeholder={STRINGS.set.sessionNamePlaceholder}
           sx={nameInputSx}
-          inputProps={{ spellCheck: false }}
         />
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Typography sx={durationLabelSx}>{STRINGS.set.totalDuration}</Typography>
+          <Typography sx={durationLabelSx}>
+            {STRINGS.set.totalDuration}
+          </Typography>
           <InputBase
             value={totalMinutes}
             onChange={(e) => {

@@ -19,7 +19,7 @@ export type TrackEditLocalState = {
   eqHigh: number;
   reverbSend: number;
   delaySend: number;
-  presetName: string;
+  presetNameValid: boolean;
   saveNewMode: boolean;
 };
 
@@ -31,8 +31,9 @@ export type TrackEditStateActions = {
   setEqHigh: (v: number) => void;
   setReverbSend: (v: number) => void;
   setDelaySend: (v: number) => void;
-  setPresetName: (name: string) => void;
+  setPresetNameValid: (valid: boolean) => void;
   setSaveNewMode: (active: boolean) => void;
+  presetNameRef: React.MutableRefObject<string>;
   originalSettingsRef: React.MutableRefObject<TrackSavedSettings | null>;
   originalIsPreviewPlayingRef: React.MutableRefObject<boolean>;
   nameInputRef: React.RefObject<HTMLInputElement | null>;
@@ -50,9 +51,10 @@ export const useTrackEditState = (
   const [eqHigh, setEqHigh] = useState(0);
   const [reverbSend, setReverbSend] = useState(0);
   const [delaySend, setDelaySend] = useState(0);
-  const [presetName, setPresetName] = useState('');
+  const [presetNameValid, setPresetNameValid] = useState(false);
   const [saveNewMode, setSaveNewMode] = useState(false);
 
+  const presetNameRef = useRef('');
   const originalSettingsRef = useRef<TrackSavedSettings | null>(null);
   const originalIsPreviewPlayingRef = useRef(false);
   const initializedTrackIdRef = useRef<string | null>(null);
@@ -88,7 +90,8 @@ export const useTrackEditState = (
     setEqHigh(trackState.eqHigh);
     setReverbSend(trackState.reverbSend);
     setDelaySend(trackState.delaySend);
-    setPresetName(track.name);
+    presetNameRef.current = track.name;
+    setPresetNameValid(!!track.name.trim());
     setSaveNewMode(false);
   }, [open, track, track?.id, trackState]);
 
@@ -107,7 +110,7 @@ export const useTrackEditState = (
     eqHigh,
     reverbSend,
     delaySend,
-    presetName,
+    presetNameValid,
     saveNewMode,
   };
 
@@ -119,8 +122,9 @@ export const useTrackEditState = (
     setEqHigh,
     setReverbSend,
     setDelaySend,
-    setPresetName,
+    setPresetNameValid,
     setSaveNewMode,
+    presetNameRef,
     originalSettingsRef,
     originalIsPreviewPlayingRef,
     nameInputRef,

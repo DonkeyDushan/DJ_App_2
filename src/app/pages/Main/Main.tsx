@@ -26,7 +26,7 @@ export const Main = (): React.ReactElement => {
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [saveNewMixOpen, setSaveNewMixOpen] = useState(false);
-  const [newMixName, setNewMixName] = useState('');
+  const [mixDialogInitialName, setMixDialogInitialName] = useState('');
   const [loadSetOpen, setLoadSetOpen] = useState(false);
 
   const pendingActionsRef = useRef<{
@@ -64,21 +64,21 @@ export const Main = (): React.ReactElement => {
     if (activeMixId) {
       mixerActions.overwriteMix(activeMixId);
     } else {
+      setMixDialogInitialName('');
       setSaveNewMixOpen(true);
     }
   };
 
   const handleSaveNew = () => {
-    setNewMixName(STRINGS.saveLoadManager.defaultMixName);
+    setMixDialogInitialName(STRINGS.saveLoadManager.defaultMixName);
     setSaveNewMixOpen(true);
   };
 
-  const handleConfirmSaveNew = () => {
-    if (newMixName.trim()) {
-      mixerActions.saveMix(newMixName.trim());
+  const handleConfirmSaveNew = (name: string) => {
+    if (name.trim()) {
+      mixerActions.saveMix(name.trim());
     }
     setSaveNewMixOpen(false);
-    setNewMixName('');
   };
 
   return (
@@ -212,8 +212,7 @@ export const Main = (): React.ReactElement => {
 
       <SaveMixDialog
         open={saveNewMixOpen}
-        mixName={newMixName}
-        onMixNameChange={setNewMixName}
+        initialName={mixDialogInitialName}
         onConfirm={handleConfirmSaveNew}
         onClose={() => setSaveNewMixOpen(false)}
       />

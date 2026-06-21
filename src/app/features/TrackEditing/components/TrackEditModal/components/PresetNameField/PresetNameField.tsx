@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Divider, TextField, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../../../strings';
@@ -6,22 +6,32 @@ import { dividerSx, nameLabelSx, nameFieldSx } from './PresetNameField.styles';
 
 type PresetNameFieldProps = {
   trackColor: string;
-  value: string;
+  initialName: string;
+  nameRef: React.MutableRefObject<string>;
   inputRef: React.RefObject<HTMLInputElement | null>;
-  onChange: (value: string) => void;
+  onValidChange: (valid: boolean) => void;
   onConfirm: () => void;
   onCancel: () => void;
 };
 
 export const PresetNameField = ({
   trackColor,
-  value,
+  initialName,
+  nameRef,
   inputRef,
-  onChange,
+  onValidChange,
   onConfirm,
   onCancel,
 }: PresetNameFieldProps): React.ReactElement => {
+  const [localName, setLocalName] = useState(initialName);
+
   const S = STRINGS.trackEditModal;
+
+  const handleChange = (value: string) => {
+    setLocalName(value);
+    nameRef.current = value;
+    onValidChange(!!value.trim());
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') onConfirm();
@@ -37,8 +47,8 @@ export const PresetNameField = ({
         </Typography>
         <TextField
           inputRef={inputRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={localName}
+          onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
           size="small"
           fullWidth
