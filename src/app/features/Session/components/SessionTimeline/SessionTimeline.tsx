@@ -143,20 +143,24 @@ export const SessionTimeline = ({
   );
 
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) return undefined;
+
     startTick(playheadSecondsRef.current);
 
-    cancelAnimationFrame(animFrameRef.current);
-    if (playbackStartRef.current) {
-      const elapsed =
-        (performance.now() - playbackStartRef.current.wall) / 1000;
-      const pos = Math.min(
-        playbackStartRef.current.pos + elapsed,
-        effectiveTotalRef.current,
-      );
-      onSeekRef.current(pos);
-      playbackStartRef.current = null;
-    }
+    // On pause/unmount: stop the animation loop and commit the final position.
+    return () => {
+      cancelAnimationFrame(animFrameRef.current);
+      if (playbackStartRef.current) {
+        const elapsed =
+          (performance.now() - playbackStartRef.current.wall) / 1000;
+        const pos = Math.min(
+          playbackStartRef.current.pos + elapsed,
+          effectiveTotalRef.current,
+        );
+        onSeekRef.current(pos);
+        playbackStartRef.current = null;
+      }
+    };
   }, [isPlaying, startTick]);
 
   useEffect(() => {
