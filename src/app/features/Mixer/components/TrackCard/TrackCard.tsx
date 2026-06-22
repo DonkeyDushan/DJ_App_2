@@ -23,6 +23,7 @@ import type {
 import { STRINGS } from '../../../../strings';
 import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import {
+  checkBoxSx,
   editButtonSx,
   favButtonSx,
   paperSx,
@@ -60,7 +61,7 @@ const TrackCardInner = ({
           label={
             <Typography
               variant="body2"
-              sx={trackNameSx(isActive)}
+              sx={trackNameSx}
               title={track.name}
               overflow="hidden"
               textOverflow="ellipsis"
@@ -87,6 +88,7 @@ const TrackCardInner = ({
                 onChange={(_, checked) => onToggle(track.id, checked)}
                 icon={<PixelIcon glyph={CheckboxIcon} />}
                 checkedIcon={<PixelIcon glyph={CheckboxOn} />}
+                sx={checkBoxSx}
               />
             </Tooltip>
           }

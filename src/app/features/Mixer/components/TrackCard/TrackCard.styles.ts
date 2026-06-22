@@ -17,17 +17,25 @@ export const rowSx: SxProps<Theme> = {
   overflow: 'hidden',
 };
 
-export const trackNameSx = (isActive: boolean): SxProps<Theme> => ({
+export const checkBoxSx: SxProps<Theme> = {
+  '&:hover': {
+    backgroundColor: 'transparent',
+
+    color: 'primary.light',
+  },
+};
+
+export const trackNameSx: SxProps<Theme> = {
   flex: 1,
   fontFamily: 'Orbitron, monospace',
-  color: isActive ? 'primary.main' : 'text.primary',
+  color: 'text.primary',
   fontSize: '1rem',
   letterSpacing: '0.06em',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
   userSelect: 'none',
-});
+};
 
 export const starBadgeSx: SxProps<Theme> = {
   fontSize: '1rem',
@@ -38,11 +46,17 @@ export const starBadgeSx: SxProps<Theme> = {
 
 export const playButtonSx = (isPreviewPlaying: boolean): SxProps<Theme> => ({
   color: isPreviewPlaying ? 'primary.main' : 'text.secondary',
+  '&:hover': {
+    color: isPreviewPlaying ? 'primary.light' : 'secondary.light',
+  },
   p: 0.5,
 });
 
 export const favButtonSx = (isFavorite: boolean): SxProps<Theme> => ({
   color: isFavorite ? '#ffd84f' : 'text.disabled',
+  '&:hover': {
+    color: isFavorite ? 'yellow.light' : 'secondary.light',
+  },
   p: 0.5,
 });
 

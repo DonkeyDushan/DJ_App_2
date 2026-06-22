@@ -49,8 +49,8 @@ export const retroTheme = createTheme({
       light: '#ff82e9',
     },
     secondary: {
-      main: '#f1531c',
-      light: '#ffae82',
+      main: '#61c1fb',
+      light: '#beffff',
     },
     success: {
       main: '#00ffff',
