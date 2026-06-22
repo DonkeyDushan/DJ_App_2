@@ -34,6 +34,8 @@ type SessionActions = {
   setSlotTransitionDuration: (slotId: string, transitionDuration: number) => void;
   setTotalDuration: (seconds: number) => void;
   startSetPlayback: () => void;
+  pauseSetPlayback: () => void;
+  resumeSetPlayback: () => void;
   stopSetPlayback: () => void;
   advanceSlot: () => void;
   seekToSlot: (slotIndex: number, offsetSeconds: number) => void;
@@ -216,6 +218,17 @@ export const SessionProvider = ({
         setSetIsPlaying(true);
         setCurrentSlotIndex(0);
         setSlotOffsetSeconds(0);
+      },
+      // Pause keeps currentSlotIndex/slotOffsetSeconds intact so playback can
+      // resume from the same position. The accurate in-slot offset is recorded
+      // separately by the timeline's seek callback as playback stops.
+      pauseSetPlayback: () => {
+        setSetIsPlaying(false);
+      },
+      // Resume continues from the preserved position (set true only — the slot
+      // index and offset are left untouched from where playback was paused).
+      resumeSetPlayback: () => {
+        setSetIsPlaying(true);
       },
       stopSetPlayback: () => {
         setSetIsPlaying(false);

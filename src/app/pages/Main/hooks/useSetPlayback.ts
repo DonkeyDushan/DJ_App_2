@@ -12,6 +12,8 @@ type SetPlaybackSessionActions = {
   advanceSlot: () => void;
   seekToSlot: (slotIndex: number, offsetSeconds: number) => void;
   startSetPlayback: () => void;
+  pauseSetPlayback: () => void;
+  resumeSetPlayback: () => void;
   stopSetPlayback: () => void;
 };
 
@@ -77,9 +79,11 @@ export const useSetPlayback = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
 
+  // Maps a global timeline position to a (slot, offset) pair and records it as
+  // the playback position. Runs while playing (live seek) and while paused
+  // (capturing the pause position so resume continues from the same point).
   const handleSeek = useCallback(
     (seconds: number): void => {
-      if (!setIsPlaying) return;
       const { slots } = activeSession;
       let cumulative = 0;
       for (let i = 0; i < slots.length; i++) {
@@ -91,19 +95,26 @@ export const useSetPlayback = ({
         cumulative += slots[i].durationSeconds;
       }
     },
-    [setIsPlaying, activeSession.slots, sessionActions],
+    [activeSession.slots, sessionActions],
   );
 
   const handleSetPlayPause = useCallback((): void => {
     if (setIsPlaying) {
-      sessionActions.stopSetPlayback();
+      sessionActions.pauseSetPlayback();
       void mixerActions.toggleTransport();
 
       return;
     }
     if (activeSession.slots.length === 0) return;
-    sessionActions.startSetPlayback();
-  }, [setIsPlaying, activeSession.slots, sessionActions, mixerActions]);
+
+    // Resume from the preserved position when a slot is still loaded; otherwise
+    // start a fresh run from the beginning of the set.
+    if (currentSlotIndex !== null) {
+      sessionActions.resumeSetPlayback();
+    } else {
+      sessionActions.startSetPlayback();
+    }
+  }, [setIsPlaying, currentSlotIndex, activeSession.slots, sessionActions, mixerActions]);
 
   return { handleSeek, handleSetPlayPause };
 };

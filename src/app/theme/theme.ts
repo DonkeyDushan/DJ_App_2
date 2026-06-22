@@ -14,6 +14,7 @@ declare module '@mui/material/styles' {
   interface Palette {
     blue: NeonPaletteColor;
     teal: NeonPaletteColor;
+    green: NeonPaletteColor;
     yellow: NeonPaletteColor;
     orange: NeonPaletteColor;
     red: NeonPaletteColor;
@@ -24,6 +25,7 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     blue: NeonPaletteColor;
     teal: NeonPaletteColor;
+    green: NeonPaletteColor;
     yellow: NeonPaletteColor;
     orange: NeonPaletteColor;
     red: NeonPaletteColor;
@@ -69,6 +71,10 @@ export const retroTheme = createTheme({
     teal: {
       main: '#61c1fb',
       light: '#beffff',
+    },
+    green: {
+      main: '#7abe6e',
+      light: '#d0ffc1',
     },
     yellow: {
       main: '#faae40',

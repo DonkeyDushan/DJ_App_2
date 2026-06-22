@@ -7,6 +7,7 @@
 export const MIX_COLOR_KEYS = Object.freeze([
   'blue',
   'teal',
+  'green',
   'yellow',
   'orange',
   'red',

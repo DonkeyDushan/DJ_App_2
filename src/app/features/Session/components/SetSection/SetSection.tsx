@@ -67,6 +67,16 @@ const SetSectionInner = ({
     }
   }, [activeSession.id]);
 
+  // When the set is fully stopped (end of set, not paused) the playback
+  // position is cleared, so snap the visual playhead back to the start. This
+  // keeps a subsequent fresh start aligned with the audio, which also restarts
+  // from zero. Pausing keeps currentSlotIndex non-null and does not reset here.
+  useEffect(() => {
+    if (currentSlotIndex === null) {
+      setPlayheadSeconds(0);
+    }
+  }, [currentSlotIndex]);
+
   const totalMinutes = Math.round(activeSession.totalDurationSeconds / 60);
   const hasSlots = activeSession.slots.length > 0;
 
