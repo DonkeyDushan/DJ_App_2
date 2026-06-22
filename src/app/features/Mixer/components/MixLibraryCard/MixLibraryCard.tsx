@@ -86,8 +86,8 @@ export const MixLibraryCard = ({
             }}
             sx={{
               p: 0.25,
-              color: 'primary.main',
-              '&:hover': { color: 'primary.light' },
+              color: `${mix.color}.main`,
+              '&:hover': { color: `${mix.color}.light` },
             }}
             data-testid={`mix-add-to-timeline--${mix.id}`}
           >
