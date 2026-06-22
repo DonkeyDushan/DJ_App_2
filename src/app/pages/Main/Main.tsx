@@ -351,7 +351,7 @@ export const Main = (): React.ReactElement => {
           <Box
             sx={{
               flex: 1,
-              overflow: 'auto',
+              overflow: 'hidden',
               px: 1.5,
               py: 1,
               pointerEvents: setIsPlaying ? 'none' : undefined,

@@ -3,16 +3,18 @@ import type { SxProps, Theme } from '@mui/material';
 export const paperSx = (isActive: boolean): SxProps<Theme> => ({
   px: 1.5,
   py: 1,
-  borderRadius: 2,
-  borderColor: isActive ? 'primary.main' : 'rgba(255,255,255,0.08)',
+  paddingRight: 0.5,
+  borderRadius: 0,
+  borderColor: isActive ? 'primary.main' : 'transparent',
   boxShadow: isActive ? `0 0 14px primary.main` : 'none',
   transition: 'box-shadow 0.2s, border-color 0.2s',
+  overflow: 'hidden',
 });
 
 export const rowSx: SxProps<Theme> = {
-  gap: 0.25,
-  display: 'grid',
-  gridTemplateColumns: 'min-content auto',
+  display: 'flex',
+  flexDirection: { sm: 'column', xl: 'row' },
+  overflow: 'hidden',
 };
 
 export const trackNameSx = (isActive: boolean): SxProps<Theme> => ({

@@ -3,13 +3,19 @@ import { useVirtualizer, defaultRangeExtractor } from '@tanstack/react-virtual';
 
 import { Box, Stack, Typography } from '@mui/material';
 
-import type { TrackCategory, TrackDefinition, TrackSavedSettings, TrackState } from '../../../../core/types/trackData';
+import type {
+  TrackCategory,
+  TrackDefinition,
+  TrackSavedSettings,
+  TrackState,
+} from '../../../../core/types/trackData';
 import { STRINGS } from '../../../../strings';
 import { TrackCard } from '../TrackCard/TrackCard';
 import { TrackEditModal } from '../../../TrackEditing/components/TrackEditModal/TrackEditModal';
 import {
-  columnCountSx,
   columnHeaderSx,
+  columnShellSx,
+  columnScrollSx,
   emptyColumnSx,
   gridSx,
 } from './TrackGrid.styles';
@@ -80,14 +86,8 @@ type TrackGridProps = {
     category: TrackCategory,
     settings: TrackSavedSettings,
   ) => void;
-  onRestoreChanges: (
-    trackId: string,
-    settings: TrackSavedSettings,
-  ) => void;
-  onSaveToTrack: (
-    trackId: string,
-    settings: TrackSavedSettings,
-  ) => void;
+  onRestoreChanges: (trackId: string, settings: TrackSavedSettings) => void;
+  onSaveToTrack: (trackId: string, settings: TrackSavedSettings) => void;
   onRenameTrack: (trackId: string, name: string) => void;
   onDeleteTrack: (trackId: string) => void;
 };
@@ -101,83 +101,98 @@ type VirtualTrackColumnProps = {
   onToggleFavorite: (trackId: string) => void;
 };
 
-const VirtualTrackColumn = React.memo(({
-  columnTracks,
-  trackStates,
-  onToggle,
-  onPlay,
-  onEdit,
-  onToggleFavorite,
-}: VirtualTrackColumnProps): React.ReactElement => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+const VirtualTrackColumn = React.memo(
+  ({
+    columnTracks,
+    trackStates,
+    onToggle,
+    onPlay,
+    onEdit,
+    onToggleFavorite,
+  }: VirtualTrackColumnProps): React.ReactElement => {
+    const scrollRef = useRef<HTMLDivElement>(null);
 
-  const getItemKey = useCallback((index: number) => columnTracks[index].id, [columnTracks]);
+    const getItemKey = useCallback(
+      (index: number) => columnTracks[index].id,
+      [columnTracks],
+    );
 
-  const estimateSize = useCallback(() => TRACK_CARD_ESTIMATE_PX, []);
+    const estimateSize = useCallback(() => TRACK_CARD_ESTIMATE_PX, []);
 
-  const rangeExtractor = useCallback((range: Parameters<typeof defaultRangeExtractor>[0]) => {
-    const containerTop = scrollRef.current?.getBoundingClientRect().top ?? 0;
-    const scrollMargin = containerTop + window.scrollY;
-    if (scrollMargin > window.scrollY + window.innerHeight) {
-      return [];
-    }
+    const rangeExtractor = useCallback(
+      (range: Parameters<typeof defaultRangeExtractor>[0]) => {
+        const containerTop =
+          scrollRef.current?.getBoundingClientRect().top ?? 0;
+        const scrollMargin = containerTop + window.scrollY;
+        if (scrollMargin > window.scrollY + window.innerHeight) {
+          return [];
+        }
 
-    return defaultRangeExtractor(range);
-  }, []);
+        return defaultRangeExtractor(range);
+      },
+      [],
+    );
 
-  const virtualizer = useVirtualizer({
-    count: columnTracks.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize,
-    getItemKey,
-    gap: TRACK_CARD_GAP_PX,
-    overscan: VIRTUALIZER_OVERSCAN,
-    rangeExtractor,
-  });
+    const virtualizer = useVirtualizer({
+      count: columnTracks.length,
+      getScrollElement: () => scrollRef.current,
+      estimateSize,
+      getItemKey,
+      gap: TRACK_CARD_GAP_PX,
+      overscan: VIRTUALIZER_OVERSCAN,
+      rangeExtractor,
+    });
 
-  const maxCount = columnTracks.length;
-  const minHeight = maxCount * TRACK_CARD_ESTIMATE_PX + Math.max(0, maxCount - 1) * TRACK_CARD_GAP_PX;
+    const maxCount = columnTracks.length;
+    const minHeight =
+      maxCount * TRACK_CARD_ESTIMATE_PX +
+      Math.max(0, maxCount - 1) * TRACK_CARD_GAP_PX;
 
-  return (
-    <div
-      ref={scrollRef}
-      style={{ overflowY: 'auto', maxHeight: '100%' }}
-      data-testid="track-column-scroll"
-    >
-      <div
-        style={{ height: virtualizer.getTotalSize(), position: 'relative', minHeight }}
+    return (
+      <Box
+        ref={scrollRef}
+        sx={columnScrollSx}
+        data-testid="track-column-scroll"
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
-          const track = columnTracks[virtualItem.index];
+        <div
+          style={{
+            height: virtualizer.getTotalSize(),
+            position: 'relative',
+            minHeight,
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => {
+            const track = columnTracks[virtualItem.index];
 
-          return (
-            <div
-              key={track.id}
-              data-index={virtualItem.index}
-              ref={virtualizer.measureElement}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-            >
-              <TrackCard
-                track={track}
-                trackState={trackStates[track.id] ?? DEFAULT_TRACK_STATE}
-                onToggle={onToggle}
-                onPlay={onPlay}
-                onEdit={onEdit}
-                onToggleFavorite={onToggleFavorite}
-              />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-});
+            return (
+              <div
+                key={track.id}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              >
+                <TrackCard
+                  track={track}
+                  trackState={trackStates[track.id] ?? DEFAULT_TRACK_STATE}
+                  onToggle={onToggle}
+                  onPlay={onPlay}
+                  onEdit={onEdit}
+                  onToggleFavorite={onToggleFavorite}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </Box>
+    );
+  },
+);
 
 VirtualTrackColumn.displayName = 'VirtualTrackColumn';
 
@@ -224,21 +239,15 @@ export const TrackGrid = ({
   return (
     <>
       <Box sx={gridSx} data-testid="track-grid">
-        {COLUMNS.map(({ category, label, color }) => {
+        {COLUMNS.map(({ category, label }) => {
           const columnTracks = grouped[category]
             .slice()
             .sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
 
           return (
-            <Box key={category}>
-              <Typography
-                variant="caption"
-                sx={columnHeaderSx(color)}
-              >
+            <Box key={category} sx={columnShellSx}>
+              <Typography variant="caption" sx={columnHeaderSx}>
                 {label}
-                <Typography component="span" sx={columnCountSx}>
-                  ({columnTracks.length})
-                </Typography>
               </Typography>
 
               {columnTracks.length === 0 ? (
@@ -246,7 +255,7 @@ export const TrackGrid = ({
                   —
                 </Typography>
               ) : (
-                <Stack spacing={0.75}>
+                <Stack spacing={0.75} sx={{ flex: 1, minHeight: 0 }}>
                   <VirtualTrackColumn
                     columnTracks={columnTracks}
                     trackStates={trackStates}
