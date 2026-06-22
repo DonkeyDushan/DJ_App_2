@@ -2,11 +2,14 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 
 import { loadSessions, persistSessions } from '../../core/storage/sessionStorage';
 import type { DJSession, SessionSlot } from '../../core/types/sessionData';
+import type { TransitionKind } from '../../core/types/transition';
 import {
   DEFAULT_SLOT_DURATION_SECONDS,
   DEFAULT_TOTAL_DURATION_SECONDS,
   DEFAULT_TRANSITION_DURATION_SECONDS,
+  DEFAULT_TRANSITION_KIND,
 } from './constants/sessionDefaults';
+import { normalizeSession } from './utils/normalizeSession';
 
 const createBlankSession = (): DJSession => ({
   id: `draft-${Date.now()}`,
@@ -15,6 +18,8 @@ const createBlankSession = (): DJSession => ({
   totalDurationSeconds: DEFAULT_TOTAL_DURATION_SECONDS,
   slots: [],
   isFavorite: false,
+  defaultTransitionKind: DEFAULT_TRANSITION_KIND,
+  defaultTransitionDuration: DEFAULT_TRANSITION_DURATION_SECONDS,
 });
 
 type SessionActions = {
@@ -32,6 +37,11 @@ type SessionActions = {
   reorderSlots: (newSlots: SessionSlot[]) => void;
   setSlotDuration: (slotId: string, durationSeconds: number) => void;
   setSlotTransitionDuration: (slotId: string, transitionDuration: number) => void;
+  setSlotTransitionKind: (slotId: string, transitionKind: TransitionKind) => void;
+  setSessionDefaultTransition: (
+    transitionKind: TransitionKind,
+    transitionDuration: number,
+  ) => void;
   setTotalDuration: (seconds: number) => void;
   startSetPlayback: () => void;
   pauseSetPlayback: () => void;
@@ -70,7 +80,7 @@ export const SessionProvider = ({
   useEffect(() => { sessionsRef.current = sessions; }, [sessions]);
 
   useEffect(() => {
-    void loadSessions().then(setSessions);
+    void loadSessions().then((loaded) => setSessions(loaded.map(normalizeSession)));
   }, []);
 
   const playingMixId = useMemo(() => {
@@ -154,16 +164,17 @@ export const SessionProvider = ({
         });
       },
       addSlot: (mixId: string) => {
-        const slot: SessionSlot = {
-          id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          mixId,
-          durationSeconds: DEFAULT_SLOT_DURATION_SECONDS,
-          transitionDuration: DEFAULT_TRANSITION_DURATION_SECONDS,
-        };
-        setActiveSession((current) => ({
-          ...current,
-          slots: [...current.slots, slot],
-        }));
+        setActiveSession((current) => {
+          const slot: SessionSlot = {
+            id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            mixId,
+            durationSeconds: DEFAULT_SLOT_DURATION_SECONDS,
+            transitionKind: current.defaultTransitionKind,
+            transitionDuration: current.defaultTransitionDuration,
+          };
+
+          return { ...current, slots: [...current.slots, slot] };
+        });
         setHasUnsavedChanges(true);
       },
       removeSlot: (slotId: string) => {
@@ -207,6 +218,26 @@ export const SessionProvider = ({
           slots: current.slots.map((s) =>
             s.id === slotId ? { ...s, transitionDuration } : s,
           ),
+        }));
+        setHasUnsavedChanges(true);
+      },
+      setSlotTransitionKind: (slotId: string, transitionKind: TransitionKind) => {
+        setActiveSession((current) => ({
+          ...current,
+          slots: current.slots.map((s) =>
+            s.id === slotId ? { ...s, transitionKind } : s,
+          ),
+        }));
+        setHasUnsavedChanges(true);
+      },
+      setSessionDefaultTransition: (
+        transitionKind: TransitionKind,
+        transitionDuration: number,
+      ) => {
+        setActiveSession((current) => ({
+          ...current,
+          defaultTransitionKind: transitionKind,
+          defaultTransitionDuration: transitionDuration,
         }));
         setHasUnsavedChanges(true);
       },

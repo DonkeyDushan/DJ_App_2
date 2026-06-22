@@ -10,6 +10,13 @@ export const FADE_MS = 180;
 /** Duration of fade-in when starting transport, in milliseconds. */
 export const FADE_IN_MS = 220;
 
+/**
+ * Extra delay in milliseconds after a transition ramp completes before the
+ * outgoing deck's sources are stopped, so its gain has fully reached zero and
+ * stopping it cannot click.
+ */
+export const TRANSITION_STOP_GUARD_MS = 80;
+
 /** Time constant for volume smoothing via setTargetAtTime. */
 export const VOLUME_TIME_CONSTANT = 0.015;
 

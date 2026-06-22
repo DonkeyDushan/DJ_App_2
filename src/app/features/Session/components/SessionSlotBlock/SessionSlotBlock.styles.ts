@@ -60,6 +60,15 @@ export const slotTransitionSx: SxProps<Theme> = {
   fontSize: '1rem',
   color: 'text.disabled',
   whiteSpace: 'nowrap',
+  border: 'none',
+  background: 'none',
+  p: 0,
+  textAlign: 'left',
+  cursor: 'pointer',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  maxWidth: '100%',
+  '&:hover': { color: 'text.secondary' },
 };
 
 export const actionsSx: SxProps<Theme> = {

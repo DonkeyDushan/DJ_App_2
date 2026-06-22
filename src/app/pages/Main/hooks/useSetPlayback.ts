@@ -3,10 +3,14 @@
  * stops transport at end of set, and provides seek/play-pause handlers.
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import type { DJSession } from '../../../core/types/sessionData';
+import type { TransitionKind } from '../../../core/types/transition';
 import type { MixerActions } from '../../../features/Mixer/types/mixerContext';
+
+/** Transition kind used for initial start, seek, and scrub (no blend). */
+const IMMEDIATE_TRANSITION_KIND: TransitionKind = 'cut';
 
 type SetPlaybackSessionActions = {
   advanceSlot: () => void;
@@ -22,7 +26,7 @@ type UseSetPlaybackParams = {
   currentSlotIndex: number | null;
   slotOffsetSeconds: number;
   activeSession: DJSession;
-  mixerActions: Pick<MixerActions, 'loadMixAndPlay' | 'toggleTransport'>;
+  mixerActions: Pick<MixerActions, 'transitionToMix' | 'toggleTransport'>;
   sessionActions: SetPlaybackSessionActions;
 };
 
@@ -39,13 +43,22 @@ export const useSetPlayback = ({
   mixerActions,
   sessionActions,
 }: UseSetPlaybackParams): UseSetPlaybackResult => {
+  // Tracks the slot that was loaded last so the next load can tell a natural
+  // advance (slot i entered from i-1 at offset 0 — apply the slot's transition)
+  // from an initial start, seek, or scrub (hard cut).
+  const loadedSlotIndexRef = useRef<number | null>(null);
+
   // Load the active slot's mix and align its loops to the in-slot offset.
   // Reruns when the slot changes (advance, or seek into another slot) and when
   // the offset changes (seek within the same slot): in every case the mix is
   // (re)started at the loop phase it would occupy had the set played from the
   // start, so the DJ auditions transitions exactly as they will sound live.
   useEffect(() => {
-    if (!setIsPlaying || currentSlotIndex === null) return;
+    if (!setIsPlaying || currentSlotIndex === null) {
+      loadedSlotIndexRef.current = null;
+
+      return;
+    }
     const slot = activeSession.slots[currentSlotIndex];
     if (!slot) {
       sessionActions.stopSetPlayback();
@@ -53,7 +66,23 @@ export const useSetPlayback = ({
       return;
     }
 
-    void mixerActions.loadMixAndPlay(slot.mixId, slotOffsetSeconds);
+    const previousIndex = loadedSlotIndexRef.current;
+    const isNaturalAdvance =
+      previousIndex !== null &&
+      currentSlotIndex === previousIndex + 1 &&
+      slotOffsetSeconds === 0;
+    const kind = isNaturalAdvance
+      ? slot.transitionKind
+      : IMMEDIATE_TRANSITION_KIND;
+    const durationSeconds = isNaturalAdvance ? slot.transitionDuration : 0;
+
+    loadedSlotIndexRef.current = currentSlotIndex;
+    void mixerActions.transitionToMix(
+      slot.mixId,
+      kind,
+      durationSeconds,
+      slotOffsetSeconds,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
 

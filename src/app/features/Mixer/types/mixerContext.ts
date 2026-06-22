@@ -6,6 +6,7 @@ import type { AudioEngine } from '../../../core/audio/audioEngine';
 import type { TrackCategory, TrackDefinition, TrackSavedSettings } from '../../../core/types/trackData';
 import type { MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
 import type { MixColorKey } from '../../../core/constants/mixColors';
+import type { TransitionKind } from '../../../core/types/transition';
 
 export type MixerActions = {
   toggleTrack: (trackId: string, enabled: boolean) => Promise<void>;
@@ -27,6 +28,12 @@ export type MixerActions = {
   toggleTransport: () => Promise<void>;
   restartTransport: () => Promise<void>;
   loadMixAndPlay: (mixId: string, offsetSeconds?: number) => Promise<void>;
+  transitionToMix: (
+    mixId: string,
+    kind: TransitionKind,
+    durationSeconds: number,
+    offsetSeconds?: number,
+  ) => Promise<void>;
   loadInitialData: () => Promise<void>;
   addCustomSound: (file: File) => Promise<void>;
   deleteCustomSound: (soundId: string) => Promise<void>;

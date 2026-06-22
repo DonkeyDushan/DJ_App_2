@@ -10,6 +10,7 @@ import { Box, Typography, useTheme } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
+import type { TransitionKind } from '../../../../core/types/transition';
 import type { SavedMix } from '../../../../core/types/mixData';
 import { SessionSlotBlock } from '../SessionSlotBlock/SessionSlotBlock';
 import {
@@ -39,6 +40,8 @@ interface SessionTimelineProps {
   onRemoveSlot: (slotId: string) => void;
   onDuplicateSlot: (slotId: string) => void;
   onSetSlotDuration: (slotId: string, durationSeconds: number) => void;
+  onSetSlotTransitionKind: (slotId: string, kind: TransitionKind) => void;
+  onSetSlotTransitionDuration: (slotId: string, durationSeconds: number) => void;
   onSeek: (seconds: number) => void;
 }
 
@@ -56,6 +59,8 @@ export const SessionTimeline = ({
   onRemoveSlot,
   onDuplicateSlot,
   onSetSlotDuration,
+  onSetSlotTransitionKind,
+  onSetSlotTransitionDuration,
   onSeek,
 }: SessionTimelineProps): React.ReactElement => {
   const theme = useTheme();
@@ -271,6 +276,12 @@ export const SessionTimeline = ({
                   onRemove={() => onRemoveSlot(slot.id)}
                   onDuplicate={() => onDuplicateSlot(slot.id)}
                   onResizeDuration={(d) => onSetSlotDuration(slot.id, d)}
+                  onSetTransitionKind={(k) =>
+                    onSetSlotTransitionKind(slot.id, k)
+                  }
+                  onSetTransitionDuration={(d) =>
+                    onSetSlotTransitionDuration(slot.id, d)
+                  }
                 />
               );
             })}

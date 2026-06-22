@@ -151,7 +151,11 @@ export const STRINGS = {
     loadSession: 'Load',
     deleteSession: 'Delete',
     renameSession: 'Rename set',
-    transitionLabel: 'Fade',
+    transitionType: 'Transition',
+    transitionCut: 'Cut',
+    transitionFade: 'Fade',
+    transitionCrossfade: 'Crossfade',
+    setDefaultTransition: 'Default transition',
     seconds: 's',
   },
 } as const;

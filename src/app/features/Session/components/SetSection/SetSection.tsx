@@ -3,15 +3,28 @@ import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Reload } from 'pixelarticons/react/Reload';
 import { Save } from 'pixelarticons/react/Save';
-import { Box, IconButton, InputBase, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  InputBase,
+  Popover,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import { PixelIcon, PlayButton } from '../../../../components';
 import type { DJSession } from '../../../../core/types/sessionData';
+import type { TransitionKind } from '../../../../core/types/transition';
 import type { SavedMix } from '../../../../core/types/mixData';
 import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
 import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
 import {
+  TRANSITION_KIND_LABEL,
+  TransitionEditor,
+} from '../TransitionEditor/TransitionEditor';
+import {
+  defaultTransitionButtonSx,
   durationInputSx,
   durationLabelSx,
   headerRootSx,
@@ -33,6 +46,15 @@ interface SetSectionProps {
   onRemoveSlot: (slotId: string) => void;
   onDuplicateSlot: (slotId: string) => void;
   onSetSlotDuration: (slotId: string, durationSeconds: number) => void;
+  onSetSlotTransitionKind: (slotId: string, kind: TransitionKind) => void;
+  onSetSlotTransitionDuration: (
+    slotId: string,
+    durationSeconds: number,
+  ) => void;
+  onSetDefaultTransition: (
+    kind: TransitionKind,
+    durationSeconds: number,
+  ) => void;
   onReorderSlots: (slots: DJSession['slots']) => void;
   onSeekSlot?: (seconds: number) => void;
 }
@@ -51,10 +73,14 @@ const SetSectionInner = ({
   onRemoveSlot,
   onDuplicateSlot,
   onSetSlotDuration,
+  onSetSlotTransitionKind,
+  onSetSlotTransitionDuration,
+  onSetDefaultTransition,
   onReorderSlots,
   onSeekSlot,
 }: SetSectionProps): React.ReactElement => {
   const [playheadSeconds, setPlayheadSeconds] = useState(0);
+  const [defaultAnchor, setDefaultAnchor] = useState<HTMLElement | null>(null);
   const prevSessionIdRef = useRef(activeSession.id);
 
   useEffect(() => {
@@ -134,6 +160,19 @@ const SetSectionInner = ({
               ml: 'auto',
             }}
           >
+            <Tooltip title={STRINGS.set.setDefaultTransition}>
+              <Box
+                component="button"
+                type="button"
+                onClick={(e) => setDefaultAnchor(e.currentTarget)}
+                sx={defaultTransitionButtonSx}
+                data-testid="set-default-transition"
+              >
+                ↗{' '}
+                {TRANSITION_KIND_LABEL[activeSession.defaultTransitionKind]}
+              </Box>
+            </Tooltip>
+
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Typography sx={durationLabelSx}>
                 {STRINGS.set.totalDuration}
@@ -180,6 +219,31 @@ const SetSectionInner = ({
           </Box>
         </Box>
 
+        <Popover
+          open={Boolean(defaultAnchor)}
+          anchorEl={defaultAnchor}
+          onClose={() => setDefaultAnchor(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <TransitionEditor
+            kind={activeSession.defaultTransitionKind}
+            durationSeconds={activeSession.defaultTransitionDuration}
+            onChangeKind={(kind) =>
+              onSetDefaultTransition(
+                kind,
+                activeSession.defaultTransitionDuration,
+              )
+            }
+            onChangeDuration={(durationSeconds) =>
+              onSetDefaultTransition(
+                activeSession.defaultTransitionKind,
+                durationSeconds,
+              )
+            }
+          />
+        </Popover>
+
         <SessionTimeline
           session={activeSession}
           mixes={mixes}
@@ -189,6 +253,8 @@ const SetSectionInner = ({
           onRemoveSlot={onRemoveSlot}
           onDuplicateSlot={onDuplicateSlot}
           onSetSlotDuration={onSetSlotDuration}
+          onSetSlotTransitionKind={onSetSlotTransitionKind}
+          onSetSlotTransitionDuration={onSetSlotTransitionDuration}
           onSeek={(seconds) => {
             setPlayheadSeconds(seconds);
             onSeekSlot?.(seconds);

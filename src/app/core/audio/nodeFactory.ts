@@ -14,11 +14,12 @@ import {
 
 /**
  * Creates a fully-wired PlaybackHandle for a single track playback instance.
- * Connects: source → EQ chain → gainNode → masterGain (+ optional reverb/delay sends).
+ * Connects: source → EQ chain → gainNode → targetGain (+ optional reverb/delay
+ * sends). `targetGain` is the deck fader the handle plays through.
  */
 export const createPlaybackHandle = (
   context: AudioContext,
-  masterGain: GainNode,
+  targetGain: GainNode,
   reverbInputGain: GainNode | null,
   delayInputGain: GainNode | null,
   trackId: string,
@@ -60,7 +61,7 @@ export const createPlaybackHandle = (
   eqLowNode.connect(eqMidNode);
   eqMidNode.connect(eqHighNode);
   eqHighNode.connect(gainNode);
-  gainNode.connect(masterGain);
+  gainNode.connect(targetGain);
 
   if (reverbInputGain) {
     gainNode.connect(reverbSendNode).connect(reverbInputGain);

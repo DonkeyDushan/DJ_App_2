@@ -10,14 +10,20 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Popover,
   Tooltip,
   Typography,
 } from '@mui/material';
 
 import type { SavedMix } from '../../../../core/types/mixData';
 import type { SessionSlot } from '../../../../core/types/sessionData';
+import type { TransitionKind } from '../../../../core/types/transition';
 import { STRINGS } from '../../../../strings';
 import { PixelIcon } from '../../../../components';
+import {
+  TRANSITION_KIND_LABEL,
+  TransitionEditor,
+} from '../TransitionEditor/TransitionEditor';
 import {
   ACTIONS_MIN_WIDTH_PX,
   MIN_SLOT_DURATION_SECONDS,
@@ -45,6 +51,8 @@ interface SessionSlotBlockProps {
   onRemove: () => void;
   onDuplicate: () => void;
   onResizeDuration: (durationSeconds: number) => void;
+  onSetTransitionKind: (kind: TransitionKind) => void;
+  onSetTransitionDuration: (durationSeconds: number) => void;
 }
 
 export const SessionSlotBlock = ({
@@ -57,6 +65,8 @@ export const SessionSlotBlock = ({
   onRemove,
   onDuplicate,
   onResizeDuration,
+  onSetTransitionKind,
+  onSetTransitionDuration,
 }: SessionSlotBlockProps): React.ReactElement => {
   const {
     attributes,
@@ -70,6 +80,14 @@ export const SessionSlotBlock = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const [isNarrow, setIsNarrow] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [transitionAnchor, setTransitionAnchor] = useState<HTMLElement | null>(
+    null,
+  );
+
+  const transitionChipLabel =
+    slot.transitionKind === 'cut'
+      ? TRANSITION_KIND_LABEL.cut
+      : `${TRANSITION_KIND_LABEL[slot.transitionKind]} ${slot.transitionDuration}${STRINGS.set.seconds}`;
 
   const setRefs = (el: HTMLDivElement | null) => {
     rootRef.current = el;
@@ -134,9 +152,20 @@ export const SessionSlotBlock = ({
         <Typography sx={slotDurationSx}>
           {formatSlotDuration(slot.durationSeconds)}
         </Typography>
-        <Typography sx={slotTransitionSx}>
-          ↗ {slot.transitionDuration}s
-        </Typography>
+        <Tooltip title={STRINGS.set.transitionType} placement="top">
+          <Typography
+            component="button"
+            type="button"
+            sx={slotTransitionSx}
+            onClick={(e) => {
+              e.stopPropagation();
+              setTransitionAnchor(e.currentTarget);
+            }}
+            data-testid={`slot-transition--${slot.id}`}
+          >
+            ↗ {transitionChipLabel}
+          </Typography>
+        </Tooltip>
       </Box>
 
       {isNarrow ? (
@@ -203,6 +232,21 @@ export const SessionSlotBlock = ({
           </Tooltip>
         </Box>
       )}
+
+      <Popover
+        open={Boolean(transitionAnchor)}
+        anchorEl={transitionAnchor}
+        onClose={() => setTransitionAnchor(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <TransitionEditor
+          kind={slot.transitionKind}
+          durationSeconds={slot.transitionDuration}
+          onChangeKind={onSetTransitionKind}
+          onChangeDuration={onSetTransitionDuration}
+        />
+      </Popover>
 
       <Box sx={resizeHandleSx} onMouseDown={handleResizeMouseDown} />
     </Box>

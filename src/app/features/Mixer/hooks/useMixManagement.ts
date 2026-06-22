@@ -16,7 +16,8 @@ import { loadSavedMixes, persistSavedMixes } from '../../../core/storage/mixStor
 import { loadFavoriteIds, loadTrackPresets } from '../../../core/storage/trackPresets';
 import type { SavedMix, MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
 import type { MixColorKey } from '../../../core/constants/mixColors';
-import type { TrackDefinition } from '../../../core/types/trackData';
+import type { TransitionKind } from '../../../core/types/transition';
+import type { TrackDefinition, TrackState } from '../../../core/types/trackData';
 import { DEFAULT_SINGLE_TRACK_VALUES, MAX_SAVED_MIXES } from '../constants/trackDefaults';
 import type { MixerActions } from '../types/mixerContext';
 import {
@@ -42,6 +43,7 @@ type MixManagementParams = {
 export type MixManagementActions = Pick<
   MixerActions,
   | 'loadMixAndPlay'
+  | 'transitionToMix'
   | 'loadInitialData'
   | 'addCustomSound'
   | 'deleteCustomSound'
@@ -54,6 +56,36 @@ export type MixManagementActions = Pick<
   | 'deleteMix'
   | 'updateMix'
 >;
+
+/**
+ * Overlays a saved mix's track states onto the current track states, leaving
+ * tracks the mix does not mention untouched. Returns a new record.
+ */
+const applyMixToTrackStates = (
+  currentTrackStates: Record<string, TrackState>,
+  mix: SavedMix,
+): Record<string, TrackState> => {
+  const nextTrackStates = { ...currentTrackStates };
+  Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
+    nextTrackStates[trackId] = {
+      ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
+      ...trackState,
+    };
+  });
+
+  return nextTrackStates;
+};
+
+/** Marks every track as playing when enabled, used after a mix starts. */
+const toPlayingTrackStates = (
+  trackStates: Record<string, TrackState>,
+): Record<string, TrackState> =>
+  Object.fromEntries(
+    Object.entries(trackStates).map(([trackId, trackState]) => [
+      trackId,
+      { ...trackState, isPlaying: trackState.enabled, isPreviewPlaying: false },
+    ]),
+  );
 
 export const buildMixManagementActions = ({
   engine,
@@ -74,13 +106,10 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = { ...currentSnapshot.trackStates };
-    Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
-      nextTrackStates[trackId] = {
-        ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-        ...trackState,
-      };
-    });
+    const nextTrackStates = applyMixToTrackStates(
+      currentSnapshot.trackStates,
+      mix,
+    );
 
     await engine.startTransport(
       currentTracks,
@@ -93,12 +122,41 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => ({
       ...current,
       globalTempo: mix.globalTempo,
-      trackStates: Object.fromEntries(
-        Object.entries(nextTrackStates).map(([trackId, trackState]) => [
-          trackId,
-          { ...trackState, isPlaying: trackState.enabled, isPreviewPlaying: false },
-        ]),
-      ),
+      trackStates: toPlayingTrackStates(nextTrackStates),
+      transportPlaying: true,
+    }));
+  },
+
+  transitionToMix: async (
+    mixId: string,
+    kind: TransitionKind,
+    durationSeconds: number,
+    offsetSeconds = 0,
+  ) => {
+    const currentSnapshot = snapshotRef.current;
+    const currentTracks = tracksRef.current;
+    const mix = currentSnapshot.savedMixes.find((entry) => entry.id === mixId);
+    if (!mix) return;
+
+    const nextTrackStates = applyMixToTrackStates(
+      currentSnapshot.trackStates,
+      mix,
+    );
+
+    // The engine decides whether this overlaps (crossfade), passes through
+    // silence (fade), or hard-cuts — based on `kind` and whether it is playing.
+    await engine.crossfadeTo(
+      currentTracks,
+      nextTrackStates,
+      currentSnapshot.customSounds,
+      mix.globalTempo,
+      { kind, durationSeconds, offsetSeconds },
+    );
+
+    setSnapshot((current) => ({
+      ...current,
+      globalTempo: mix.globalTempo,
+      trackStates: toPlayingTrackStates(nextTrackStates),
       transportPlaying: true,
     }));
   },

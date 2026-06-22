@@ -55,3 +55,20 @@ export const durationInputSx: SxProps<Theme> = {
   outline: 'none',
   '&:focus': { borderColor: 'primary.main' },
 };
+
+export const defaultTransitionButtonSx: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 0.25,
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '0.875rem',
+  color: 'text.secondary',
+  whiteSpace: 'nowrap',
+  bgcolor: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 0.5,
+  px: 0.75,
+  py: 0.25,
+  cursor: 'pointer',
+  '&:hover': { borderColor: 'primary.main', color: 'text.primary' },
+};
