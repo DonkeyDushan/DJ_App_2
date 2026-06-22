@@ -12,10 +12,10 @@ export const cardSx = (
   borderTop: '1px solid',
   borderBottom: '1px solid',
   cursor: isSetPlaybackActive || isActive ? 'default' : 'pointer',
-  borderColor: isSetPlaying || isActive ? 'primary.main' : 'transparent',
+  borderColor: isActive ? 'primary.main' : 'transparent',
   transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
   '&:hover': {
-    borderColor: isActive || isSetPlaying ? 'undefined' : 'divider',
+    borderColor: isActive ? 'undefined' : 'divider',
     bgcolor: '#000',
   },
 });

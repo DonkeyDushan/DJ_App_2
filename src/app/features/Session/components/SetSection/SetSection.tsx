@@ -9,7 +9,6 @@ import { STRINGS } from '../../../../strings';
 import { PixelIcon, PlayButton } from '../../../../components';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
-import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
 import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
 import {
@@ -23,7 +22,6 @@ import {
 interface SetSectionProps {
   activeSession: DJSession;
   mixes: SavedMix[];
-  tracks: TrackDefinition[];
   isSetPlaying: boolean;
   currentSlotIndex: number | null;
   hasUnsavedChanges: boolean;
@@ -42,7 +40,6 @@ interface SetSectionProps {
 const SetSectionInner = ({
   activeSession,
   mixes,
-  tracks,
   isSetPlaying,
   currentSlotIndex,
   hasUnsavedChanges,
@@ -186,7 +183,6 @@ const SetSectionInner = ({
         <SessionTimeline
           session={activeSession}
           mixes={mixes}
-          tracks={tracks}
           isPlaying={isSetPlaying}
           playheadSeconds={playheadSeconds}
           onDragEnd={handleDragEnd}

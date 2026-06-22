@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   SortableContext,
   arrayMove,
@@ -11,12 +11,10 @@ import { Box, Typography } from '@mui/material';
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
 import type { SavedMix } from '../../../../core/types/mixData';
-import type { TrackDefinition } from '../../../../core/types/trackData';
 import { SessionSlotBlock } from '../SessionSlotBlock/SessionSlotBlock';
 import {
   emptyLabelSx,
   emptyTimelineSx,
-  loopMarkerSx,
   playheadContainerSx,
   playheadHandleSx,
   playheadLineSx,
@@ -25,15 +23,17 @@ import {
   tickLabelSx,
   timelineWrapperSx,
 } from './SessionTimeline.styles';
-import { formatTickLabel, getSlotColor, getTickIntervalSeconds } from '../../utils/timelineFormatters';
-import { computeLoopMarkers } from '../../utils/loopMarkers';
+import {
+  formatTickLabel,
+  getSlotColor,
+  getTickIntervalSeconds,
+} from '../../utils/timelineFormatters';
 
 export const TIMELINE_DROPPABLE_ID = 'timeline';
 
 interface SessionTimelineProps {
   session: DJSession;
   mixes: SavedMix[];
-  tracks: TrackDefinition[];
   isPlaying: boolean;
   playheadSeconds: number;
   onDragEnd: (event: DragEndEvent) => void;
@@ -46,9 +46,9 @@ interface SessionTimelineProps {
 export const SessionTimeline = ({
   session,
   mixes,
-  tracks,
   isPlaying,
   playheadSeconds,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDragEnd: _onDragEnd,
   onRemoveSlot,
   onDuplicateSlot,
@@ -61,33 +61,43 @@ export const SessionTimeline = ({
   const { isOver, setNodeRef } = useDroppable({ id: TIMELINE_DROPPABLE_ID });
 
   const isPlayingRef = useRef(isPlaying);
-  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   const playheadSecondsRef = useRef(playheadSeconds);
-  useEffect(() => { playheadSecondsRef.current = playheadSeconds; }, [playheadSeconds]);
+  useEffect(() => {
+    playheadSecondsRef.current = playheadSeconds;
+  }, [playheadSeconds]);
 
   const onSeekRef = useRef(onSeek);
-  useEffect(() => { onSeekRef.current = onSeek; }, [onSeek]);
+  useEffect(() => {
+    onSeekRef.current = onSeek;
+  }, [onSeek]);
 
   const slotTotalSeconds = session.slots.reduce(
     (sum, s) => sum + s.durationSeconds,
     0,
   );
-  const effectiveTotal = Math.max(session.totalDurationSeconds, slotTotalSeconds, 1);
+  const effectiveTotal = Math.max(
+    session.totalDurationSeconds,
+    slotTotalSeconds,
+    1,
+  );
 
   const effectiveTotalRef = useRef(effectiveTotal);
-  useEffect(() => { effectiveTotalRef.current = effectiveTotal; }, [effectiveTotal]);
+  useEffect(() => {
+    effectiveTotalRef.current = effectiveTotal;
+  }, [effectiveTotal]);
 
   const animFrameRef = useRef<number>(0);
   const playbackStartRef = useRef<{ wall: number; pos: number } | null>(null);
 
   const tickIntervalSeconds = getTickIntervalSeconds(effectiveTotal);
   const tickCount = Math.ceil(effectiveTotal / tickIntervalSeconds);
-  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => i * tickIntervalSeconds);
-
-  const loopMarkers = useMemo(
-    () => computeLoopMarkers(session.slots, mixes, tracks, effectiveTotal),
-    [session.slots, mixes, tracks, effectiveTotal],
+  const ticks = Array.from(
+    { length: tickCount + 1 },
+    (_, i) => i * tickIntervalSeconds,
   );
 
   const slotIds = session.slots.map((s) => s.id);
@@ -118,33 +128,35 @@ export const SessionTimeline = ({
     animFrameRef.current = requestAnimationFrame(tick);
   }, []);
 
-  const seekTo = useCallback((pos: number) => {
-    playheadSecondsRef.current = pos;
-    if (playheadRef.current) {
-      playheadRef.current.style.left = `${(pos / effectiveTotalRef.current) * 100}%`;
-    }
-    onSeekRef.current(pos);
-    if (isPlayingRef.current) {
-      startTick(pos);
-    }
-  }, [startTick]);
+  const seekTo = useCallback(
+    (pos: number) => {
+      playheadSecondsRef.current = pos;
+      if (playheadRef.current) {
+        playheadRef.current.style.left = `${(pos / effectiveTotalRef.current) * 100}%`;
+      }
+      onSeekRef.current(pos);
+      if (isPlayingRef.current) {
+        startTick(pos);
+      }
+    },
+    [startTick],
+  );
 
   useEffect(() => {
     if (!isPlaying) return;
     startTick(playheadSecondsRef.current);
 
-    return () => {
-      cancelAnimationFrame(animFrameRef.current);
-      if (playbackStartRef.current) {
-        const elapsed = (performance.now() - playbackStartRef.current.wall) / 1000;
-        const pos = Math.min(
-          playbackStartRef.current.pos + elapsed,
-          effectiveTotalRef.current,
-        );
-        onSeekRef.current(pos);
-        playbackStartRef.current = null;
-      }
-    };
+    cancelAnimationFrame(animFrameRef.current);
+    if (playbackStartRef.current) {
+      const elapsed =
+        (performance.now() - playbackStartRef.current.wall) / 1000;
+      const pos = Math.min(
+        playbackStartRef.current.pos + elapsed,
+        effectiveTotalRef.current,
+      );
+      onSeekRef.current(pos);
+      playbackStartRef.current = null;
+    }
   }, [isPlaying, startTick]);
 
   useEffect(() => {
@@ -192,7 +204,11 @@ export const SessionTimeline = ({
   };
 
   return (
-    <Box ref={timelineWrapperRef} sx={timelineWrapperSx} data-testid="session-timeline">
+    <Box
+      ref={timelineWrapperRef}
+      sx={timelineWrapperSx}
+      data-testid="session-timeline"
+    >
       {/* Time ruler */}
       <Box sx={rulerSx} onPointerDown={handleRulerSeek}>
         {ticks.map((seconds) => (
@@ -220,9 +236,13 @@ export const SessionTimeline = ({
             <Typography sx={emptyLabelSx}>{STRINGS.set.noSlots}</Typography>
           </Box>
         ) : (
-          <SortableContext items={slotIds} strategy={horizontalListSortingStrategy}>
+          <SortableContext
+            items={slotIds}
+            strategy={horizontalListSortingStrategy}
+          >
             {session.slots.map((slot) => {
-              const widthPercent = (slot.durationSeconds / effectiveTotal) * 100;
+              const widthPercent =
+                (slot.durationSeconds / effectiveTotal) * 100;
 
               return (
                 <SessionSlotBlock
@@ -241,15 +261,6 @@ export const SessionTimeline = ({
           </SortableContext>
         )}
       </Box>
-
-      {/* Loop-restart markers — where each slot's mix loops back to its start */}
-      {loopMarkers.map((marker) => (
-        <Box
-          key={marker.key}
-          sx={loopMarkerSx}
-          style={{ left: `${marker.fraction * 100}%` }}
-        />
-      ))}
 
       {/* Playhead */}
       <Box
