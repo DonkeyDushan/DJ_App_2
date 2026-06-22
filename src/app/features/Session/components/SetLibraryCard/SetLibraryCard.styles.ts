@@ -4,21 +4,18 @@ import type { SxProps, Theme } from '@mui/material';
  * Saved-set card appearance. Mirrors the mix-library card minus drag/favourite states.
  * `dimmed` fades non-active sets while a set is playing (interactions are locked then).
  */
-export const cardSx = (
-  isActive: boolean,
-  isSetPlaybackActive: boolean,
-): SxProps<Theme> => ({
+export const cardSx = (isActive: boolean): SxProps<Theme> => ({
   px: 1.5,
   py: 1,
   borderRadius: 0,
   border: 0,
   borderTop: '1px solid',
   borderBottom: '1px solid',
-  cursor: isSetPlaybackActive || isActive ? 'default' : 'pointer',
-  borderColor: isSetPlaybackActive || isActive ? 'primary.main' : 'transparent',
+  cursor: isActive ? 'default' : 'pointer',
+  borderColor: isActive ? 'primary.main' : 'transparent',
   transition: 'opacity 0.15s, border-color 0.2s, background-color 0.2s',
   '&:hover': {
-    borderColor: isActive || isSetPlaybackActive ? 'undefined' : 'divider',
+    borderColor: isActive ? 'undefined' : 'divider',
     bgcolor: '#000',
   },
 });

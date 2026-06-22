@@ -27,15 +27,17 @@ import {
 
 type MixEditDialogProps = {
   open: boolean;
+  mode: 'create' | 'edit';
   initialName: string;
   initialColor: MixColorKey | null;
   onSave: (name: string, color: MixColorKey | null) => void;
-  onDelete: () => void;
+  onDelete?: () => void;
   onClose: () => void;
 };
 
 const MixEditDialogInner = ({
   open,
+  mode,
   initialName,
   initialColor,
   onSave,
@@ -62,6 +64,11 @@ const MixEditDialogInner = ({
     if (e.key === 'Enter') handleSave();
   };
 
+  const title =
+    mode === 'create'
+      ? STRINGS.mixEditDialog.createTitle
+      : STRINGS.mixEditDialog.editTitle;
+
   return (
     <Dialog
       open={open}
@@ -69,7 +76,7 @@ const MixEditDialogInner = ({
       PaperProps={{ sx: paperSx }}
       data-testid="mix-edit-dialog"
     >
-      <DialogTitle sx={titleSx}>{STRINGS.mixEditDialog.title}</DialogTitle>
+      <DialogTitle sx={titleSx}>{title}</DialogTitle>
 
       <DialogContent>
         <InputBase
@@ -112,14 +119,16 @@ const MixEditDialogInner = ({
       </DialogContent>
 
       <DialogActions>
-        <Button
-          size="small"
-          onClick={onDelete}
-          sx={deleteButtonSx}
-          data-testid="mix-edit-dialog-delete"
-        >
-          {STRINGS.mixEditDialog.delete}
-        </Button>
+        {mode === 'edit' && onDelete && (
+          <Button
+            size="small"
+            onClick={onDelete}
+            sx={deleteButtonSx}
+            data-testid="mix-edit-dialog-delete"
+          >
+            {STRINGS.mixEditDialog.delete}
+          </Button>
+        )}
 
         <Button size="small" onClick={onClose} sx={buttonSx}>
           {STRINGS.mixEditDialog.cancel}

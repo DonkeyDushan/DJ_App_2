@@ -117,7 +117,8 @@ export const STRINGS = {
     cancel: 'Cancel',
   },
   mixEditDialog: {
-    title: 'EDIT MIX',
+    createTitle: 'SAVE MIX',
+    editTitle: 'EDIT MIX',
     namePlaceholder: 'Mix name…',
     colorLabel: 'COLOR',
     clearColor: 'No color',

@@ -6,7 +6,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import type { DJSession } from '../../../../core/types/sessionData';
@@ -25,7 +25,6 @@ import {
 } from './SessionTimeline.styles';
 import {
   formatTickLabel,
-  getSlotColor,
   getTickIntervalSeconds,
 } from '../../utils/timelineFormatters';
 
@@ -43,6 +42,10 @@ interface SessionTimelineProps {
   onSeek: (seconds: number) => void;
 }
 
+/** Neutral slot color used when a mix has no accent color assigned. */
+const SLOT_COLOR_FALLBACK = '#808080';
+const SLOT_COLOR_LIGHT_FALLBACK = '#ebebeb';
+
 export const SessionTimeline = ({
   session,
   mixes,
@@ -55,6 +58,7 @@ export const SessionTimeline = ({
   onSetSlotDuration,
   onSeek,
 }: SessionTimelineProps): React.ReactElement => {
+  const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
@@ -247,13 +251,21 @@ export const SessionTimeline = ({
             {session.slots.map((slot) => {
               const widthPercent =
                 (slot.durationSeconds / effectiveTotal) * 100;
+              const mix = mixes.find((m) => m.id === slot.mixId);
+              const color = mix?.color
+                ? (theme.palette[mix.color] as { main: string }).main
+                : SLOT_COLOR_FALLBACK;
+              const colorLight = mix?.color
+                ? (theme.palette[mix.color] as { light: string }).light
+                : SLOT_COLOR_LIGHT_FALLBACK;
 
               return (
                 <SessionSlotBlock
                   key={slot.id}
                   slot={slot}
-                  mix={mixes.find((m) => m.id === slot.mixId)}
-                  color={getSlotColor(slot.mixId)}
+                  mix={mix}
+                  color={color}
+                  colorLight={colorLight}
                   widthPercent={widthPercent}
                   getResizeFactor={getResizeFactor}
                   onRemove={() => onRemoveSlot(slot.id)}

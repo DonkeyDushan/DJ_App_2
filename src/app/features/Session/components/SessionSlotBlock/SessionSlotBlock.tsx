@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Close } from 'pixelarticons/react/Close';
 import { Copy } from 'pixelarticons/react/Copy';
-import { Menu as MenuGlyph } from 'pixelarticons/react/Menu';
+import { ChevronsHorizontal } from 'pixelarticons/react/ChevronsHorizontal';
 import { MoreVertical } from 'pixelarticons/react/MoreVertical';
 import {
   Box,
@@ -39,6 +39,7 @@ interface SessionSlotBlockProps {
   slot: SessionSlot;
   mix: SavedMix | undefined;
   color: string;
+  colorLight: string;
   widthPercent: number;
   getResizeFactor: () => number;
   onRemove: () => void;
@@ -50,6 +51,7 @@ export const SessionSlotBlock = ({
   slot,
   mix,
   color,
+  colorLight,
   widthPercent,
   getResizeFactor,
   onRemove,
@@ -124,11 +126,11 @@ export const SessionSlotBlock = ({
       data-testid={`slot-block--${slot.id}`}
     >
       <Box {...attributes} {...listeners} sx={dragHandleSx}>
-        <PixelIcon glyph={MenuGlyph} />
+        <PixelIcon glyph={ChevronsHorizontal} />
       </Box>
 
       <Box sx={slotContentSx}>
-        <Typography sx={slotNameSx(color)}>{mix?.name ?? '—'}</Typography>
+        <Typography sx={slotNameSx(colorLight)}>{mix?.name ?? '—'}</Typography>
         <Typography sx={slotDurationSx}>
           {formatSlotDuration(slot.durationSeconds)}
         </Typography>

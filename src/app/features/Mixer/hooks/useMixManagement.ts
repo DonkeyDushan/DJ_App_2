@@ -15,6 +15,7 @@ import {
 import { loadSavedMixes, persistSavedMixes } from '../../../core/storage/mixStorage';
 import { loadFavoriteIds, loadTrackPresets } from '../../../core/storage/trackPresets';
 import type { SavedMix, MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
+import type { MixColorKey } from '../../../core/constants/mixColors';
 import type { TrackDefinition } from '../../../core/types/trackData';
 import { DEFAULT_SINGLE_TRACK_VALUES, MAX_SAVED_MIXES } from '../constants/trackDefaults';
 import type { MixerActions } from '../types/mixerContext';
@@ -209,7 +210,7 @@ export const buildMixManagementActions = ({
     );
   },
 
-  saveMix: (name: string) => {
+  saveMix: (name: string, color: MixColorKey | null) => {
     const currentSnapshot = snapshotRef.current;
     const mix: SavedMix = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -222,6 +223,8 @@ export const buildMixManagementActions = ({
         ),
       ),
     };
+
+    if (color !== null) mix.color = color;
 
     const nextMixes = [mix, ...currentSnapshot.savedMixes].slice(0, MAX_SAVED_MIXES);
     persistSavedMixes(nextMixes);

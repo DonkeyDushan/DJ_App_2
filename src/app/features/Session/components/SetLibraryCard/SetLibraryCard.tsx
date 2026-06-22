@@ -31,7 +31,7 @@ const SetLibraryCardInner = ({
   onRename,
 }: SetLibraryCardProps): React.ReactElement => (
   <Paper
-    sx={cardSx(isActive, isSetPlaybackActive)}
+    sx={cardSx(isActive)}
     onClick={isSetPlaybackActive ? undefined : onLoad}
     data-testid={`set-library-card--${session.id}`}
   >
@@ -39,7 +39,9 @@ const SetLibraryCardInner = ({
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           {isActive && (
-            <Box sx={{ display: 'inline-flex', color: 'primary.main' }}>
+            <Box
+              sx={{ display: 'inline-flex', color: 'primary.main', mt: '-4px' }}
+            >
               <PixelIcon glyph={AudioWaveform} />
             </Box>
           )}

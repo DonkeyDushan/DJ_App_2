@@ -18,10 +18,9 @@ import {
   ConfirmDialog,
   NameInputDialog,
 } from '../../components';
-import { SaveMixDialog } from './components/SaveMixDialog/SaveMixDialog';
 import { useSetPlayback } from './hooks/useSetPlayback';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
-import type { MixEditTarget } from './types/mixEditTarget';
+import type { MixDialogState } from './types/mixEditTarget';
 
 /** Confirmation message shown for each kind of deletable library item. */
 const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
@@ -51,13 +50,9 @@ export const Main = (): React.ReactElement => {
   } = useSession();
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
-  const [saveNewMixOpen, setSaveNewMixOpen] = useState(false);
-  const [mixDialogInitialName, setMixDialogInitialName] = useState('');
+  const [mixDialog, setMixDialog] = useState<MixDialogState | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
-  const [mixEditTarget, setMixEditTarget] = useState<MixEditTarget | null>(
-    null,
-  );
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
@@ -108,27 +103,16 @@ export const Main = (): React.ReactElement => {
     if (mixId) {
       mixerActions.overwriteMix(mixId);
     } else {
-      setMixDialogInitialName('');
-      setSaveNewMixOpen(true);
+      setMixDialog({ kind: 'create', initialName: '' });
     }
   }, []);
 
   const handleSaveNew = useCallback(() => {
-    setMixDialogInitialName(STRINGS.saveLoadManager.defaultMixName);
-    setSaveNewMixOpen(true);
+    setMixDialog({
+      kind: 'create',
+      initialName: STRINGS.saveLoadManager.defaultMixName,
+    });
   }, []);
-
-  const handleConfirmSaveNew = useCallback((name: string) => {
-    if (name.trim()) {
-      mixerActions.saveMix(name.trim());
-    }
-    setSaveNewMixOpen(false);
-  }, []);
-
-  const handleCloseSaveMixDialog = useCallback(
-    () => setSaveNewMixOpen(false),
-    [],
-  );
   const handleOpenCustomSounds = useCallback(
     () => setCustomSoundsOpen(true),
     [],
@@ -219,7 +203,7 @@ export const Main = (): React.ReactElement => {
     const mix = mixesLookupRef.current.find((m) => m.id === mixId);
     if (!mix) return;
 
-    setMixEditTarget({ id: mixId, name: mix.name, color: mix.color ?? null });
+    setMixDialog({ kind: 'edit', id: mixId, name: mix.name, color: mix.color ?? null });
   }, []);
 
   const requestDeleteSet = useCallback((sessionId: string) => {
@@ -238,12 +222,18 @@ export const Main = (): React.ReactElement => {
 
   const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
   const handleCloseRename = useCallback(() => setRenameTarget(null), []);
-  const handleCloseMixEdit = useCallback(() => setMixEditTarget(null), []);
+  const handleCloseMixDialog = useCallback(() => setMixDialog(null), []);
 
-  const handleSaveMixEdit = useCallback(
+  const handleSaveMixDialog = useCallback(
     (name: string, color: MixColorKey | null) => {
-      setMixEditTarget((current) => {
-        if (current) mixerActions.updateMix(current.id, { name, color });
+      setMixDialog((current) => {
+        if (!current) return null;
+
+        if (current.kind === 'create') {
+          mixerActions.saveMix(name, color);
+        } else {
+          mixerActions.updateMix(current.id, { name, color });
+        }
 
         return null;
       });
@@ -252,8 +242,8 @@ export const Main = (): React.ReactElement => {
   );
 
   const handleDeleteFromMixEdit = useCallback(() => {
-    setMixEditTarget((current) => {
-      if (current)
+    setMixDialog((current) => {
+      if (current?.kind === 'edit')
         setDeleteTarget({ kind: 'mix', id: current.id, name: current.name });
 
       return null;
@@ -466,12 +456,6 @@ export const Main = (): React.ReactElement => {
         onRename={requestRenameSound}
       />
 
-      <SaveMixDialog
-        open={saveNewMixOpen}
-        initialName={mixDialogInitialName}
-        onConfirm={handleConfirmSaveNew}
-        onClose={handleCloseSaveMixDialog}
-      />
 
       {/* Legacy SaveLoadManager kept for mix load only */}
       <SaveLoadManager
@@ -479,7 +463,7 @@ export const Main = (): React.ReactElement => {
         loadOpen={false}
         mixes={snapshot.savedMixes}
         onClose={() => {}}
-        onSave={(name) => mixerActions.saveMix(name)}
+        onSave={(name) => mixerActions.saveMix(name, null)}
         onLoad={(mixId) => void mixerActions.loadMix(mixId)}
         onDelete={(mixId) => mixerActions.deleteMix(mixId)}
       />
@@ -507,12 +491,13 @@ export const Main = (): React.ReactElement => {
       />
 
       <MixEditDialog
-        open={mixEditTarget !== null}
-        initialName={mixEditTarget?.name ?? ''}
-        initialColor={mixEditTarget?.color ?? null}
-        onSave={handleSaveMixEdit}
-        onDelete={handleDeleteFromMixEdit}
-        onClose={handleCloseMixEdit}
+        open={mixDialog !== null}
+        mode={mixDialog?.kind ?? 'create'}
+        initialName={mixDialog?.kind === 'edit' ? mixDialog.name : (mixDialog?.initialName ?? '')}
+        initialColor={mixDialog?.kind === 'edit' ? mixDialog.color : null}
+        onSave={handleSaveMixDialog}
+        onDelete={mixDialog?.kind === 'edit' ? handleDeleteFromMixEdit : undefined}
+        onClose={handleCloseMixDialog}
       />
     </Box>
   );
