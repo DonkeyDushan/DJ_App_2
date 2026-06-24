@@ -9,12 +9,20 @@ export const paperSx = (isActive: boolean): SxProps<Theme> => ({
   boxShadow: isActive ? `0 0 14px primary.main` : 'none',
   transition: 'box-shadow 0.2s, border-color 0.2s',
   overflow: 'hidden',
+  // Reveal the hover-only action buttons (preview, edit, and the favourite
+  // button when the track is not favourited) while the card is hovered or
+  // focused. They are removed from layout otherwise so the track name can use
+  // the freed width.
+  '&:hover [data-track-action], &:focus-within [data-track-action]': {
+    display: 'inline-flex',
+  },
 });
 
 export const rowSx: SxProps<Theme> = {
   display: 'flex',
   flexDirection: { sm: 'column', xl: 'row' },
   overflow: 'hidden',
+  justifyContent: 'space-between',
 };
 
 export const checkBoxSx: SxProps<Theme> = {
@@ -50,6 +58,7 @@ export const playButtonSx = (isPreviewPlaying: boolean): SxProps<Theme> => ({
     color: isPreviewPlaying ? 'primary.light' : 'secondary.light',
   },
   p: 0.5,
+  display: 'none',
 });
 
 export const favButtonSx = (isFavorite: boolean): SxProps<Theme> => ({
@@ -58,9 +67,13 @@ export const favButtonSx = (isFavorite: boolean): SxProps<Theme> => ({
     color: isFavorite ? 'yellow.light' : 'secondary.light',
   },
   p: 0.5,
+  // Favourited tracks keep the star visible at all times; otherwise it is
+  // hover-only like the other action buttons.
+  display: isFavorite ? 'inline-flex' : 'none',
 });
 
 export const editButtonSx: SxProps<Theme> = {
   color: 'text.secondary',
   p: 0.5,
+  display: 'none',
 };

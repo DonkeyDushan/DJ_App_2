@@ -111,6 +111,7 @@ const TrackCardInner = ({
               size="small"
               onClick={() => onPlay(track.id)}
               sx={playButtonSx(trackState.isPreviewPlaying)}
+              data-track-action
               data-testid={`track-preview--${track.id}`}
             >
               {trackState.isPreviewPlaying ? (
@@ -118,6 +119,18 @@ const TrackCardInner = ({
               ) : (
                 <PixelIcon glyph={Play} />
               )}
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title={STRINGS.trackCard.editTrack}>
+            <IconButton
+              size="small"
+              onClick={() => onEdit(track.id)}
+              sx={editButtonSx}
+              data-track-action
+              data-testid={`track-edit--${track.id}`}
+            >
+              <PixelIcon glyph={PenSquare} />
             </IconButton>
           </Tooltip>
 
@@ -132,20 +145,10 @@ const TrackCardInner = ({
               size="small"
               onClick={() => onToggleFavorite(track.id)}
               sx={favButtonSx(track.isFavorite ?? false)}
+              data-track-action
               data-testid={`track-favorite--${track.id}`}
             >
               <PixelIcon glyph={Sparkle} />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title={STRINGS.trackCard.editTrack}>
-            <IconButton
-              size="small"
-              onClick={() => onEdit(track.id)}
-              sx={editButtonSx}
-              data-testid={`track-edit--${track.id}`}
-            >
-              <PixelIcon glyph={PenSquare} />
             </IconButton>
           </Tooltip>
         </Stack>

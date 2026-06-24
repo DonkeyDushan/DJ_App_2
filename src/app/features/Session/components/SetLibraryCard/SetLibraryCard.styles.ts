@@ -18,17 +18,19 @@ export const cardSx = (isActive: boolean): SxProps<Theme> => ({
     borderColor: isActive ? 'undefined' : 'divider',
     bgcolor: '#000',
   },
-  // Reveal the row action buttons only while the card is hovered or holds focus.
+  // Reveal the row action buttons only while the card is hovered or holds
+  // focus. They are removed from layout otherwise so the set name can use the
+  // freed width.
   '&:hover [data-set-action], &:focus-within [data-set-action]': {
-    opacity: 1,
+    display: 'inline-flex',
   },
 });
 
 export const actionButtonSx: SxProps<Theme> = {
   p: 0.25,
   color: 'text.disabled',
-  opacity: 0,
-  transition: 'opacity 0.15s, color 0.2s',
+  display: 'none',
+  transition: 'color 0.2s',
 };
 
 export const deleteButtonSx: SxProps<Theme> = {

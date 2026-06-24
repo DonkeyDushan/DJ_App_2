@@ -18,7 +18,19 @@ export const cardSx = (
     borderColor: isActive ? 'undefined' : 'divider',
     bgcolor: '#000',
   },
+  // Reveal the hover-only action buttons (edit, duplicate) when the card is
+  // hovered or focused. They are removed from layout otherwise so the mix name
+  // can use the freed width.
+  '&:hover [data-mix-action], &:focus-within [data-mix-action]': {
+    display: 'inline-flex',
+  },
 });
+
+export const hoverActionButtonSx: SxProps<Theme> = {
+  p: 0.25,
+  color: 'text.disabled',
+  display: 'none',
+};
 
 export const rowSx: SxProps<Theme> = {
   display: 'flex',

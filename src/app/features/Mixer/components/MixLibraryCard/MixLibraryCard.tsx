@@ -9,6 +9,7 @@ import type { SavedMix } from '../../../../core/types/mixData';
 import { PixelIcon } from '../../../../components';
 import {
   cardSx,
+  hoverActionButtonSx,
   mixMetaSx,
   mixNameSx,
   playingDotSx,
@@ -73,7 +74,8 @@ export const MixLibraryCard = ({
               e.stopPropagation();
               onEdit();
             }}
-            sx={{ p: 0.25, color: 'text.disabled' }}
+            sx={hoverActionButtonSx}
+            data-mix-action
             data-testid={`mix-edit--${mix.id}`}
           >
             <PixelIcon glyph={PenSquare} />
@@ -87,7 +89,8 @@ export const MixLibraryCard = ({
               e.stopPropagation();
               onDuplicate();
             }}
-            sx={{ p: 0.25, color: 'text.disabled' }}
+            sx={hoverActionButtonSx}
+            data-mix-action
             data-testid={`mix-duplicate--${mix.id}`}
           >
             <PixelIcon glyph={Copy} />
