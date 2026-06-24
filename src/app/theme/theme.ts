@@ -147,6 +147,10 @@ export const retroTheme = createTheme({
           '&.MuiButton-contained': {
             fontWeight: 500,
             color: '#fff',
+            backgroundColor: theme.palette.primary.main,
+            '&:hover': {
+              backgroundColor: theme.palette.primary.light,
+            },
           },
           '&.MuiButton-outlined': {
             border: '1px solid',
@@ -157,6 +161,7 @@ export const retroTheme = createTheme({
             },
           },
           '&.MuiButton-colorError': {
+            backgroundColor: theme.palette.error.main,
             '&:hover': {
               backgroundColor: theme.palette.error.light,
             },
@@ -205,6 +210,25 @@ export const retroTheme = createTheme({
           },
           '&.Mui-disabled': { opacity: 0.3 },
         }),
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          padding: 10,
+          '.MuiDialogTitle-root': {
+            padding: 0,
+            paddingLeft: 10,
+            /*   paddingRight: 0, */
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
+          '.MuiDialogContent-root': {
+            padding: 10,
+            minWidth: '420px',
+          },
+        },
       },
     },
   },

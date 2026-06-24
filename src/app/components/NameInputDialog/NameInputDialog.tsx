@@ -5,10 +5,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   InputBase,
   Typography,
 } from '@mui/material';
-
+import { Close } from 'pixelarticons/react/Close';
 import {
   buttonSx,
   helperTextSx,
@@ -16,6 +17,7 @@ import {
   paperSx,
   titleSx,
 } from './NameInputDialog.styles';
+import { PixelIcon } from '../PixelIcon/PixelIcon';
 
 type NameInputDialogProps = {
   open: boolean;
@@ -63,7 +65,12 @@ const NameInputDialogInner = ({
       PaperProps={{ sx: paperSx }}
       data-testid="name-input-dialog"
     >
-      <DialogTitle sx={titleSx}>{title}</DialogTitle>
+      <DialogTitle sx={titleSx}>
+        {title}
+        <IconButton size="small" onClick={onClose}>
+          <PixelIcon glyph={Close} />
+        </IconButton>
+      </DialogTitle>
 
       <DialogContent>
         <InputBase
@@ -82,7 +89,7 @@ const NameInputDialogInner = ({
       </DialogContent>
 
       <DialogActions>
-        <Button size="small" onClick={onClose} sx={buttonSx}>
+        <Button size="small" variant="outlined" onClick={onClose} sx={buttonSx}>
           {cancelLabel}
         </Button>
         <Button
