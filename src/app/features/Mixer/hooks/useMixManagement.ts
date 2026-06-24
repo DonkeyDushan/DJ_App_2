@@ -29,6 +29,7 @@ import {
   withMissingTrackStates,
 } from '../utils/trackBuilders';
 import { DEFAULT_TRACKS } from '../../../core/data/defaultTracks';
+import { buildDuplicateMixName } from '../utils/duplicateMixName';
 
 type MixManagementParams = {
   engine: AudioEngine;
@@ -54,6 +55,7 @@ export type MixManagementActions = Pick<
   | 'clearMix'
   | 'resetMix'
   | 'deleteMix'
+  | 'duplicateMix'
   | 'updateMix'
 >;
 
@@ -419,6 +421,41 @@ export const buildMixManagementActions = ({
     const nextMixes = currentSnapshot.savedMixes.filter(
       (entry) => entry.id !== mixId,
     );
+    persistSavedMixes(nextMixes);
+    setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
+  },
+
+  duplicateMix: (mixId: string) => {
+    const currentSnapshot = snapshotRef.current;
+    const source = currentSnapshot.savedMixes.find(
+      (entry) => entry.id === mixId,
+    );
+    if (!source) return;
+
+    const duplicate: SavedMix = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: buildDuplicateMixName(source, currentSnapshot.savedMixes),
+      createdAt: Date.now(),
+      globalTempo: source.globalTempo,
+      trackStates: Object.fromEntries(
+        Object.entries(source.trackStates).map(([trackId, trackState]) => [
+          trackId,
+          { ...trackState },
+        ]),
+      ),
+    };
+
+    if (source.color !== undefined) duplicate.color = source.color;
+
+    const sourceIndex = currentSnapshot.savedMixes.findIndex(
+      (entry) => entry.id === mixId,
+    );
+    const nextMixes = [
+      ...currentSnapshot.savedMixes.slice(0, sourceIndex + 1),
+      duplicate,
+      ...currentSnapshot.savedMixes.slice(sourceIndex + 1),
+    ].slice(0, MAX_SAVED_MIXES);
+
     persistSavedMixes(nextMixes);
     setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
   },

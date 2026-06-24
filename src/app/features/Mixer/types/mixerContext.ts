@@ -44,6 +44,7 @@ export type MixerActions = {
   clearMix: () => Promise<void>;
   resetMix: () => Promise<void>;
   deleteMix: (mixId: string) => void;
+  duplicateMix: (mixId: string) => void;
   updateMix: (mixId: string, patch: MixUpdate) => void;
   saveTrackPreset: (
     sourceTrackId: string,

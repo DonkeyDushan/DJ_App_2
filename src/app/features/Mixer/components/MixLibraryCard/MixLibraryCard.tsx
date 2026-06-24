@@ -1,5 +1,6 @@
 import { AudioWaveform } from 'pixelarticons/react/AudioWaveform';
 import { PenSquare } from 'pixelarticons/react/PenSquare';
+import { Copy } from 'pixelarticons/react/Copy';
 import { Music } from 'pixelarticons/react/Music';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 
@@ -22,6 +23,7 @@ interface MixLibraryCardProps {
   onAdd: () => void;
   onLoad: () => void;
   onEdit: () => void;
+  onDuplicate: () => void;
 }
 
 export const MixLibraryCard = ({
@@ -32,6 +34,7 @@ export const MixLibraryCard = ({
   onAdd,
   onLoad,
   onEdit,
+  onDuplicate,
 }: MixLibraryCardProps): React.ReactElement => {
   const trackCount = Object.values(mix.trackStates).filter(
     (ts) => ts.enabled,
@@ -74,6 +77,20 @@ export const MixLibraryCard = ({
             data-testid={`mix-edit--${mix.id}`}
           >
             <PixelIcon glyph={PenSquare} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title={STRINGS.set.duplicateMix}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicate();
+            }}
+            sx={{ p: 0.25, color: 'text.disabled' }}
+            data-testid={`mix-duplicate--${mix.id}`}
+          >
+            <PixelIcon glyph={Copy} />
           </IconButton>
         </Tooltip>
 

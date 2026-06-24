@@ -23,6 +23,7 @@ interface MixLibraryProps {
   onLoadMix: (mixId: string) => void;
   onNewMix: () => void;
   onEditMix: (mixId: string) => void;
+  onDuplicateMix: (mixId: string) => void;
 }
 
 const MixLibraryInner = ({
@@ -34,6 +35,7 @@ const MixLibraryInner = ({
   onLoadMix,
   onNewMix,
   onEditMix,
+  onDuplicateMix,
 }: MixLibraryProps): React.ReactElement => (
   <Box sx={panelSx} data-testid="mix-library">
     <Box sx={headerRowSx}>
@@ -69,6 +71,7 @@ const MixLibraryInner = ({
             onAdd={() => onAddToTimeline(mix.id)}
             onLoad={() => onLoadMix(mix.id)}
             onEdit={() => onEditMix(mix.id)}
+            onDuplicate={() => onDuplicateMix(mix.id)}
           />
         ))
       )}

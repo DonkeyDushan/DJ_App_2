@@ -137,6 +137,7 @@ export const STRINGS = {
     noMixes: 'No saved mixes yet.\nSave a mix in the Mixer tab first.',
     addToTimeline: 'Add to set',
     editMix: 'Edit mix',
+    duplicateMix: 'Duplicate mix',
     sessionNamePlaceholder: 'Set name…',
     newSession: 'NEW',
     newSet: 'NEW SET',

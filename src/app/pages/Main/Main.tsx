@@ -314,6 +314,7 @@ export const Main = (): React.ReactElement => {
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
           onEditMix={requestEditMix}
+          onDuplicateMix={mixerActions.duplicateMix}
         />
 
         <Box
