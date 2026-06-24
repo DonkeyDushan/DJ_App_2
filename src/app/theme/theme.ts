@@ -179,6 +179,21 @@ export const retroTheme = createTheme({
           '& .MuiSlider-track': {
             border: 'none',
           },
+          // The auto value-label bubble defaults to the slider colour, which
+          // reads like a coloured tooltip. Force a black background with a white
+          // border so it matches the app's tooltip styling. Keep it absolutely
+          // positioned so it never enters layout flow and pushes adjacent slider
+          // rows apart, and drop the pointer triangle under the bubble.
+          '& .MuiSlider-valueLabel': {
+            position: 'absolute',
+            backgroundColor: '#000',
+            color: '#fff',
+            border: '1px solid #fff',
+            borderRadius: 0,
+            '&::before': {
+              display: 'none',
+            },
+          },
         },
       },
     },
@@ -217,9 +232,9 @@ export const retroTheme = createTheme({
         paper: {
           padding: 10,
           '.MuiDialogTitle-root': {
+            fontFamily: 'Orbitron, monospace',
             padding: 0,
             paddingLeft: 10,
-            /*   paddingRight: 0, */
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',

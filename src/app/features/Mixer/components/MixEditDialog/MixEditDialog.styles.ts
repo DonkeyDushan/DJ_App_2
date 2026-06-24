@@ -13,13 +13,6 @@ export const paperSx: SxProps<Theme> = {
   minWidth: '22rem',
 };
 
-/** Title typography — Orbitron, small-caps look. */
-export const titleSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '1rem',
-  letterSpacing: '0.1em',
-};
-
 /** Monospace input for the name field. */
 export const inputSx: SxProps<Theme> = {
   fontFamily: 'Mozilla Headline, monospace',

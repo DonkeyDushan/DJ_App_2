@@ -23,6 +23,7 @@ import type {
 import { STRINGS } from '../../../../strings';
 import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import {
+  actionsSx,
   checkBoxSx,
   editButtonSx,
   favButtonSx,
@@ -99,6 +100,7 @@ const TrackCardInner = ({
           alignItems="center"
           justifyContent="end"
           minWidth="fit-content"
+          sx={actionsSx}
         >
           <Tooltip
             title={

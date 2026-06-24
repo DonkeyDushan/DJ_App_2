@@ -25,7 +25,6 @@ import {
   paperSx,
   swatchRowSx,
   swatchSx,
-  titleSx,
 } from './MixEditDialog.styles';
 import { PixelIcon } from '../../../../components';
 
@@ -82,7 +81,7 @@ const MixEditDialogInner = ({
       PaperProps={{ sx: paperSx }}
       data-testid="mix-edit-dialog"
     >
-      <DialogTitle sx={titleSx}>
+      <DialogTitle>
         {title}
         <IconButton size="small" onClick={onClose}>
           <PixelIcon glyph={Close} />

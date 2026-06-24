@@ -23,12 +23,7 @@ import { useTrackEditState } from '../../hooks/useTrackEditState';
 import { TrackSlidersContent } from './components/TrackSlidersContent/TrackSlidersContent';
 import { PresetNameField } from './components/PresetNameField/PresetNameField';
 import { TrackSaveActions } from './components/TrackSaveActions/TrackSaveActions';
-import {
-  closeButtonSx,
-  colorDotSx,
-  dialogTitleSx,
-  discardButtonSx,
-} from './TrackEditModal.styles';
+import { closeButtonSx, discardButtonSx } from './TrackEditModal.styles';
 
 type TrackEditModalProps = {
   open: boolean;
@@ -239,9 +234,14 @@ export const TrackEditModal = ({
   const S = STRINGS.trackEditModal;
 
   return (
-    <Dialog open={open} onClose={handleCancel} data-testid="track-edit-modal">
-      <DialogTitle sx={dialogTitleSx(track.color)}>
-        <Box sx={colorDotSx(track.color)} />
+    <Dialog
+      open={open}
+      onClose={handleCancel}
+      data-testid="track-edit-modal"
+      slotProps={{ paper: { style: { minWidth: '540px' } } }}
+    >
+      <DialogTitle>
+        <Box />
         {S.title}
         <Tooltip title={S.discardChanges}>
           <IconButton
@@ -260,7 +260,6 @@ export const TrackEditModal = ({
       <DialogContent sx={{ pt: 0 }}>
         <Stack spacing={2}>
           <TrackSlidersContent
-            trackColor={track.color}
             volume={volume}
             speed={speed}
             eqLow={eqLow}

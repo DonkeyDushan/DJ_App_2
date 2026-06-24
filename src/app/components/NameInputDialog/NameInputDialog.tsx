@@ -15,7 +15,6 @@ import {
   helperTextSx,
   inputSx,
   paperSx,
-  titleSx,
 } from './NameInputDialog.styles';
 import { PixelIcon } from '../PixelIcon/PixelIcon';
 
@@ -65,7 +64,7 @@ const NameInputDialogInner = ({
       PaperProps={{ sx: paperSx }}
       data-testid="name-input-dialog"
     >
-      <DialogTitle sx={titleSx}>
+      <DialogTitle>
         {title}
         <IconButton size="small" onClick={onClose}>
           <PixelIcon glyph={Close} />

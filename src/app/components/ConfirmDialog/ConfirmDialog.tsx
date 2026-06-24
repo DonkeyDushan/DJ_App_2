@@ -10,12 +10,7 @@ import {
 } from '@mui/material';
 import { Close } from 'pixelarticons/react/Close';
 
-import {
-  itemNameSx,
-  messageSx,
-  paperSx,
-  titleSx,
-} from './ConfirmDialog.styles';
+import { itemNameSx, messageSx, paperSx } from './ConfirmDialog.styles';
 import { PixelIcon } from '../PixelIcon/PixelIcon';
 
 type ConfirmDialogProps = {
@@ -45,7 +40,7 @@ const ConfirmDialogInner = ({
     PaperProps={{ sx: paperSx }}
     data-testid="confirm-dialog"
   >
-    <DialogTitle sx={titleSx}>
+    <DialogTitle>
       {title}
       <IconButton size="small" onClick={onClose}>
         <PixelIcon glyph={Close} />

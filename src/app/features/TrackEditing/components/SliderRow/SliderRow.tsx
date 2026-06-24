@@ -13,6 +13,7 @@ type SliderRowProps = {
   onChange: (v: number) => void;
   valueLabelFormat?: (v: number) => string;
   color?: string;
+  labelColor?: string;
 };
 
 export const SliderRow = ({
@@ -24,9 +25,10 @@ export const SliderRow = ({
   onChange,
   valueLabelFormat = undefined,
   color = undefined,
+  labelColor = undefined,
 }: SliderRowProps): React.ReactElement => (
   <Box sx={rowSx}>
-    <Typography variant="caption" sx={labelSx(color)}>
+    <Typography variant="caption" sx={labelSx(labelColor)}>
       {label}
     </Typography>
     <Slider

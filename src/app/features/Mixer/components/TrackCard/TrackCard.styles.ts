@@ -1,5 +1,14 @@
 import type { SxProps, Theme } from '@mui/material';
 
+/**
+ * Height reserved for the action buttons row (preview / edit / favourite).
+ * A pixel icon renders at 24px and each IconButton adds 4px of vertical padding
+ * (`p: 0.5`), giving a 32px = 2rem control. Reserving this height keeps the card
+ * a constant height whether the hover-only buttons are revealed or hidden, so
+ * hovering one track never shifts the vertical spacing of its neighbours.
+ */
+const ACTIONS_ROW_MIN_HEIGHT_REM = '2rem';
+
 export const paperSx = (isActive: boolean): SxProps<Theme> => ({
   px: 1.5,
   py: 1,
@@ -23,6 +32,10 @@ export const rowSx: SxProps<Theme> = {
   flexDirection: { sm: 'column', xl: 'row' },
   overflow: 'hidden',
   justifyContent: 'space-between',
+};
+
+export const actionsSx: SxProps<Theme> = {
+  minHeight: ACTIONS_ROW_MIN_HEIGHT_REM,
 };
 
 export const checkBoxSx: SxProps<Theme> = {

@@ -10,17 +10,6 @@ export const paperSx: SxProps<Theme> = {
   minWidth: '20rem',
 };
 
-/** Title typography style — Orbitron, small-caps look. */
-export const titleSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '1rem',
-  letterSpacing: '0.1em',
-  color: 'red.light',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-};
-
 /** Body message typography. */
 export const messageSx: SxProps<Theme> = {
   fontFamily: 'Mozilla Headline, monospace',
