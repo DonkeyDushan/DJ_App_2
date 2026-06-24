@@ -5,10 +5,10 @@
 import type { TransitionKind } from '../../../core/types/transition';
 
 /** Default total session duration in seconds. */
-export const DEFAULT_TOTAL_DURATION_SECONDS = 600;
+export const DEFAULT_TOTAL_DURATION_SECONDS = 180;
 
 /** Default duration for a newly added slot in seconds. */
-export const DEFAULT_SLOT_DURATION_SECONDS = 300;
+export const DEFAULT_SLOT_DURATION_SECONDS = 15;
 
 /** Default transition duration between slots in seconds. */
 export const DEFAULT_TRANSITION_DURATION_SECONDS = 8;

@@ -1,6 +1,9 @@
 import type { SxProps, Theme } from '@mui/material';
 
-export const slotRootSx = (color: string, isDragging: boolean): SxProps<Theme> => ({
+export const slotRootSx = (
+  color: string,
+  isDragging: boolean,
+): SxProps<Theme> => ({
   position: 'relative',
   display: 'flex',
   alignItems: 'stretch',
@@ -12,28 +15,27 @@ export const slotRootSx = (color: string, isDragging: boolean): SxProps<Theme> =
   opacity: isDragging ? 0.4 : 1,
   overflow: 'hidden',
   userSelect: 'none',
+  cursor: isDragging ? 'grabbing' : 'grab',
   transition: 'opacity 0.15s',
   pr: '6px',
-  '&:hover .slot-actions': { opacity: 1 },
+  '.delete-slot-button': {
+    opacity: 0,
+    transition: 'opacity 0.15s',
+  },
+  '&:hover .delete-slot-button': {
+    opacity: 1,
+    '&:hover': { svg: { color: 'red.light' } },
+  },
 });
-
-export const dragHandleSx: SxProps<Theme> = {
-  display: 'flex',
-  alignItems: 'center',
-  px: 0.5,
-  cursor: 'grab',
-  color: 'text.disabled',
-  '&:active': { cursor: 'grabbing' },
-  flexShrink: 0,
-};
 
 export const slotContentSx: SxProps<Theme> = {
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
+  alignItems: 'flex-start',
   overflow: 'hidden',
-  px: 0.5,
+  px: 1.5,
   minWidth: 0,
 };
 
@@ -46,6 +48,9 @@ export const slotNameSx = (color: string): SxProps<Theme> => ({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+  // Parent column uses align-items: flex-start, so the item shrinks to its
+  // content width; cap it to the column width to let the ellipsis engage.
+  maxWidth: '100%',
 });
 
 export const slotDurationSx: SxProps<Theme> = {
@@ -53,38 +58,27 @@ export const slotDurationSx: SxProps<Theme> = {
   fontSize: '0.875rem',
   color: 'text.secondary',
   whiteSpace: 'nowrap',
-};
-
-export const slotTransitionSx: SxProps<Theme> = {
-  fontFamily: 'Mozilla Headline, monospace',
-  fontSize: '1rem',
-  color: 'text.disabled',
-  whiteSpace: 'nowrap',
-  border: 'none',
-  background: 'none',
-  p: 0,
-  textAlign: 'left',
-  cursor: 'pointer',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  maxWidth: '100%',
-  '&:hover': { color: 'text.secondary' },
 };
 
-export const actionsSx: SxProps<Theme> = {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  flexShrink: 0,
-  opacity: 0,
-  transition: 'opacity 0.15s',
-};
-
-export const narrowActionsSx: SxProps<Theme> = {
+export const transitionButtonSx: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
+  justifyContent: 'flex-start',
+  gap: 0.5,
+  p: 0.25,
+  maxWidth: '100%',
+  minWidth: 0,
+  // Keep the glyph at its fixed grid size; only the label may shrink.
+  '& svg': { flexShrink: 0 },
+};
+
+export const transitionChipLabelSx: SxProps<Theme> = {
+  ...slotDurationSx,
+  // Flex items default to min-width: auto, which blocks shrinking below the
+  // text's intrinsic width and prevents the ellipsis from ever engaging.
+  minWidth: 0,
 };
 
 export const resizeHandleSx: SxProps<Theme> = {

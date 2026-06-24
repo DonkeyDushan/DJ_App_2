@@ -3,6 +3,7 @@ import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Reload } from 'pixelarticons/react/Reload';
 import { Save } from 'pixelarticons/react/Save';
+import { Waves } from 'pixelarticons/react/Waves';
 import {
   Box,
   IconButton,
@@ -156,21 +157,25 @@ const SetSectionInner = ({
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 0.75,
+              gap: 2,
               ml: 'auto',
             }}
           >
             <Tooltip title={STRINGS.set.setDefaultTransition}>
-              <Box
-                component="button"
-                type="button"
+              <IconButton
+                size="small"
                 onClick={(e) => setDefaultAnchor(e.currentTarget)}
                 sx={defaultTransitionButtonSx}
                 data-testid="set-default-transition"
               >
-                ↗{' '}
-                {TRANSITION_KIND_LABEL[activeSession.defaultTransitionKind]}
-              </Box>
+                <PixelIcon glyph={Waves} />
+                <Typography>
+                  {TRANSITION_KIND_LABEL[activeSession.defaultTransitionKind]}
+                  {activeSession.defaultTransitionDuration > 0
+                    ? ` ${activeSession.defaultTransitionDuration}s`
+                    : ''}
+                </Typography>
+              </IconButton>
             </Tooltip>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

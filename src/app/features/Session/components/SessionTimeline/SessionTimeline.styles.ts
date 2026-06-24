@@ -61,7 +61,7 @@ export const tickLabelSx: SxProps<Theme> = {
 export const slotsRowSx = (isOver: boolean): SxProps<Theme> => ({
   display: 'flex',
   alignItems: 'stretch',
-  height: '5rem',
+  height: '8rem',
   width: '100%',
   gap: '2px',
   p: '2px',
