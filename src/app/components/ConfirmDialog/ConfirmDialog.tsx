@@ -5,17 +5,18 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Typography,
 } from '@mui/material';
+import { Close } from 'pixelarticons/react/Close';
 
 import {
-  cancelButtonSx,
-  confirmButtonSx,
   itemNameSx,
   messageSx,
   paperSx,
   titleSx,
 } from './ConfirmDialog.styles';
+import { PixelIcon } from '../PixelIcon/PixelIcon';
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -44,7 +45,12 @@ const ConfirmDialogInner = ({
     PaperProps={{ sx: paperSx }}
     data-testid="confirm-dialog"
   >
-    <DialogTitle sx={titleSx}>{title}</DialogTitle>
+    <DialogTitle sx={titleSx}>
+      {title}
+      <IconButton size="small" onClick={onClose}>
+        <PixelIcon glyph={Close} />
+      </IconButton>
+    </DialogTitle>
 
     <DialogContent>
       {itemName != null && (
@@ -57,19 +63,16 @@ const ConfirmDialogInner = ({
 
     <DialogActions>
       <Button
-        size="small"
+        variant="outlined"
         onClick={onClose}
-        sx={cancelButtonSx}
         data-testid="confirm-dialog-cancel"
       >
         {cancelLabel}
       </Button>
       <Button
-        size="small"
         variant="contained"
         color="error"
         onClick={onConfirm}
-        sx={confirmButtonSx}
         data-testid="confirm-dialog-confirm"
       >
         {confirmLabel}

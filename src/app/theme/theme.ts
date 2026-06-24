@@ -110,7 +110,6 @@ export const retroTheme = createTheme({
       letterSpacing: '0.06em',
     },
     button: {
-      fontFamily: ['Orbitron', 'sans-serif'].join(','),
       letterSpacing: '0.08em',
     },
   },
@@ -138,11 +137,31 @@ export const retroTheme = createTheme({
     },
     MuiButton: {
       styleOverrides: {
-        root: {
-          borderRadius: 16,
+        root: ({ theme }) => ({
+          borderRadius: 0,
           textTransform: 'uppercase',
-          boxShadow: '0 0 16px rgba(255,79,216,0.18)',
-        },
+          boxShadow: 'none',
+          fontWeight: 500,
+          fontFamily: 'Orbitron, monospace',
+          fontSize: '1rem',
+          '&.MuiButton-contained': {
+            fontWeight: 500,
+            color: '#fff',
+          },
+          '&.MuiButton-outlined': {
+            border: '1px solid',
+            color: '#fff',
+            borderColor: theme.palette.text.secondary,
+            '&:hover': {
+              borderColor: theme.palette.divider,
+            },
+          },
+          '&.MuiButton-colorError': {
+            '&:hover': {
+              backgroundColor: theme.palette.error.light,
+            },
+          },
+        }),
       },
     },
     MuiSlider: {

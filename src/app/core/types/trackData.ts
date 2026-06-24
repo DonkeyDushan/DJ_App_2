@@ -36,6 +36,7 @@ export interface TrackDefinition {
   sourceTrackId?: string;
   preloadedSrc?: string;
   customSoundId?: string;
+  color: string;
 }
 
 export interface PreloadedAudioFile {

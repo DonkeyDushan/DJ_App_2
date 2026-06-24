@@ -39,6 +39,5 @@ export const helperTextSx: SxProps<Theme> = {
 
 /** Action button typography style. */
 export const buttonSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
   fontSize: '1rem',
 };

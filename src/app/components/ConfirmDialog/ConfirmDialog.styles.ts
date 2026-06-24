@@ -15,7 +15,10 @@ export const titleSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
   fontSize: '1rem',
   letterSpacing: '0.1em',
-  color: 'warning.main',
+  color: 'red.light',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
 };
 
 /** Body message typography. */
@@ -35,16 +38,4 @@ export const itemNameSx: SxProps<Theme> = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
-};
-
-/** Cancel button typography. */
-export const cancelButtonSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '1rem',
-};
-
-/** Destructive confirm button typography and colour. */
-export const confirmButtonSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '1rem',
 };
