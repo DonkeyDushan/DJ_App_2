@@ -6,10 +6,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   InputBase,
   Tooltip,
   Typography,
 } from '@mui/material';
+import { Close } from 'pixelarticons/react/Close';
+import { Trash } from 'pixelarticons/react/Trash';
 
 import { STRINGS } from '../../../../strings';
 import { MIX_COLOR_KEYS, type MixColorKey } from '../../../../core';
@@ -24,6 +27,7 @@ import {
   swatchSx,
   titleSx,
 } from './MixEditDialog.styles';
+import { PixelIcon } from '../../../../components';
 
 type MixEditDialogProps = {
   open: boolean;
@@ -45,7 +49,9 @@ const MixEditDialogInner = ({
   onClose,
 }: MixEditDialogProps): React.ReactElement => {
   const [localName, setLocalName] = useState(initialName);
-  const [localColor, setLocalColor] = useState<MixColorKey | null>(initialColor);
+  const [localColor, setLocalColor] = useState<MixColorKey | null>(
+    initialColor,
+  );
 
   useEffect(() => {
     if (open) {
@@ -76,7 +82,12 @@ const MixEditDialogInner = ({
       PaperProps={{ sx: paperSx }}
       data-testid="mix-edit-dialog"
     >
-      <DialogTitle sx={titleSx}>{title}</DialogTitle>
+      <DialogTitle sx={titleSx}>
+        {title}
+        <IconButton size="small" onClick={onClose}>
+          <PixelIcon glyph={Close} />
+        </IconButton>
+      </DialogTitle>
 
       <DialogContent>
         <InputBase
@@ -120,22 +131,34 @@ const MixEditDialogInner = ({
 
       <DialogActions>
         {mode === 'edit' && onDelete && (
-          <Button
-            size="small"
+          /*  <Button
             onClick={onDelete}
             sx={deleteButtonSx}
             data-testid="mix-edit-dialog-delete"
           >
             {STRINGS.mixEditDialog.delete}
-          </Button>
+          </Button> */
+
+          <Tooltip title={STRINGS.set.deleteSession}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              sx={deleteButtonSx}
+              data-set-action
+            >
+              <PixelIcon glyph={Trash} />
+            </IconButton>
+          </Tooltip>
         )}
 
-        <Button size="small" onClick={onClose} sx={buttonSx}>
+        <Button variant="outlined" onClick={onClose} sx={buttonSx}>
           {STRINGS.mixEditDialog.cancel}
         </Button>
 
         <Button
-          size="small"
           variant="contained"
           onClick={handleSave}
           disabled={!trimmed}

@@ -47,6 +47,8 @@ export const swatchRowSx: SxProps<Theme> = {
   flexWrap: 'wrap',
   gap: 1,
   alignItems: 'center',
+  width: '100%',
+  justifyContent: 'space-between',
 };
 
 /** A single color swatch — fills from the matching theme palette key. */
@@ -96,8 +98,10 @@ export const buttonSx: SxProps<Theme> = {
 
 /** Delete button — pushed to the left, error-tinted. */
 export const deleteButtonSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
   fontSize: '1rem',
   color: 'error.main',
   mr: 'auto',
+  '&:hover': {
+    color: 'error.light',
+  },
 };
