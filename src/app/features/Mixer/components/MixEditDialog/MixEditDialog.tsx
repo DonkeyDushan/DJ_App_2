@@ -131,14 +131,6 @@ const MixEditDialogInner = ({
 
       <DialogActions>
         {mode === 'edit' && onDelete && (
-          /*  <Button
-            onClick={onDelete}
-            sx={deleteButtonSx}
-            data-testid="mix-edit-dialog-delete"
-          >
-            {STRINGS.mixEditDialog.delete}
-          </Button> */
-
           <Tooltip title={STRINGS.set.deleteSession}>
             <IconButton
               size="small"

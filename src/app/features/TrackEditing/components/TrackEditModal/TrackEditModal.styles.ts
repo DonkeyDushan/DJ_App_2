@@ -5,14 +5,6 @@
 
 import type { SxProps, Theme } from '@mui/material';
 
-/** Dialog paper — dark gradient tinted with track color. */
-export const dialogPaperSx = (color: string): SxProps<Theme> => ({
-  background: 'linear-gradient(160deg, #1a1230 0%, #0d0d1a 100%)',
-  border: `1px solid ${color}44`,
-  boxShadow: `0 0 40px ${color}22`,
-  borderRadius: 3,
-});
-
 /** Dialog title row — flex row with track color text. */
 export const dialogTitleSx = (color: string): SxProps<Theme> => ({
   display: 'flex',

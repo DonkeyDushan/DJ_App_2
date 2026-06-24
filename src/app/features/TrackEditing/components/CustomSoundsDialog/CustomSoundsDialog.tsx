@@ -19,6 +19,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import { Close } from 'pixelarticons/react/Close';
 
 import type { CustomSoundRecord } from '../../../../core/types/mixData';
 import { STRINGS } from '../../../../strings';
@@ -53,8 +54,13 @@ const CustomSoundsDialogInner = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" data-testid="custom-sounds-dialog">
-      <DialogTitle>{S.title}</DialogTitle>
+    <Dialog open={open} onClose={onClose} data-testid="custom-sounds-dialog">
+      <DialogTitle>
+        {S.title}
+        <IconButton size="small" onClick={onClose}>
+          <PixelIcon glyph={Close} />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Button

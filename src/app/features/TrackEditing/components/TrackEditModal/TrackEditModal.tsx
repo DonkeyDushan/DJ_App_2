@@ -26,7 +26,6 @@ import { TrackSaveActions } from './components/TrackSaveActions/TrackSaveActions
 import {
   closeButtonSx,
   colorDotSx,
-  dialogPaperSx,
   dialogTitleSx,
   discardButtonSx,
 } from './TrackEditModal.styles';
@@ -176,7 +175,12 @@ export const TrackEditModal = ({
 
   const handleSaveOver = () => {
     if (!presetNameRef.current.trim()) return;
-    onSaveOver(track.id, presetNameRef.current.trim(), track.category, currentSettings);
+    onSaveOver(
+      track.id,
+      presetNameRef.current.trim(),
+      track.category,
+      currentSettings,
+    );
     setSaveNewMode(false);
     onClose();
   };
@@ -203,30 +207,48 @@ export const TrackEditModal = ({
     onClose();
   };
 
-  const handleVolumeChange = (v: number) => { setVolume(v); onVolumeChange(track.id, v); };
-  const handleSpeedChange = (v: number) => { setSpeed(v); onSpeedChange(track.id, v); };
-  const handleEqLowChange = (v: number) => { setEqLow(v); onEqChange(track.id, v, eqMid, eqHigh); };
-  const handleEqMidChange = (v: number) => { setEqMid(v); onEqChange(track.id, eqLow, v, eqHigh); };
-  const handleEqHighChange = (v: number) => { setEqHigh(v); onEqChange(track.id, eqLow, eqMid, v); };
-  const handleReverbChange = (v: number) => { setReverbSend(v); onEffectsChange(track.id, v, delaySend); };
-  const handleDelayChange = (v: number) => { setDelaySend(v); onEffectsChange(track.id, reverbSend, v); };
+  const handleVolumeChange = (v: number) => {
+    setVolume(v);
+    onVolumeChange(track.id, v);
+  };
+  const handleSpeedChange = (v: number) => {
+    setSpeed(v);
+    onSpeedChange(track.id, v);
+  };
+  const handleEqLowChange = (v: number) => {
+    setEqLow(v);
+    onEqChange(track.id, v, eqMid, eqHigh);
+  };
+  const handleEqMidChange = (v: number) => {
+    setEqMid(v);
+    onEqChange(track.id, eqLow, v, eqHigh);
+  };
+  const handleEqHighChange = (v: number) => {
+    setEqHigh(v);
+    onEqChange(track.id, eqLow, eqMid, v);
+  };
+  const handleReverbChange = (v: number) => {
+    setReverbSend(v);
+    onEffectsChange(track.id, v, delaySend);
+  };
+  const handleDelayChange = (v: number) => {
+    setDelaySend(v);
+    onEffectsChange(track.id, reverbSend, v);
+  };
 
   const S = STRINGS.trackEditModal;
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancel}
-      maxWidth="xs"
-      fullWidth
-      slotProps={{ paper: { sx: dialogPaperSx(track.color) } }}
-      data-testid="track-edit-modal"
-    >
+    <Dialog open={open} onClose={handleCancel} data-testid="track-edit-modal">
       <DialogTitle sx={dialogTitleSx(track.color)}>
         <Box sx={colorDotSx(track.color)} />
         {S.title}
         <Tooltip title={S.discardChanges}>
-          <IconButton size="small" onClick={handleDiscardChanges} sx={discardButtonSx}>
+          <IconButton
+            size="small"
+            onClick={handleDiscardChanges}
+            sx={discardButtonSx}
+          >
             <PixelIcon glyph={Undo} />
           </IconButton>
         </Tooltip>
