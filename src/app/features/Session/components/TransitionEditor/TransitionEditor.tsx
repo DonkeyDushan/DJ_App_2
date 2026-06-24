@@ -1,4 +1,10 @@
-import { Box, InputBase, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import {
+  Box,
+  InputBase,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
 
 import type { TransitionKind } from '../../../../core/types/transition';
 import { STRINGS } from '../../../../strings';
@@ -50,9 +56,7 @@ export const TransitionEditor = ({
     if (next !== null) onChangeKind(next);
   };
 
-  const handleDuration = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
+  const handleDuration = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = parseInt(event.target.value, 10);
     if (Number.isNaN(value)) return;
 
@@ -67,7 +71,6 @@ export const TransitionEditor = ({
     <Box sx={editorRootSx} data-testid="transition-editor">
       <ToggleButtonGroup
         exclusive
-        size="small"
         value={kind}
         onChange={handleKind}
         sx={toggleGroupSx}

@@ -11,7 +11,6 @@ export const slotRootSx = (
   flexShrink: 0,
   background: `linear-gradient(135deg, ${color}28 0%, ${color}12 100%)`,
   border: `1px solid ${color}66`,
-  borderRadius: '0.375rem',
   opacity: isDragging ? 0.4 : 1,
   overflow: 'hidden',
   userSelect: 'none',

@@ -39,7 +39,7 @@ export const retroTheme = createTheme({
     mode: 'dark',
     background: {
       default: '#090812',
-      paper: '#120f1f',
+      paper: '#000000',
     },
     text: {
       primary: '#fff',
@@ -125,7 +125,12 @@ export const retroTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
+          // Disable MUI's dark-mode elevation overlay so raised surfaces
+          // (dialogs, popovers) keep the pure black `background.paper` instead
+          // of being lightened to a grey (#2e2b39).
+          backgroundImage: 'none',
           border: '1px solid #fff',
+          borderRadius: '0',
           boxShadow:
             '0 0 0 1px rgba(255, 79, 216, 0.06), 0 20px 60px rgba(0, 0, 0, 0.42), 0 0 32px rgba(64, 217, 255, 0.08)',
         },
