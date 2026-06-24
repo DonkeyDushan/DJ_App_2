@@ -8,7 +8,14 @@ import { STRINGS } from '../../../../strings';
 import { PixelIcon } from '../../../../components';
 import type { DJSession } from '../../../../core/types/sessionData';
 import { formatSlotDuration } from '../../utils/timelineFormatters';
-import { cardSx, rowSx, setMetaSx, setNameSx } from './SetLibraryCard.styles';
+import {
+  actionButtonSx,
+  cardSx,
+  deleteButtonSx,
+  rowSx,
+  setMetaSx,
+  setNameSx,
+} from './SetLibraryCard.styles';
 
 interface SetLibraryCardProps {
   session: DJSession;
@@ -60,7 +67,8 @@ const SetLibraryCardInner = ({
             e.stopPropagation();
             onRename();
           }}
-          sx={{ p: 0.25, color: 'text.disabled' }}
+          sx={actionButtonSx}
+          data-set-action
           data-testid={`set-library-rename--${session.id}`}
         >
           <PixelIcon glyph={PenSquare} />
@@ -74,11 +82,8 @@ const SetLibraryCardInner = ({
             e.stopPropagation();
             onDelete();
           }}
-          sx={{
-            p: 0.25,
-            color: 'text.disabled',
-            '&:hover': { color: 'error.main' },
-          }}
+          sx={deleteButtonSx}
+          data-set-action
           data-testid={`set-library-delete--${session.id}`}
         >
           <PixelIcon glyph={Trash} />

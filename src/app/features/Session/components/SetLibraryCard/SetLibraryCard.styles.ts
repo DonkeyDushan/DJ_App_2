@@ -18,7 +18,23 @@ export const cardSx = (isActive: boolean): SxProps<Theme> => ({
     borderColor: isActive ? 'undefined' : 'divider',
     bgcolor: '#000',
   },
+  // Reveal the row action buttons only while the card is hovered or holds focus.
+  '&:hover [data-set-action], &:focus-within [data-set-action]': {
+    opacity: 1,
+  },
 });
+
+export const actionButtonSx: SxProps<Theme> = {
+  p: 0.25,
+  color: 'text.disabled',
+  opacity: 0,
+  transition: 'opacity 0.15s, color 0.2s',
+};
+
+export const deleteButtonSx: SxProps<Theme> = {
+  ...actionButtonSx,
+  '&:hover': { color: 'red.light' },
+};
 
 export const rowSx: SxProps<Theme> = {
   display: 'flex',
