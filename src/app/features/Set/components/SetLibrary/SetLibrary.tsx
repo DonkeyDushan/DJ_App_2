@@ -18,7 +18,6 @@ import {
 interface SetLibraryProps {
   sets: DJSet[];
   activeSetId: string;
-  isSetPlaybackActive: boolean;
   onLoad: (setId: string) => void;
   onDelete: (setId: string) => void;
   onRename: (setId: string) => void;
@@ -28,7 +27,6 @@ interface SetLibraryProps {
 const SetLibraryInner = ({
   sets,
   activeSetId,
-  isSetPlaybackActive,
   onLoad,
   onDelete,
   onRename,
@@ -64,7 +62,6 @@ const SetLibraryInner = ({
               key={set.id}
               set={set}
               isActive={activeSetId === set.id}
-              isSetPlaybackActive={isSetPlaybackActive}
               onLoad={() => onLoad(set.id)}
               onDelete={() => onDelete(set.id)}
               onRename={() => onRename(set.id)}

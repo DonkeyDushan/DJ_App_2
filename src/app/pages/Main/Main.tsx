@@ -422,7 +422,6 @@ export const Main = (): React.ReactElement => {
         <SetLibrary
           sets={sets}
           activeSetId={activeSet.id}
-          isSetPlaybackActive={setIsPlaying}
           onLoad={setActions.loadSet}
           onDelete={requestDeleteSet}
           onRename={requestRenameSet}

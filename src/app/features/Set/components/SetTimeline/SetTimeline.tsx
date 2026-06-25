@@ -178,6 +178,22 @@ export const SetTimeline = ({
     }
   }, [playheadSeconds, effectiveTotal, isPlaying]);
 
+  // Switching to a different set mid-playback restarts the transport from the
+  // new set's first slot (see SetContext.loadSet), but isPlaying stays true so
+  // the animation loop above does not re-run. Restart it from zero here so the
+  // playhead snaps to the start and tracks the newly selected set's audio. The
+  // paused/stopped case is already handled by the snap-on-position effect above.
+  const prevSetIdRef = useRef(set.id);
+  useEffect(() => {
+    if (prevSetIdRef.current === set.id) return;
+    prevSetIdRef.current = set.id;
+
+    if (!isPlayingRef.current) return;
+
+    playheadSecondsRef.current = 0;
+    startTick(0);
+  }, [set.id, startTick]);
+
   const handleRulerSeek = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!timelineWrapperRef.current) return;
     e.preventDefault();

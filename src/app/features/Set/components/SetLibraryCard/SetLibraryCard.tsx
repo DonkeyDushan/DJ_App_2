@@ -20,7 +20,6 @@ import {
 interface SetLibraryCardProps {
   set: DJSet;
   isActive: boolean;
-  isSetPlaybackActive: boolean;
   onLoad: () => void;
   onDelete: () => void;
   onRename: () => void;
@@ -32,14 +31,13 @@ const getTotalDuration = (set: DJSet): number =>
 const SetLibraryCardInner = ({
   set,
   isActive,
-  isSetPlaybackActive,
   onLoad,
   onDelete,
   onRename,
 }: SetLibraryCardProps): React.ReactElement => (
   <Paper
     sx={cardSx(isActive)}
-    onClick={isSetPlaybackActive ? undefined : onLoad}
+    onClick={onLoad}
     data-testid={`set-library-card--${set.id}`}
   >
     <Box sx={rowSx}>

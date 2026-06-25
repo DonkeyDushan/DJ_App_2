@@ -79,6 +79,14 @@ export const SetProvider = ({
   const setsRef = useRef(sets);
   useEffect(() => { setsRef.current = sets; }, [sets]);
 
+  // Refs read by the stable (empty-dep) action callbacks below, so loading a
+  // set can branch on the live playback state and current selection without
+  // recreating the actions object.
+  const isPlayingRef = useRef(setIsPlaying);
+  useEffect(() => { isPlayingRef.current = setIsPlaying; }, [setIsPlaying]);
+  const activeSetIdRef = useRef(activeSet.id);
+  useEffect(() => { activeSetIdRef.current = activeSet.id; }, [activeSet.id]);
+
   useEffect(() => {
     void loadSets().then((loaded) => setSets(loaded.map(normalizeSet)));
   }, []);
@@ -100,13 +108,23 @@ export const SetProvider = ({
         setHasUnsavedChanges(true);
       },
       loadSet: (setId: string) => {
-        setSets((current) => {
-          const set = current.find((s) => s.id === setId);
-          if (set) setActiveSet({ ...set });
+        const set = setsRef.current.find((s) => s.id === setId);
+        if (!set) return;
 
-          return current;
-        });
+        const isDifferentSet = activeSetIdRef.current !== set.id;
+
+        setActiveSet({ ...set });
         setHasUnsavedChanges(false);
+
+        // A newly selected set always begins from its start. While playing,
+        // restart the transport on its first slot so the previous set stops and
+        // the new one begins (see useSetPlayback). While paused or stopped,
+        // clear the playhead so the next play starts fresh from 0 rather than
+        // resuming a leftover slot from the previous set.
+        if (isDifferentSet) {
+          setSlotOffsetSeconds(0);
+          setCurrentSlotIndex(isPlayingRef.current ? 0 : null);
+        }
       },
       saveSet: () => {
         setActiveSet((current) => {

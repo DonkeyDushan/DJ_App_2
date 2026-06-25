@@ -61,7 +61,11 @@ export const useSetPlayback = ({
     }
     const slot = activeSet.slots[currentSlotIndex];
     if (!slot) {
+      // Reachable when switching to a shorter or empty set mid-playback: there
+      // is no slot to load, so stop both the set timeline and the live
+      // transport so the previously playing set goes silent.
       setActions.stopSetPlayback();
+      void mixerActions.toggleTransport();
 
       return;
     }
@@ -83,8 +87,10 @@ export const useSetPlayback = ({
       durationSeconds,
       slotOffsetSeconds,
     );
+    // activeSet.id re-triggers the load when switching sets mid-playback, even
+    // if the new set's first slot index matches the previous playhead position.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
+  }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds, activeSet.id]);
 
   // Schedule advancement to the next slot based on the time remaining in the
   // current slot. Reruns on seek so the timer reflects the new playhead offset.
@@ -105,8 +111,10 @@ export const useSetPlayback = ({
     }, remaining * 1000);
 
     return () => clearTimeout(timer);
+    // activeSet.id reschedules the advance timer for the newly selected set's
+    // first slot when switching sets mid-playback.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds]);
+  }, [setIsPlaying, currentSlotIndex, slotOffsetSeconds, activeSet.id]);
 
   // Maps a global timeline position to a (slot, offset) pair and records it as
   // the playback position. Runs while playing (live seek) and while paused
