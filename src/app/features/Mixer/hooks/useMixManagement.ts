@@ -29,7 +29,7 @@ import {
   presetToTrackDefinition,
   withMissingTrackStates,
 } from '../utils/trackBuilders';
-import { DEFAULT_TRACKS } from '../../../core/data/defaultTracks';
+import { DEFAULT_TRACKS, DEFAULT_GLOBAL_TEMPO } from '../../../core/data/defaultTracks';
 import { buildDuplicateMixName } from '../utils/duplicateMixName';
 
 type MixManagementParams = {
@@ -425,6 +425,7 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => ({
       ...current,
       transportPlaying: false,
+      globalTempo: DEFAULT_GLOBAL_TEMPO,
       trackStates: Object.fromEntries(
         Object.entries(current.trackStates).map(([id, state]) => [
           id,
