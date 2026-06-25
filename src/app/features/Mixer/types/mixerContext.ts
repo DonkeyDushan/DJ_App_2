@@ -38,6 +38,11 @@ export type MixerActions = {
   addCustomSound: (file: File) => Promise<void>;
   deleteCustomSound: (soundId: string) => Promise<void>;
   renameCustomSound: (soundId: string, name: string) => Promise<void>;
+  replaceCustomSound: (
+    soundId: string,
+    blob: Blob,
+    mimeType: string,
+  ) => Promise<void>;
   saveMix: (name: string, color: MixColorKey | null) => void;
   loadMix: (mixId: string) => Promise<void>;
   overwriteMix: (mixId: string) => void;

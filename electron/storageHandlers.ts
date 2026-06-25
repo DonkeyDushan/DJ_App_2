@@ -109,6 +109,29 @@ export const registerStorageHandlers = (): void => {
     },
   );
 
+  ipcMain.handle(
+    'sounds:replace',
+    async (
+      _,
+      id: string,
+      data: Uint8Array,
+      patch?: Partial<Omit<SoundMeta, 'id'>>,
+    ): Promise<SoundMeta | null> => {
+      const index = await readSoundsIndex();
+      const existing = index.find((entry) => entry.id === id);
+      if (!existing) return null;
+
+      await fs.mkdir(getSoundsDir(), { recursive: true });
+      await fs.writeFile(path.join(getSoundsDir(), id), Buffer.from(data));
+
+      const updated: SoundMeta = { ...existing, ...patch };
+      const next = index.map((entry) => (entry.id === id ? updated : entry));
+      await writeSoundsIndex(next);
+
+      return updated;
+    },
+  );
+
   ipcMain.handle('sounds:remove', async (_, id: string): Promise<void> => {
     const index = await readSoundsIndex();
     await writeSoundsIndex(index.filter((entry) => entry.id !== id));
@@ -135,6 +158,7 @@ export const unregisterStorageHandlers = (): void => {
   ipcMain.removeHandler('sounds:list');
   ipcMain.removeHandler('sounds:add');
   ipcMain.removeHandler('sounds:update');
+  ipcMain.removeHandler('sounds:replace');
   ipcMain.removeHandler('sounds:remove');
   ipcMain.removeHandler('sounds:read');
 };

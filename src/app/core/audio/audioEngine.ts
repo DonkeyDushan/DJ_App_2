@@ -691,6 +691,15 @@ export class AudioEngine {
   async prepareContext(): Promise<void> {
     await this.ensureContext();
   }
+
+  /**
+   * Drops the cached decoded buffer for a custom sound so the next playback
+   * re-decodes it from the (possibly replaced) Blob. Called after a sound's
+   * bytes change, e.g. when its audio is trimmed.
+   */
+  invalidateCustomBuffer(soundId: string): void {
+    this.customBufferCache.delete(soundId);
+  }
 }
 
 /** Re-exported snapshot type for consumers that only need the mixer state shape. */

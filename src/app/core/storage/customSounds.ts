@@ -48,6 +48,15 @@ export const renameCustomSound = async (
   await sounds().update(soundId, { name });
 };
 
+export const replaceCustomSound = async (
+  soundId: string,
+  blob: Blob,
+  mimeType: string,
+): Promise<void> => {
+  const data = new Uint8Array(await blob.arrayBuffer());
+  await sounds().replace(soundId, data, { mimeType });
+};
+
 export const removeCustomSound = async (soundId: string): Promise<void> => {
   await sounds().remove(soundId);
 };

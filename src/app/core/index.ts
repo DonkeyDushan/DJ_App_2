@@ -16,6 +16,7 @@ export type { MixColorKey } from './constants/mixColors';
 export { AudioEngine } from './audio/audioEngine';
 export type { PlaybackState, PlaybackListener, PlaybackHandle } from './audio/audioTypes';
 export { createDemoBuffer, createImpulseResponse } from './audio/synthesis';
+export { encodeWavRegion, WAV_MIME_TYPE } from './audio/wavEncoder';
 
 // Storage
 export type { PersistedActiveState } from './storage/appState';

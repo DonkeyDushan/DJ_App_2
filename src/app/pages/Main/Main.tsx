@@ -11,7 +11,7 @@ import {
 } from '../../features/Mixer';
 import { useSet, SetSection, SetLibrary } from '../../features/Set';
 import type { MixColorKey } from '../../core';
-import { CustomSoundsDialog } from '../../features/TrackEditing';
+import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
 import {
   TopBar,
   SaveLoadManager,
@@ -50,6 +50,7 @@ export const Main = (): React.ReactElement => {
   } = useSet();
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
+  const [trimSoundId, setTrimSoundId] = useState<string | null>(null);
   const [mixDialog, setMixDialog] = useState<MixDialogState | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
@@ -189,6 +190,24 @@ export const Main = (): React.ReactElement => {
       name: sound?.name ?? soundId,
     });
   }, []);
+
+  const requestTrimSound = useCallback((soundId: string) => {
+    setTrimSoundId(soundId);
+  }, []);
+
+  const handleCloseTrim = useCallback(() => setTrimSoundId(null), []);
+
+  const handleSaveTrim = useCallback(
+    (soundId: string, blob: Blob, mimeType: string) => {
+      mixerActions
+        .replaceCustomSound(soundId, blob, mimeType)
+        .then(() => setTrimSoundId(null))
+        .catch((error: unknown) => {
+          console.error('[trim] Failed to save trimmed sound', error);
+        });
+    },
+    [mixerActions],
+  );
 
   const requestRenameSound = useCallback((soundId: string) => {
     const sound = soundsLookupRef.current.find((s) => s.id === soundId);
@@ -453,6 +472,18 @@ export const Main = (): React.ReactElement => {
         onUpload={handleUploadSound}
         onDelete={requestDeleteSound}
         onRename={requestRenameSound}
+        onTrim={requestTrimSound}
+      />
+
+      <SoundTrimDialog
+        open={trimSoundId !== null}
+        sound={
+          trimSoundId !== null
+            ? snapshot.customSounds.find((s) => s.id === trimSoundId) ?? null
+            : null
+        }
+        onClose={handleCloseTrim}
+        onSave={handleSaveTrim}
       />
 
 

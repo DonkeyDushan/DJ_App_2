@@ -23,6 +23,11 @@ interface Window {
         id: string,
         patch: Partial<Omit<SoundMeta, 'id'>>,
       ) => Promise<SoundMeta | null>;
+      replace: (
+        id: string,
+        data: Uint8Array,
+        patch?: Partial<Omit<SoundMeta, 'id'>>,
+      ) => Promise<SoundMeta | null>;
       remove: (id: string) => Promise<void>;
       read: (id: string) => Promise<Uint8Array | null>;
     };

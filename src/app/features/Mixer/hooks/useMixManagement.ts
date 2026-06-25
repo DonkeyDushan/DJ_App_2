@@ -11,6 +11,7 @@ import {
   loadCustomSounds,
   removeCustomSound,
   renameCustomSound as renameCustomSoundStorage,
+  replaceCustomSound as replaceCustomSoundStorage,
 } from '../../../core/storage/customSounds';
 import { loadSavedMixes, persistSavedMixes } from '../../../core/storage/mixStorage';
 import { loadFavoriteIds, loadTrackPresets } from '../../../core/storage/trackPresets';
@@ -49,6 +50,7 @@ export type MixManagementActions = Pick<
   | 'addCustomSound'
   | 'deleteCustomSound'
   | 'renameCustomSound'
+  | 'replaceCustomSound'
   | 'saveMix'
   | 'loadMix'
   | 'overwriteMix'
@@ -279,6 +281,44 @@ export const buildMixManagementActions = ({
       currentSnapshot.customSounds,
       currentSnapshot.globalTempo,
     );
+  },
+
+  replaceCustomSound: async (soundId: string, blob: Blob, mimeType: string) => {
+    const currentSnapshot = snapshotRef.current;
+    await replaceCustomSoundStorage(soundId, blob, mimeType);
+
+    // Drop the stale decoded buffer so the next playback re-decodes the
+    // trimmed audio rather than serving the cached full-length version.
+    engine.invalidateCustomBuffer(soundId);
+
+    const nextSounds = currentSnapshot.customSounds.map((sound) =>
+      sound.id === soundId ? { ...sound, blob, mimeType } : sound,
+    );
+
+    setSnapshot((current) => ({
+      ...current,
+      customSounds: current.customSounds.map((sound) =>
+        sound.id === soundId ? { ...sound, blob, mimeType } : sound,
+      ),
+    }));
+
+    // If the trimmed sound is currently looping, restart it so the change is
+    // audible immediately rather than only after the next transport start.
+    const track = tracksRef.current.find(
+      (entry) => entry.kind === 'custom' && entry.customSoundId === soundId,
+    );
+    const trackState = track
+      ? currentSnapshot.trackStates[track.id]
+      : undefined;
+
+    if (track && trackState?.enabled && currentSnapshot.transportPlaying) {
+      void engine.syncTrack(
+        track,
+        trackState,
+        nextSounds,
+        currentSnapshot.globalTempo,
+      );
+    }
   },
 
   renameCustomSound: async (soundId: string, name: string) => {
