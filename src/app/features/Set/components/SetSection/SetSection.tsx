@@ -15,11 +15,11 @@ import {
 
 import { STRINGS } from '../../../../strings';
 import { PixelIcon, PlayButton } from '../../../../components';
-import type { DJSession } from '../../../../core/types/sessionData';
+import type { DJSet } from '../../../../core/types/setData';
 import type { TransitionKind } from '../../../../core/types/transition';
 import type { SavedMix } from '../../../../core/types/mixData';
-import { SessionNameInput } from '../SessionNameInput/SessionNameInput';
-import { SessionTimeline } from '../SessionTimeline/SessionTimeline';
+import { SetNameInput } from '../SetNameInput/SetNameInput';
+import { SetTimeline } from '../SetTimeline/SetTimeline';
 import {
   TRANSITION_KIND_LABEL,
   TransitionEditor,
@@ -34,7 +34,7 @@ import {
 } from './SetSection.styles';
 
 interface SetSectionProps {
-  activeSession: DJSession;
+  activeSet: DJSet;
   mixes: SavedMix[];
   isSetPlaying: boolean;
   currentSlotIndex: number | null;
@@ -42,7 +42,7 @@ interface SetSectionProps {
   onPlayPause: () => void;
   onSaveSet: () => void;
   onResetSet: () => void;
-  onSetSessionName: (name: string) => void;
+  onUpdateSetName: (name: string) => void;
   onSetTotalDuration: (seconds: number) => void;
   onRemoveSlot: (slotId: string) => void;
   onDuplicateSlot: (slotId: string) => void;
@@ -56,12 +56,12 @@ interface SetSectionProps {
     kind: TransitionKind,
     durationSeconds: number,
   ) => void;
-  onReorderSlots: (slots: DJSession['slots']) => void;
+  onReorderSlots: (slots: DJSet['slots']) => void;
   onSeekSlot?: (seconds: number) => void;
 }
 
 const SetSectionInner = ({
-  activeSession,
+  activeSet,
   mixes,
   isSetPlaying,
   currentSlotIndex,
@@ -69,7 +69,7 @@ const SetSectionInner = ({
   onPlayPause,
   onSaveSet,
   onResetSet,
-  onSetSessionName,
+  onUpdateSetName,
   onSetTotalDuration,
   onRemoveSlot,
   onDuplicateSlot,
@@ -82,14 +82,14 @@ const SetSectionInner = ({
 }: SetSectionProps): React.ReactElement => {
   const [playheadSeconds, setPlayheadSeconds] = useState(0);
   const [defaultAnchor, setDefaultAnchor] = useState<HTMLElement | null>(null);
-  const prevSessionIdRef = useRef(activeSession.id);
+  const prevSetIdRef = useRef(activeSet.id);
 
   useEffect(() => {
-    if (prevSessionIdRef.current !== activeSession.id) {
-      prevSessionIdRef.current = activeSession.id;
+    if (prevSetIdRef.current !== activeSet.id) {
+      prevSetIdRef.current = activeSet.id;
       setPlayheadSeconds(0);
     }
-  }, [activeSession.id]);
+  }, [activeSet.id]);
 
   // When the set is fully stopped (end of set, not paused) the playback
   // position is cleared, so snap the visual playhead back to the start. This
@@ -101,8 +101,8 @@ const SetSectionInner = ({
     }
   }, [currentSlotIndex]);
 
-  const totalMinutes = Math.round(activeSession.totalDurationSeconds / 60);
-  const hasSlots = activeSession.slots.length > 0;
+  const totalMinutes = Math.round(activeSet.totalDurationSeconds / 60);
+  const hasSlots = activeSet.slots.length > 0;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -112,10 +112,10 @@ const SetSectionInner = ({
 
     if (type === 'slot') {
       if (active.id !== over.id) {
-        const oldIdx = activeSession.slots.findIndex((s) => s.id === active.id);
-        const newIdx = activeSession.slots.findIndex((s) => s.id === over.id);
+        const oldIdx = activeSet.slots.findIndex((s) => s.id === active.id);
+        const newIdx = activeSet.slots.findIndex((s) => s.id === over.id);
         if (oldIdx !== -1 && newIdx !== -1) {
-          onReorderSlots(arrayMove(activeSession.slots, oldIdx, newIdx));
+          onReorderSlots(arrayMove(activeSet.slots, oldIdx, newIdx));
         }
       }
     }
@@ -131,11 +131,11 @@ const SetSectionInner = ({
             disabled={!hasSlots}
           />
 
-          <SessionNameInput
-            key={activeSession.id}
-            initialName={activeSession.name}
-            onCommit={onSetSessionName}
-            placeholder={STRINGS.set.sessionNamePlaceholder}
+          <SetNameInput
+            key={activeSet.id}
+            initialName={activeSet.name}
+            onCommit={onUpdateSetName}
+            placeholder={STRINGS.set.setNamePlaceholder}
             sx={nameInputSx}
           />
 
@@ -149,7 +149,7 @@ const SetSectionInner = ({
                 flexShrink: 0,
               }}
             >
-              {currentSlotIndex + 1} / {activeSession.slots.length}
+              {currentSlotIndex + 1} / {activeSet.slots.length}
             </Typography>
           )}
 
@@ -170,9 +170,9 @@ const SetSectionInner = ({
               >
                 <PixelIcon glyph={Waves} />
                 <Typography>
-                  {TRANSITION_KIND_LABEL[activeSession.defaultTransitionKind]}
-                  {activeSession.defaultTransitionDuration > 0
-                    ? ` ${activeSession.defaultTransitionDuration}s`
+                  {TRANSITION_KIND_LABEL[activeSet.defaultTransitionKind]}
+                  {activeSet.defaultTransitionDuration > 0
+                    ? ` ${activeSet.defaultTransitionDuration}s`
                     : ''}
                 </Typography>
               </IconButton>
@@ -232,25 +232,25 @@ const SetSectionInner = ({
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <TransitionEditor
-            kind={activeSession.defaultTransitionKind}
-            durationSeconds={activeSession.defaultTransitionDuration}
+            kind={activeSet.defaultTransitionKind}
+            durationSeconds={activeSet.defaultTransitionDuration}
             onChangeKind={(kind) =>
               onSetDefaultTransition(
                 kind,
-                activeSession.defaultTransitionDuration,
+                activeSet.defaultTransitionDuration,
               )
             }
             onChangeDuration={(durationSeconds) =>
               onSetDefaultTransition(
-                activeSession.defaultTransitionKind,
+                activeSet.defaultTransitionKind,
                 durationSeconds,
               )
             }
           />
         </Popover>
 
-        <SessionTimeline
-          session={activeSession}
+        <SetTimeline
+          set={activeSet}
           mixes={mixes}
           isPlaying={isSetPlaying}
           playheadSeconds={playheadSeconds}

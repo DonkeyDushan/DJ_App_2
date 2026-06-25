@@ -12,7 +12,7 @@ import {
   listSx,
   panelSx,
 } from './MixLibrary.styles';
-import { headerLabelSx } from '../../../Session/components/SetLibrary/SetLibrary.styles';
+import { headerLabelSx } from '../../../Set/components/SetLibrary/SetLibrary.styles';
 
 interface MixLibraryProps {
   mixes: SavedMix[];

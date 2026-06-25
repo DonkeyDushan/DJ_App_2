@@ -6,7 +6,7 @@
 // Types
 export type { TrackKind, TrackCategory, TrackSavedSettings, TrackDefinition, PreloadedAudioFile, TrackState } from './types/trackData';
 export type { CustomSoundRecord, SavedMixTrackState, SavedMix, MixUpdate, MixerSnapshot } from './types/mixData';
-export type { SessionSlot, DJSession } from './types/sessionData';
+export type { SetSlot, DJSet } from './types/setData';
 
 // Constants
 export { MIX_COLOR_KEYS } from './constants/mixColors';
@@ -24,4 +24,4 @@ export { loadCustomSounds, addCustomSound, removeCustomSound } from './storage/c
 export { loadSavedMixes, persistSavedMixes } from './storage/mixStorage';
 export type { PersistedTrackPreset, TrackOverrides } from './storage/trackPresets';
 export { loadTrackPresets, persistTrackPresets, loadFavoriteIds, persistFavoriteIds, loadTrackOverrides, persistTrackOverrides } from './storage/trackPresets';
-export { loadSessions, persistSessions } from './storage/sessionStorage';
+export { loadSets, persistSets } from './storage/setStorage';

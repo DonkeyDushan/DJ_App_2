@@ -6,7 +6,7 @@ import { Waves } from 'pixelarticons/react/Waves';
 import { Box, IconButton, Popover, Tooltip, Typography } from '@mui/material';
 
 import type { SavedMix } from '../../../../core/types/mixData';
-import type { SessionSlot } from '../../../../core/types/sessionData';
+import type { SetSlot } from '../../../../core/types/setData';
 import type { TransitionKind } from '../../../../core/types/transition';
 import { STRINGS } from '../../../../strings';
 import { PixelIcon } from '../../../../components';
@@ -24,10 +24,10 @@ import {
   slotRootSx,
   transitionButtonSx,
   transitionChipLabelSx,
-} from './SessionSlotBlock.styles';
+} from './SetSlotBlock.styles';
 
-interface SessionSlotBlockProps {
-  slot: SessionSlot;
+interface SetSlotBlockProps {
+  slot: SetSlot;
   mix: SavedMix | undefined;
   color: string;
   colorLight: string;
@@ -40,7 +40,7 @@ interface SessionSlotBlockProps {
   onSetTransitionDuration: (durationSeconds: number) => void;
 }
 
-export const SessionSlotBlock = ({
+export const SetSlotBlock = ({
   slot,
   mix,
   color,
@@ -51,7 +51,7 @@ export const SessionSlotBlock = ({
   onResizeDuration,
   onSetTransitionKind,
   onSetTransitionDuration,
-}: SessionSlotBlockProps): React.ReactElement => {
+}: SetSlotBlockProps): React.ReactElement => {
   const {
     attributes,
     listeners,

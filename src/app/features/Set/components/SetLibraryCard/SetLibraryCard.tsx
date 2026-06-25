@@ -6,7 +6,7 @@ import { IconButton, Paper, Tooltip, Typography, Box } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
 import { PixelIcon } from '../../../../components';
-import type { DJSession } from '../../../../core/types/sessionData';
+import type { DJSet } from '../../../../core/types/setData';
 import { formatSlotDuration } from '../../utils/timelineFormatters';
 import {
   actionButtonSx,
@@ -18,7 +18,7 @@ import {
 } from './SetLibraryCard.styles';
 
 interface SetLibraryCardProps {
-  session: DJSession;
+  set: DJSet;
   isActive: boolean;
   isSetPlaybackActive: boolean;
   onLoad: () => void;
@@ -26,11 +26,11 @@ interface SetLibraryCardProps {
   onRename: () => void;
 }
 
-const getTotalDuration = (session: DJSession): number =>
-  session.slots.reduce((sum, s) => sum + s.durationSeconds, 0);
+const getTotalDuration = (set: DJSet): number =>
+  set.slots.reduce((sum, s) => sum + s.durationSeconds, 0);
 
 const SetLibraryCardInner = ({
-  session,
+  set,
   isActive,
   isSetPlaybackActive,
   onLoad,
@@ -40,7 +40,7 @@ const SetLibraryCardInner = ({
   <Paper
     sx={cardSx(isActive)}
     onClick={isSetPlaybackActive ? undefined : onLoad}
-    data-testid={`set-library-card--${session.id}`}
+    data-testid={`set-library-card--${set.id}`}
   >
     <Box sx={rowSx}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -52,15 +52,15 @@ const SetLibraryCardInner = ({
               <PixelIcon glyph={AudioWaveform} />
             </Box>
           )}
-          <Typography sx={setNameSx}>{session.name}</Typography>
+          <Typography sx={setNameSx}>{set.name}</Typography>
         </Box>
         <Typography sx={setMetaSx}>
-          {session.slots.length} slots ·{' '}
-          {formatSlotDuration(getTotalDuration(session))}
+          {set.slots.length} slots ·{' '}
+          {formatSlotDuration(getTotalDuration(set))}
         </Typography>
       </Box>
 
-      <Tooltip title={STRINGS.set.renameSession}>
+      <Tooltip title={STRINGS.set.renameSet}>
         <IconButton
           size="small"
           onClick={(e) => {
@@ -69,13 +69,13 @@ const SetLibraryCardInner = ({
           }}
           sx={actionButtonSx}
           data-set-action
-          data-testid={`set-library-rename--${session.id}`}
+          data-testid={`set-library-rename--${set.id}`}
         >
           <PixelIcon glyph={PenSquare} />
         </IconButton>
       </Tooltip>
 
-      <Tooltip title={STRINGS.set.deleteSession}>
+      <Tooltip title={STRINGS.set.deleteSet}>
         <IconButton
           size="small"
           onClick={(e) => {
@@ -84,7 +84,7 @@ const SetLibraryCardInner = ({
           }}
           sx={deleteButtonSx}
           data-set-action
-          data-testid={`set-library-delete--${session.id}`}
+          data-testid={`set-library-delete--${set.id}`}
         >
           <PixelIcon glyph={Trash} />
         </IconButton>

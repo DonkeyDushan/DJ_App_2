@@ -130,7 +130,7 @@ const MixEditDialogInner = ({
 
       <DialogActions>
         {mode === 'edit' && onDelete && (
-          <Tooltip title={STRINGS.set.deleteSession}>
+          <Tooltip title={STRINGS.set.deleteSet}>
             <IconButton
               size="small"
               onClick={(e) => {

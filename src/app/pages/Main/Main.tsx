@@ -9,7 +9,7 @@ import {
   MixLibrary,
   MixEditDialog,
 } from '../../features/Mixer';
-import { useSession, SetSection, SetLibrary } from '../../features/Session';
+import { useSet, SetSection, SetLibrary } from '../../features/Set';
 import type { MixColorKey } from '../../core';
 import { CustomSoundsDialog } from '../../features/TrackEditing';
 import {
@@ -39,15 +39,15 @@ const RENAME_TITLE_BY_TYPE: Record<RenameTarget['kind'], string> = {
 export const Main = (): React.ReactElement => {
   const { snapshot, tracks, activeMixId, actions: mixerActions } = useMixer();
   const {
-    activeSession,
-    sessions,
+    activeSet,
+    sets,
     setIsPlaying,
     currentSlotIndex,
     slotOffsetSeconds,
     playingMixId,
     hasUnsavedChanges,
-    actions: sessionActions,
-  } = useSession();
+    actions: setActions,
+  } = useSet();
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [mixDialog, setMixDialog] = useState<MixDialogState | null>(null);
@@ -62,8 +62,8 @@ export const Main = (): React.ReactElement => {
   soundsLookupRef.current = snapshot.customSounds;
   const mixesLookupRef = useRef(snapshot.savedMixes);
   mixesLookupRef.current = snapshot.savedMixes;
-  const sessionsLookupRef = useRef(sessions);
-  sessionsLookupRef.current = sessions;
+  const setsLookupRef = useRef(sets);
+  setsLookupRef.current = sets;
 
   const pendingActionsRef = useRef<{
     presetId: string;
@@ -93,9 +93,9 @@ export const Main = (): React.ReactElement => {
     setIsPlaying,
     currentSlotIndex,
     slotOffsetSeconds,
-    activeSession,
+    activeSet,
     mixerActions,
-    sessionActions,
+    setActions,
   });
 
   const handleSave = useCallback(() => {
@@ -206,18 +206,18 @@ export const Main = (): React.ReactElement => {
     setMixDialog({ kind: 'edit', id: mixId, name: mix.name, color: mix.color ?? null });
   }, []);
 
-  const requestDeleteSet = useCallback((sessionId: string) => {
-    const session = sessionsLookupRef.current.find((s) => s.id === sessionId);
+  const requestDeleteSet = useCallback((setId: string) => {
+    const set = setsLookupRef.current.find((s) => s.id === setId);
     setDeleteTarget({
       kind: 'set',
-      id: sessionId,
-      name: session?.name ?? sessionId,
+      id: setId,
+      name: set?.name ?? setId,
     });
   }, []);
 
-  const requestRenameSet = useCallback((sessionId: string) => {
-    const session = sessionsLookupRef.current.find((s) => s.id === sessionId);
-    setRenameTarget({ kind: 'set', id: sessionId, name: session?.name ?? '' });
+  const requestRenameSet = useCallback((setId: string) => {
+    const set = setsLookupRef.current.find((s) => s.id === setId);
+    setRenameTarget({ kind: 'set', id: setId, name: set?.name ?? '' });
   }, []);
 
   const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
@@ -264,14 +264,14 @@ export const Main = (): React.ReactElement => {
         mixerActions.deleteMix(deleteTarget.id);
         break;
       case 'set':
-        sessionActions.deleteSession(deleteTarget.id);
+        setActions.deleteSet(deleteTarget.id);
         break;
       default:
         break;
     }
 
     setDeleteTarget(null);
-  }, [deleteTarget, mixerActions, sessionActions]);
+  }, [deleteTarget, mixerActions, setActions]);
 
   const handleConfirmRename = useCallback(
     (name: string) => {
@@ -282,7 +282,7 @@ export const Main = (): React.ReactElement => {
           void mixerActions.renameCustomSound(renameTarget.id, name);
           break;
         case 'set':
-          sessionActions.renameSession(renameTarget.id, name);
+          setActions.renameSet(renameTarget.id, name);
           break;
         default:
           break;
@@ -290,7 +290,7 @@ export const Main = (): React.ReactElement => {
 
       setRenameTarget(null);
     },
-    [renameTarget, mixerActions, sessionActions],
+    [renameTarget, mixerActions, setActions],
   );
 
   return (
@@ -310,7 +310,7 @@ export const Main = (): React.ReactElement => {
           activeMixId={activeMixId}
           playingMixId={playingMixId}
           isSetPlaybackActive={setIsPlaying}
-          onAddToTimeline={sessionActions.addSlot}
+          onAddToTimeline={setActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
           onEditMix={requestEditMix}
@@ -420,33 +420,33 @@ export const Main = (): React.ReactElement => {
         }}
       >
         <SetLibrary
-          sessions={sessions}
-          activeSessionId={activeSession.id}
+          sets={sets}
+          activeSetId={activeSet.id}
           isSetPlaybackActive={setIsPlaying}
-          onLoad={sessionActions.loadSession}
+          onLoad={setActions.loadSet}
           onDelete={requestDeleteSet}
           onRename={requestRenameSet}
-          onNewSet={sessionActions.newSession}
+          onNewSet={setActions.newSet}
         />
 
         <SetSection
-          activeSession={activeSession}
+          activeSet={activeSet}
           mixes={snapshot.savedMixes}
           isSetPlaying={setIsPlaying}
           currentSlotIndex={currentSlotIndex}
           hasUnsavedChanges={hasUnsavedChanges}
           onPlayPause={handleSetPlayPause}
-          onSaveSet={sessionActions.saveSession}
-          onResetSet={sessionActions.resetSession}
-          onSetSessionName={sessionActions.setSessionName}
-          onSetTotalDuration={sessionActions.setTotalDuration}
-          onRemoveSlot={sessionActions.removeSlot}
-          onDuplicateSlot={sessionActions.duplicateSlot}
-          onSetSlotDuration={sessionActions.setSlotDuration}
-          onSetSlotTransitionKind={sessionActions.setSlotTransitionKind}
-          onSetSlotTransitionDuration={sessionActions.setSlotTransitionDuration}
-          onSetDefaultTransition={sessionActions.setSessionDefaultTransition}
-          onReorderSlots={sessionActions.reorderSlots}
+          onSaveSet={setActions.saveSet}
+          onResetSet={setActions.resetSet}
+          onUpdateSetName={setActions.updateSetName}
+          onSetTotalDuration={setActions.setTotalDuration}
+          onRemoveSlot={setActions.removeSlot}
+          onDuplicateSlot={setActions.duplicateSlot}
+          onSetSlotDuration={setActions.setSlotDuration}
+          onSetSlotTransitionKind={setActions.setSlotTransitionKind}
+          onSetSlotTransitionDuration={setActions.setSlotTransitionDuration}
+          onSetDefaultTransition={setActions.updateSetDefaultTransition}
+          onReorderSlots={setActions.reorderSlots}
           onSeekSlot={handleSeek}
         />
       </Box>

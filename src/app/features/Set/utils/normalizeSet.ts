@@ -1,20 +1,20 @@
 /**
- * Backfills transition fields onto sessions and slots persisted before
+ * Backfills transition fields onto sets and slots persisted before
  * per-slot transitions existed, so playback and UI never read `undefined`.
  */
 
-import type { DJSession } from '../../../core/types/sessionData';
+import type { DJSet } from '../../../core/types/setData';
 import {
   DEFAULT_TRANSITION_DURATION_SECONDS,
   DEFAULT_TRANSITION_KIND,
-} from '../constants/sessionDefaults';
+} from '../constants/setDefaults';
 
-export const normalizeSession = (session: DJSession): DJSession => ({
-  ...session,
-  defaultTransitionKind: session.defaultTransitionKind ?? DEFAULT_TRANSITION_KIND,
+export const normalizeSet = (set: DJSet): DJSet => ({
+  ...set,
+  defaultTransitionKind: set.defaultTransitionKind ?? DEFAULT_TRANSITION_KIND,
   defaultTransitionDuration:
-    session.defaultTransitionDuration ?? DEFAULT_TRANSITION_DURATION_SECONDS,
-  slots: session.slots.map((slot) => ({
+    set.defaultTransitionDuration ?? DEFAULT_TRANSITION_DURATION_SECONDS,
+  slots: set.slots.map((slot) => ({
     ...slot,
     transitionKind: slot.transitionKind ?? DEFAULT_TRANSITION_KIND,
     transitionDuration:

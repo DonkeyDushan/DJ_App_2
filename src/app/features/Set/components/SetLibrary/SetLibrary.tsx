@@ -3,7 +3,7 @@ import { Plus } from 'pixelarticons/react/Plus';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
-import type { DJSession } from '../../../../core/types/sessionData';
+import type { DJSet } from '../../../../core/types/setData';
 import { SetLibraryCard } from '../SetLibraryCard/SetLibraryCard';
 import { PixelIcon } from '../../../../components';
 import {
@@ -16,18 +16,18 @@ import {
 } from './SetLibrary.styles';
 
 interface SetLibraryProps {
-  sessions: DJSession[];
-  activeSessionId: string;
+  sets: DJSet[];
+  activeSetId: string;
   isSetPlaybackActive: boolean;
-  onLoad: (sessionId: string) => void;
-  onDelete: (sessionId: string) => void;
-  onRename: (sessionId: string) => void;
+  onLoad: (setId: string) => void;
+  onDelete: (setId: string) => void;
+  onRename: (setId: string) => void;
   onNewSet: () => void;
 }
 
 const SetLibraryInner = ({
-  sessions,
-  activeSessionId,
+  sets,
+  activeSetId,
   isSetPlaybackActive,
   onLoad,
   onDelete,
@@ -36,7 +36,7 @@ const SetLibraryInner = ({
 }: SetLibraryProps): React.ReactElement => (
   <Box sx={panelSx} data-testid="set-library">
     <Box sx={headerRowSx}>
-      <Typography sx={headerLabelSx}>{STRINGS.set.savedSessions}</Typography>
+      <Typography sx={headerLabelSx}>{STRINGS.set.savedSets}</Typography>
 
       <Tooltip title={STRINGS.set.newSet}>
         <IconButton
@@ -56,18 +56,18 @@ const SetLibraryInner = ({
 
     <Box sx={listWrapperSx}>
       <Box sx={listSx}>
-        {sessions.length === 0 ? (
-          <Typography sx={emptyLabelSx}>{STRINGS.set.noSessions}</Typography>
+        {sets.length === 0 ? (
+          <Typography sx={emptyLabelSx}>{STRINGS.set.noSets}</Typography>
         ) : (
-          sessions.map((session) => (
+          sets.map((set) => (
             <SetLibraryCard
-              key={session.id}
-              session={session}
-              isActive={activeSessionId === session.id}
+              key={set.id}
+              set={set}
+              isActive={activeSetId === set.id}
               isSetPlaybackActive={isSetPlaybackActive}
-              onLoad={() => onLoad(session.id)}
-              onDelete={() => onDelete(session.id)}
-              onRename={() => onRename(session.id)}
+              onLoad={() => onLoad(set.id)}
+              onDelete={() => onDelete(set.id)}
+              onRename={() => onRename(set.id)}
             />
           ))
         )}

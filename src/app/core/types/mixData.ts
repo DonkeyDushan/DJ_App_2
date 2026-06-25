@@ -1,6 +1,6 @@
 /**
  * Core data types for saved mixes and mixer snapshots.
- * Used by Mixer and Session features.
+ * Used by Mixer and Set features.
  */
 
 import type { MixColorKey } from '../constants/mixColors';

@@ -9,10 +9,10 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { Box, Typography, useTheme } from '@mui/material';
 
 import { STRINGS } from '../../../../strings';
-import type { DJSession } from '../../../../core/types/sessionData';
+import type { DJSet } from '../../../../core/types/setData';
 import type { TransitionKind } from '../../../../core/types/transition';
 import type { SavedMix } from '../../../../core/types/mixData';
-import { SessionSlotBlock } from '../SessionSlotBlock/SessionSlotBlock';
+import { SetSlotBlock } from '../SetSlotBlock/SetSlotBlock';
 import {
   emptyLabelSx,
   emptyTimelineSx,
@@ -23,7 +23,7 @@ import {
   slotsRowSx,
   tickLabelSx,
   timelineWrapperSx,
-} from './SessionTimeline.styles';
+} from './SetTimeline.styles';
 import {
   formatTickLabel,
   getTickIntervalSeconds,
@@ -31,8 +31,8 @@ import {
 
 export const TIMELINE_DROPPABLE_ID = 'timeline';
 
-interface SessionTimelineProps {
-  session: DJSession;
+interface SetTimelineProps {
+  set: DJSet;
   mixes: SavedMix[];
   isPlaying: boolean;
   playheadSeconds: number;
@@ -49,8 +49,8 @@ interface SessionTimelineProps {
 const SLOT_COLOR_FALLBACK = '#808080';
 const SLOT_COLOR_LIGHT_FALLBACK = '#ebebeb';
 
-export const SessionTimeline = ({
-  session,
+export const SetTimeline = ({
+  set,
   mixes,
   isPlaying,
   playheadSeconds,
@@ -62,7 +62,7 @@ export const SessionTimeline = ({
   onSetSlotTransitionKind,
   onSetSlotTransitionDuration,
   onSeek,
-}: SessionTimelineProps): React.ReactElement => {
+}: SetTimelineProps): React.ReactElement => {
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
@@ -84,12 +84,12 @@ export const SessionTimeline = ({
     onSeekRef.current = onSeek;
   }, [onSeek]);
 
-  const slotTotalSeconds = session.slots.reduce(
+  const slotTotalSeconds = set.slots.reduce(
     (sum, s) => sum + s.durationSeconds,
     0,
   );
   const effectiveTotal = Math.max(
-    session.totalDurationSeconds,
+    set.totalDurationSeconds,
     slotTotalSeconds,
     1,
   );
@@ -109,7 +109,7 @@ export const SessionTimeline = ({
     (_, i) => i * tickIntervalSeconds,
   );
 
-  const slotIds = session.slots.map((s) => s.id);
+  const slotIds = set.slots.map((s) => s.id);
 
   const getResizeFactor = useCallback(() => {
     const width = containerRef.current?.offsetWidth ?? 1;
@@ -220,7 +220,7 @@ export const SessionTimeline = ({
     <Box
       ref={timelineWrapperRef}
       sx={timelineWrapperSx}
-      data-testid="session-timeline"
+      data-testid="set-timeline"
     >
       {/* Time ruler */}
       <Box sx={rulerSx} onPointerDown={handleRulerSeek}>
@@ -244,7 +244,7 @@ export const SessionTimeline = ({
 
       {/* Slots row */}
       <Box ref={setRefs} sx={slotsRowSx(isOver)}>
-        {session.slots.length === 0 ? (
+        {set.slots.length === 0 ? (
           <Box sx={emptyTimelineSx}>
             <Typography sx={emptyLabelSx}>{STRINGS.set.noSlots}</Typography>
           </Box>
@@ -253,7 +253,7 @@ export const SessionTimeline = ({
             items={slotIds}
             strategy={horizontalListSortingStrategy}
           >
-            {session.slots.map((slot) => {
+            {set.slots.map((slot) => {
               const widthPercent =
                 (slot.durationSeconds / effectiveTotal) * 100;
               const mix = mixes.find((m) => m.id === slot.mixId);
@@ -265,7 +265,7 @@ export const SessionTimeline = ({
                 : SLOT_COLOR_LIGHT_FALLBACK;
 
               return (
-                <SessionSlotBlock
+                <SetSlotBlock
                   key={slot.id}
                   slot={slot}
                   mix={mix}

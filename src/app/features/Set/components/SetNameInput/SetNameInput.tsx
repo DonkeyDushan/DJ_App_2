@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { InputBase } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 
-interface SessionNameInputProps {
+interface SetNameInputProps {
   initialName: string;
   onCommit: (name: string) => void;
   placeholder: string;
   sx?: SxProps<Theme>;
 }
 
-export const SessionNameInput = ({
+export const SetNameInput = ({
   initialName,
   onCommit,
   placeholder,
   sx,
-}: SessionNameInputProps): React.ReactElement => {
+}: SetNameInputProps): React.ReactElement => {
   const [localName, setLocalName] = useState(initialName);
 
   const handleBlur = () => onCommit(localName);

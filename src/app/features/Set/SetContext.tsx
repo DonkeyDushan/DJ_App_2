@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { loadSessions, persistSessions } from '../../core/storage/sessionStorage';
-import type { DJSession, SessionSlot } from '../../core/types/sessionData';
+import { loadSets, persistSets } from '../../core/storage/setStorage';
+import type { DJSet, SetSlot } from '../../core/types/setData';
 import type { TransitionKind } from '../../core/types/transition';
 import {
   DEFAULT_SLOT_DURATION_SECONDS,
   DEFAULT_TOTAL_DURATION_SECONDS,
   DEFAULT_TRANSITION_DURATION_SECONDS,
   DEFAULT_TRANSITION_KIND,
-} from './constants/sessionDefaults';
-import { normalizeSession } from './utils/normalizeSession';
+} from './constants/setDefaults';
+import { normalizeSet } from './utils/normalizeSet';
 
-const createBlankSession = (): DJSession => ({
+const createBlankSet = (): DJSet => ({
   id: `draft-${Date.now()}`,
   name: '',
   createdAt: Date.now(),
@@ -22,23 +22,23 @@ const createBlankSession = (): DJSession => ({
   defaultTransitionDuration: DEFAULT_TRANSITION_DURATION_SECONDS,
 });
 
-type SessionActions = {
-  newSession: () => void;
-  setSessionName: (name: string) => void;
-  loadSession: (sessionId: string) => void;
-  saveSession: () => void;
-  resetSession: () => void;
-  deleteSession: (sessionId: string) => void;
-  renameSession: (sessionId: string, name: string) => void;
-  toggleSessionFavorite: (sessionId: string) => void;
+type SetActions = {
+  newSet: () => void;
+  updateSetName: (name: string) => void;
+  loadSet: (setId: string) => void;
+  saveSet: () => void;
+  resetSet: () => void;
+  deleteSet: (setId: string) => void;
+  renameSet: (setId: string, name: string) => void;
+  toggleSetFavorite: (setId: string) => void;
   addSlot: (mixId: string) => void;
   removeSlot: (slotId: string) => void;
   duplicateSlot: (slotId: string) => void;
-  reorderSlots: (newSlots: SessionSlot[]) => void;
+  reorderSlots: (newSlots: SetSlot[]) => void;
   setSlotDuration: (slotId: string, durationSeconds: number) => void;
   setSlotTransitionDuration: (slotId: string, transitionDuration: number) => void;
   setSlotTransitionKind: (slotId: string, transitionKind: TransitionKind) => void;
-  setSessionDefaultTransition: (
+  updateSetDefaultTransition: (
     transitionKind: TransitionKind,
     transitionDuration: number,
   ) => void;
@@ -51,73 +51,73 @@ type SessionActions = {
   seekToSlot: (slotIndex: number, offsetSeconds: number) => void;
 };
 
-type SessionContextValue = {
-  sessions: DJSession[];
-  activeSession: DJSession;
+type SetContextValue = {
+  sets: DJSet[];
+  activeSet: DJSet;
   setIsPlaying: boolean;
   currentSlotIndex: number | null;
   slotOffsetSeconds: number;
   playingMixId: string | null;
   hasUnsavedChanges: boolean;
-  actions: SessionActions;
+  actions: SetActions;
 };
 
-const SessionContext = createContext<SessionContextValue | null>(null);
+const SetContext = createContext<SetContextValue | null>(null);
 
-export const SessionProvider = ({
+export const SetProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const [sessions, setSessions] = useState<DJSession[]>([]);
-  const [activeSession, setActiveSession] = useState<DJSession>(createBlankSession);
+  const [sets, setSets] = useState<DJSet[]>([]);
+  const [activeSet, setActiveSet] = useState<DJSet>(createBlankSet);
   const [setIsPlaying, setSetIsPlaying] = useState(false);
   const [currentSlotIndex, setCurrentSlotIndex] = useState<number | null>(null);
   const [slotOffsetSeconds, setSlotOffsetSeconds] = useState(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const sessionsRef = useRef(sessions);
-  useEffect(() => { sessionsRef.current = sessions; }, [sessions]);
+  const setsRef = useRef(sets);
+  useEffect(() => { setsRef.current = sets; }, [sets]);
 
   useEffect(() => {
-    void loadSessions().then((loaded) => setSessions(loaded.map(normalizeSession)));
+    void loadSets().then((loaded) => setSets(loaded.map(normalizeSet)));
   }, []);
 
   const playingMixId = useMemo(() => {
     if (currentSlotIndex === null) return null;
 
-    return activeSession.slots[currentSlotIndex]?.mixId ?? null;
-  }, [currentSlotIndex, activeSession.slots]);
+    return activeSet.slots[currentSlotIndex]?.mixId ?? null;
+  }, [currentSlotIndex, activeSet.slots]);
 
-  const actions = useMemo<SessionActions>(
+  const actions = useMemo<SetActions>(
     () => ({
-      newSession: () => {
-        setActiveSession(createBlankSession());
+      newSet: () => {
+        setActiveSet(createBlankSet());
         setHasUnsavedChanges(false);
       },
-      setSessionName: (name: string) => {
-        setActiveSession((current) => ({ ...current, name }));
+      updateSetName: (name: string) => {
+        setActiveSet((current) => ({ ...current, name }));
         setHasUnsavedChanges(true);
       },
-      loadSession: (sessionId: string) => {
-        setSessions((current) => {
-          const session = current.find((s) => s.id === sessionId);
-          if (session) setActiveSession({ ...session });
+      loadSet: (setId: string) => {
+        setSets((current) => {
+          const set = current.find((s) => s.id === setId);
+          if (set) setActiveSet({ ...set });
 
           return current;
         });
         setHasUnsavedChanges(false);
       },
-      saveSession: () => {
-        setActiveSession((current) => {
+      saveSet: () => {
+        setActiveSet((current) => {
           const name = current.name.trim() || 'Untitled Set';
-          const toSave: DJSession = { ...current, name };
-          setSessions((prev) => {
+          const toSave: DJSet = { ...current, name };
+          setSets((prev) => {
             const exists = prev.some((s) => s.id === toSave.id);
             const next = exists
               ? prev.map((s) => (s.id === toSave.id ? toSave : s))
               : [toSave, ...prev];
-            persistSessions(next);
+            persistSets(next);
 
             return next;
           });
@@ -126,46 +126,46 @@ export const SessionProvider = ({
         });
         setHasUnsavedChanges(false);
       },
-      resetSession: () => {
-        setActiveSession((current) => {
-          const savedVersion = sessionsRef.current.find((s) => s.id === current.id);
+      resetSet: () => {
+        setActiveSet((current) => {
+          const savedVersion = setsRef.current.find((s) => s.id === current.id);
 
-          return savedVersion ? { ...savedVersion } : createBlankSession();
+          return savedVersion ? { ...savedVersion } : createBlankSet();
         });
         setHasUnsavedChanges(false);
       },
-      deleteSession: (sessionId: string) => {
-        setSessions((prev) => {
-          const next = prev.filter((s) => s.id !== sessionId);
-          persistSessions(next);
+      deleteSet: (setId: string) => {
+        setSets((prev) => {
+          const next = prev.filter((s) => s.id !== setId);
+          persistSets(next);
 
           return next;
         });
       },
-      renameSession: (sessionId: string, name: string) => {
-        setSessions((prev) => {
-          const next = prev.map((s) => (s.id === sessionId ? { ...s, name } : s));
-          persistSessions(next);
+      renameSet: (setId: string, name: string) => {
+        setSets((prev) => {
+          const next = prev.map((s) => (s.id === setId ? { ...s, name } : s));
+          persistSets(next);
 
           return next;
         });
-        setActiveSession((current) =>
-          current.id === sessionId ? { ...current, name } : current,
+        setActiveSet((current) =>
+          current.id === setId ? { ...current, name } : current,
         );
       },
-      toggleSessionFavorite: (sessionId: string) => {
-        setSessions((prev) => {
+      toggleSetFavorite: (setId: string) => {
+        setSets((prev) => {
           const next = prev.map((s) =>
-            s.id === sessionId ? { ...s, isFavorite: !s.isFavorite } : s,
+            s.id === setId ? { ...s, isFavorite: !s.isFavorite } : s,
           );
-          persistSessions(next);
+          persistSets(next);
 
           return next;
         });
       },
       addSlot: (mixId: string) => {
-        setActiveSession((current) => {
-          const slot: SessionSlot = {
+        setActiveSet((current) => {
+          const slot: SetSlot = {
             id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
             mixId,
             durationSeconds: DEFAULT_SLOT_DURATION_SECONDS,
@@ -178,17 +178,17 @@ export const SessionProvider = ({
         setHasUnsavedChanges(true);
       },
       removeSlot: (slotId: string) => {
-        setActiveSession((current) => ({
+        setActiveSet((current) => ({
           ...current,
           slots: current.slots.filter((s) => s.id !== slotId),
         }));
         setHasUnsavedChanges(true);
       },
       duplicateSlot: (slotId: string) => {
-        setActiveSession((current) => {
+        setActiveSet((current) => {
           const idx = current.slots.findIndex((s) => s.id === slotId);
           if (idx === -1) return current;
-          const copy: SessionSlot = {
+          const copy: SetSlot = {
             ...current.slots[idx],
             id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           };
@@ -199,12 +199,12 @@ export const SessionProvider = ({
         });
         setHasUnsavedChanges(true);
       },
-      reorderSlots: (newSlots: SessionSlot[]) => {
-        setActiveSession((current) => ({ ...current, slots: newSlots }));
+      reorderSlots: (newSlots: SetSlot[]) => {
+        setActiveSet((current) => ({ ...current, slots: newSlots }));
         setHasUnsavedChanges(true);
       },
       setSlotDuration: (slotId: string, durationSeconds: number) => {
-        setActiveSession((current) => ({
+        setActiveSet((current) => ({
           ...current,
           slots: current.slots.map((s) =>
             s.id === slotId ? { ...s, durationSeconds } : s,
@@ -213,7 +213,7 @@ export const SessionProvider = ({
         setHasUnsavedChanges(true);
       },
       setSlotTransitionDuration: (slotId: string, transitionDuration: number) => {
-        setActiveSession((current) => ({
+        setActiveSet((current) => ({
           ...current,
           slots: current.slots.map((s) =>
             s.id === slotId ? { ...s, transitionDuration } : s,
@@ -222,7 +222,7 @@ export const SessionProvider = ({
         setHasUnsavedChanges(true);
       },
       setSlotTransitionKind: (slotId: string, transitionKind: TransitionKind) => {
-        setActiveSession((current) => ({
+        setActiveSet((current) => ({
           ...current,
           slots: current.slots.map((s) =>
             s.id === slotId ? { ...s, transitionKind } : s,
@@ -230,11 +230,11 @@ export const SessionProvider = ({
         }));
         setHasUnsavedChanges(true);
       },
-      setSessionDefaultTransition: (
+      updateSetDefaultTransition: (
         transitionKind: TransitionKind,
         transitionDuration: number,
       ) => {
-        setActiveSession((current) => ({
+        setActiveSet((current) => ({
           ...current,
           defaultTransitionKind: transitionKind,
           defaultTransitionDuration: transitionDuration,
@@ -242,7 +242,7 @@ export const SessionProvider = ({
         setHasUnsavedChanges(true);
       },
       setTotalDuration: (totalDurationSeconds: number) => {
-        setActiveSession((current) => ({ ...current, totalDurationSeconds }));
+        setActiveSet((current) => ({ ...current, totalDurationSeconds }));
         setHasUnsavedChanges(true);
       },
       startSetPlayback: () => {
@@ -278,19 +278,19 @@ export const SessionProvider = ({
     [],
   );
 
-  const value = useMemo<SessionContextValue>(
-    () => ({ sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, hasUnsavedChanges, actions }),
-    [sessions, activeSession, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, hasUnsavedChanges, actions],
+  const value = useMemo<SetContextValue>(
+    () => ({ sets, activeSet, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, hasUnsavedChanges, actions }),
+    [sets, activeSet, setIsPlaying, currentSlotIndex, slotOffsetSeconds, playingMixId, hasUnsavedChanges, actions],
   );
 
   return (
-    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+    <SetContext.Provider value={value}>{children}</SetContext.Provider>
   );
 };
 
-export const useSession = (): SessionContextValue => {
-  const context = useContext(SessionContext);
-  if (!context) throw new Error('useSession must be inside SessionProvider');
+export const useSet = (): SetContextValue => {
+  const context = useContext(SetContext);
+  if (!context) throw new Error('useSet must be inside SetProvider');
 
   return context;
 };

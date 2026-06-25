@@ -1,11 +1,11 @@
 /**
- * Core data types for DJ sessions (set planning / timeline).
- * Used by the Session feature.
+ * Core data types for DJ sets (set planning / timeline).
+ * Used by the Set feature.
  */
 
 import type { TransitionKind } from './transition';
 
-export interface SessionSlot {
+export interface SetSlot {
   id: string;
   mixId: string;
   durationSeconds: number;
@@ -15,12 +15,12 @@ export interface SessionSlot {
   transitionDuration: number;
 }
 
-export interface DJSession {
+export interface DJSet {
   id: string;
   name: string;
   createdAt: number;
   totalDurationSeconds: number;
-  slots: SessionSlot[];
+  slots: SetSlot[];
   isFavorite: boolean;
   /** Transition kind seeded onto newly added slots. */
   defaultTransitionKind: TransitionKind;

@@ -1,8 +1,8 @@
-export { SessionProvider, useSession } from './SessionContext';
-export { SessionSlotBlock } from './components/SessionSlotBlock/SessionSlotBlock';
+export { SetProvider, useSet } from './SetContext';
+export { SetSlotBlock } from './components/SetSlotBlock/SetSlotBlock';
 export {
-  SessionTimeline,
+  SetTimeline,
   TIMELINE_DROPPABLE_ID,
-} from './components/SessionTimeline/SessionTimeline';
+} from './components/SetTimeline/SetTimeline';
 export { SetLibrary } from './components/SetLibrary/SetLibrary';
 export { SetSection } from './components/SetSection/SetSection';

@@ -1,10 +1,10 @@
 /**
- * Default values for new sessions and slots.
+ * Default values for new sets and slots.
  */
 
 import type { TransitionKind } from '../../../core/types/transition';
 
-/** Default total session duration in seconds. */
+/** Default total set duration in seconds. */
 export const DEFAULT_TOTAL_DURATION_SECONDS = 180;
 
 /** Default duration for a newly added slot in seconds. */

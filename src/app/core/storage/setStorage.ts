@@ -1,16 +1,16 @@
 /**
- * Persistence layer for DJ sessions (set timeline data).
+ * Persistence layer for DJ sets (set timeline data).
  */
 
-import type { DJSession } from '../types/sessionData';
+import type { DJSet } from '../types/setData';
 import { getState, setState } from './appState';
 
-/** Storage key for the saved sessions list. */
+/** Storage key for the saved sets list. */
 const KEY = 'dj-sessions';
 
-export const loadSessions = async (): Promise<DJSession[]> =>
-  (await getState<DJSession[]>(KEY)) ?? [];
+export const loadSets = async (): Promise<DJSet[]> =>
+  (await getState<DJSet[]>(KEY)) ?? [];
 
-export const persistSessions = (sessions: DJSession[]): void => {
-  setState(KEY, sessions);
+export const persistSets = (sets: DJSet[]): void => {
+  setState(KEY, sets);
 };
