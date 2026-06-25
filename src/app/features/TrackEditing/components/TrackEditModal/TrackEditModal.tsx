@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { Close } from 'pixelarticons/react/Close';
+import { Reload } from 'pixelarticons/react/Reload';
 import { Undo } from 'pixelarticons/react/Undo';
 
 import type {
@@ -23,7 +24,17 @@ import { useTrackEditState } from '../../hooks/useTrackEditState';
 import { TrackSlidersContent } from './components/TrackSlidersContent/TrackSlidersContent';
 import { PresetNameField } from './components/PresetNameField/PresetNameField';
 import { TrackSaveActions } from './components/TrackSaveActions/TrackSaveActions';
-import { closeButtonSx, discardButtonSx } from './TrackEditModal.styles';
+import {
+  DEFAULT_TRACK_EQ,
+  DEFAULT_TRACK_FX_SEND,
+  DEFAULT_TRACK_SPEED,
+  DEFAULT_TRACK_VOLUME,
+} from '../../constants/trackEditDefaults';
+import {
+  closeButtonSx,
+  discardButtonSx,
+  resetButtonSx,
+} from './TrackEditModal.styles';
 
 type TrackEditModalProps = {
   open: boolean;
@@ -142,6 +153,28 @@ export const TrackEditModal = ({
     setDelaySend(original.delaySend);
   };
 
+  const handleResetToDefault = () => {
+    const defaults: TrackSavedSettings = {
+      volume: DEFAULT_TRACK_VOLUME,
+      speed: DEFAULT_TRACK_SPEED,
+      followsGlobalTempo: trackState.followsGlobalTempo,
+      eqLow: DEFAULT_TRACK_EQ,
+      eqMid: DEFAULT_TRACK_EQ,
+      eqHigh: DEFAULT_TRACK_EQ,
+      reverbSend: DEFAULT_TRACK_FX_SEND,
+      delaySend: DEFAULT_TRACK_FX_SEND,
+    };
+
+    onRestoreChanges(track.id, defaults);
+    setVolume(defaults.volume);
+    setSpeed(defaults.speed);
+    setEqLow(defaults.eqLow);
+    setEqMid(defaults.eqMid);
+    setEqHigh(defaults.eqHigh);
+    setReverbSend(defaults.reverbSend);
+    setDelaySend(defaults.delaySend);
+  };
+
   const handleCancel = () => {
     if (originalSettingsRef.current) {
       onRestoreChanges(track.id, originalSettingsRef.current);
@@ -243,6 +276,16 @@ export const TrackEditModal = ({
       <DialogTitle>
         <Box />
         {S.title}
+        <Tooltip title={S.resetToDefault}>
+          <IconButton
+            size="small"
+            onClick={handleResetToDefault}
+            sx={resetButtonSx}
+            data-testid="track-edit-reset-default"
+          >
+            <PixelIcon glyph={Reload} />
+          </IconButton>
+        </Tooltip>
         <Tooltip title={S.discardChanges}>
           <IconButton
             size="small"

@@ -78,6 +78,7 @@ export const STRINGS = {
     saveToTrackTooltip: 'Save current settings to this track',
     saveAsNewTooltip: 'Save as a new preset — original track stays unchanged',
     discardChanges: 'Discard changes',
+    resetToDefault: 'Reset to defaults',
   },
   saveLoadManager: {
     saveMixTitle: 'Save mix',

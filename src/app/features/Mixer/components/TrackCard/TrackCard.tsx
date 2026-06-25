@@ -58,7 +58,7 @@ const TrackCardInner = ({
     <Paper sx={paperSx(isActive)} data-testid={`track-card--${track.id}`}>
       <Box sx={rowSx}>
         <FormControlLabel
-          sx={{ minWidth: '100px' }}
+          sx={{ minWidth: '50px' }}
           label={
             <Typography
               variant="body2"

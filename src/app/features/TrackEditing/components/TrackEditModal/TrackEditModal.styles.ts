@@ -5,9 +5,14 @@
 
 import type { SxProps, Theme } from '@mui/material';
 
-/** Discard-changes icon button — pushed to the right. */
-export const discardButtonSx: SxProps<Theme> = {
+/** Reset-to-defaults icon button — leftmost of the right-aligned action group. */
+export const resetButtonSx: SxProps<Theme> = {
   ml: 'auto',
+  color: 'text.disabled',
+};
+
+/** Discard-changes icon button — sits between reset and close. */
+export const discardButtonSx: SxProps<Theme> = {
   color: 'text.disabled',
 };
 

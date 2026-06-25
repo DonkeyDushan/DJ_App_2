@@ -155,6 +155,7 @@ export const buildMixManagementActions = ({
       { kind, durationSeconds, offsetSeconds },
     );
 
+    setActiveMixId(mixId);
     setSnapshot((current) => ({
       ...current,
       globalTempo: mix.globalTempo,
