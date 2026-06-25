@@ -56,6 +56,8 @@ export const STRINGS = {
   },
   trackEditModal: {
     title: 'EDIT TRACK',
+    preview: 'Preview',
+    stopPreview: 'Stop preview',
     levels: 'LEVELS',
     vol: 'VOL',
     speed: 'SPEED',
@@ -84,7 +86,7 @@ export const STRINGS = {
     saveMixTitle: 'Save mix',
     loadMixTitle: 'Load mix',
     mixNameLabel: 'Mix name',
-    defaultMixName: 'Neon Session',
+    defaultMixName: '',
     noSavedMixes: 'No saved mixes yet.',
     savesInfo: 'Stores selected tracks, volume, speed and global tempo.',
     close: 'Close',

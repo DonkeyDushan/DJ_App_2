@@ -60,20 +60,47 @@ export type MixManagementActions = Pick<
 >;
 
 /**
- * Overlays a saved mix's track states onto the current track states, leaving
- * tracks the mix does not mention untouched. Returns a new record.
+ * Builds the track-state map for a mix while honouring the two ownership rules:
+ *
+ * - `enabled` (whether a track is checked into the mix) is owned by the mix.
+ *   It is taken solely from the mix, so unsaved checks on the previously active
+ *   mix never leak into the one being loaded — a track defaults to unchecked
+ *   when the mix does not mention it.
+ * - All audio settings (volume, speed, EQ, effects, tempo follow) are owned by
+ *   the track and shared across every mix. They are carried over from the
+ *   current track state, so edits saved in the track editor remain in effect no
+ *   matter which mix is loaded.
+ *
+ * Playback flags are reset; callers re-derive them after starting audio.
  */
-const applyMixToTrackStates = (
+const buildMixTrackStates = (
   currentTrackStates: Record<string, TrackState>,
   mix: SavedMix,
 ): Record<string, TrackState> => {
-  const nextTrackStates = { ...currentTrackStates };
-  Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
+  const nextTrackStates: Record<string, TrackState> = {};
+
+  for (const [trackId, currentState] of Object.entries(currentTrackStates)) {
     nextTrackStates[trackId] = {
-      ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-      ...trackState,
+      ...currentState,
+      enabled: mix.trackStates[trackId]?.enabled ?? false,
+      isPlaying: false,
+      isPreviewPlaying: false,
     };
-  });
+  }
+
+  // Include any track the mix references that is not yet present in the current
+  // set, so its state is available once the track definition loads. No shared
+  // audio settings exist for it yet, so fall back to the mix's saved values.
+  for (const [trackId, savedState] of Object.entries(mix.trackStates)) {
+    if (nextTrackStates[trackId]) continue;
+
+    nextTrackStates[trackId] = {
+      ...DEFAULT_SINGLE_TRACK_VALUES,
+      ...savedState,
+      isPlaying: false,
+      isPreviewPlaying: false,
+    };
+  }
 
   return nextTrackStates;
 };
@@ -108,7 +135,7 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = applyMixToTrackStates(
+    const nextTrackStates = buildMixTrackStates(
       currentSnapshot.trackStates,
       mix,
     );
@@ -140,7 +167,7 @@ export const buildMixManagementActions = ({
     const mix = currentSnapshot.savedMixes.find((entry) => entry.id === mixId);
     if (!mix) return;
 
-    const nextTrackStates = applyMixToTrackStates(
+    const nextTrackStates = buildMixTrackStates(
       currentSnapshot.trackStates,
       mix,
     );
@@ -303,18 +330,10 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = Object.fromEntries(
-      Object.entries(snapshotRef.current.trackStates).map(([id, state]) => [
-        id,
-        { ...state, isPlaying: false, isPreviewPlaying: false },
-      ]),
+    const nextTrackStates = buildMixTrackStates(
+      snapshotRef.current.trackStates,
+      mix,
     );
-    Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
-      nextTrackStates[trackId] = {
-        ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-        ...trackState,
-      };
-    });
 
     setActiveMixId(mixId);
     setSnapshot((current) => ({
@@ -387,18 +406,10 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = Object.fromEntries(
-      Object.entries(snapshotRef.current.trackStates).map(([id, state]) => [
-        id,
-        { ...state, isPlaying: false, isPreviewPlaying: false },
-      ]),
+    const nextTrackStates = buildMixTrackStates(
+      snapshotRef.current.trackStates,
+      mix,
     );
-    Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
-      nextTrackStates[trackId] = {
-        ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-        ...trackState,
-      };
-    });
 
     setSnapshot((current) => ({
       ...current,

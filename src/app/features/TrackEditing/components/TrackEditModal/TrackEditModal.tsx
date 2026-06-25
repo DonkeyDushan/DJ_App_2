@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { Close } from 'pixelarticons/react/Close';
+import { Play } from 'pixelarticons/react/Play';
 import { Reload } from 'pixelarticons/react/Reload';
 import { Undo } from 'pixelarticons/react/Undo';
 
@@ -19,7 +20,7 @@ import type {
   TrackState,
 } from '../../../../core/types/trackData';
 import { STRINGS } from '../../../../strings';
-import { PixelIcon } from '../../../../components';
+import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import { useTrackEditState } from '../../hooks/useTrackEditState';
 import { TrackSlidersContent } from './components/TrackSlidersContent/TrackSlidersContent';
 import { PresetNameField } from './components/PresetNameField/PresetNameField';
@@ -33,6 +34,7 @@ import {
 import {
   closeButtonSx,
   discardButtonSx,
+  previewButtonSx,
   resetButtonSx,
 } from './TrackEditModal.styles';
 
@@ -41,6 +43,7 @@ type TrackEditModalProps = {
   track: TrackDefinition | null;
   trackState: TrackState | null;
   onClose: () => void;
+  onPlay: (trackId: string) => void;
   onSaveAsNew: (
     editedTrackId: string,
     name: string,
@@ -79,6 +82,7 @@ export const TrackEditModal = ({
   track,
   trackState,
   onClose,
+  onPlay,
   onSaveAsNew,
   onSaveOver,
   onSaveToTrack,
@@ -274,8 +278,23 @@ export const TrackEditModal = ({
       slotProps={{ paper: { style: { minWidth: '540px' } } }}
     >
       <DialogTitle>
-        <Box />
         {S.title}
+        <Tooltip
+          title={trackState.isPreviewPlaying ? S.stopPreview : S.preview}
+        >
+          <IconButton
+            size="small"
+            onClick={() => onPlay(track.id)}
+            sx={previewButtonSx(trackState.isPreviewPlaying)}
+            data-testid="track-edit-preview"
+          >
+            {trackState.isPreviewPlaying ? (
+              <PixelIcon glyph={PausePixelGlyph} />
+            ) : (
+              <PixelIcon glyph={Play} />
+            )}
+          </IconButton>
+        </Tooltip>
         <Tooltip title={S.resetToDefault}>
           <IconButton
             size="small"

@@ -226,29 +226,25 @@ export const Main = (): React.ReactElement => {
 
   const handleSaveMixDialog = useCallback(
     (name: string, color: MixColorKey | null) => {
-      setMixDialog((current) => {
-        if (!current) return null;
+      if (!mixDialog) return;
 
-        if (current.kind === 'create') {
-          mixerActions.saveMix(name, color);
-        } else {
-          mixerActions.updateMix(current.id, { name, color });
-        }
+      if (mixDialog.kind === 'create') {
+        mixerActions.saveMix(name, color);
+      } else {
+        mixerActions.updateMix(mixDialog.id, { name, color });
+      }
 
-        return null;
-      });
+      setMixDialog(null);
     },
-    [mixerActions],
+    [mixDialog, mixerActions],
   );
 
   const handleDeleteFromMixEdit = useCallback(() => {
-    setMixDialog((current) => {
-      if (current?.kind === 'edit')
-        setDeleteTarget({ kind: 'mix', id: current.id, name: current.name });
+    if (mixDialog?.kind === 'edit')
+      setDeleteTarget({ kind: 'mix', id: mixDialog.id, name: mixDialog.name });
 
-      return null;
-    });
-  }, []);
+    setMixDialog(null);
+  }, [mixDialog]);
 
   const handleConfirmDelete = useCallback(() => {
     if (!deleteTarget) return;

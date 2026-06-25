@@ -276,6 +276,7 @@ export const TrackGrid = ({
         track={editTrack}
         trackState={editTrackState}
         onClose={() => setEditTrackId(null)}
+        onPlay={onPlay}
         onSaveAsNew={onSaveAsNew}
         onSaveOver={onSaveOver}
         onRestoreChanges={onRestoreChanges}

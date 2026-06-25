@@ -5,6 +5,15 @@
 
 import type { SxProps, Theme } from '@mui/material';
 
+/** Preview play/pause icon button — leftmost of the title bar, balancing the
+ * right-aligned action group. Highlights while the one-shot preview plays. */
+export const previewButtonSx = (isPreviewPlaying: boolean): SxProps<Theme> => ({
+  color: isPreviewPlaying ? 'primary.main' : 'text.disabled',
+  '&:hover': {
+    color: isPreviewPlaying ? 'primary.light' : 'text.secondary',
+  },
+});
+
 /** Reset-to-defaults icon button — leftmost of the right-aligned action group. */
 export const resetButtonSx: SxProps<Theme> = {
   ml: 'auto',
