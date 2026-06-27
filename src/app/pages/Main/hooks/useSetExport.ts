@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { fixWebmDuration } from '../../../core';
 import type { AudioEngine, DJSet } from '../../../core';
 
 /** Preferred container/codec for the recorded output. */
@@ -54,6 +55,10 @@ export const useSetExport = ({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const cancelledRef = useRef(false);
+  // Wall-clock recording span, used to write the WebM Duration metadata that
+  // MediaRecorder omits (so players show total length and a progress bar).
+  const startTimeRef = useRef(0);
+  const durationMsRef = useRef(0);
   // True once set playback has actually begun, so the subsequent stop (natural
   // end of the set) can be distinguished from the pre-start idle state.
   const startedRef = useRef(false);
@@ -68,6 +73,7 @@ export const useSetExport = ({
     }
 
     if (recorder.state !== 'inactive') {
+      durationMsRef.current = performance.now() - startTimeRef.current;
       recorder.stop();
     }
   }, []);
@@ -108,17 +114,20 @@ export const useSetExport = ({
         return;
       }
 
-      const blob = new Blob(chunks, { type: recorder.mimeType });
-      void blob.arrayBuffer().then((buffer) => {
-        void window.djApp?.files?.saveAudio(
-          `${fileNameRef.current}.${EXPORT_EXTENSION}`,
-          new Uint8Array(buffer),
-        );
-      });
+      const rawBlob = new Blob(chunks, { type: recorder.mimeType });
+      void fixWebmDuration(rawBlob, durationMsRef.current)
+        .then((blob) => blob.arrayBuffer())
+        .then((buffer) => {
+          void window.djApp?.files?.saveAudio(
+            `${fileNameRef.current}.${EXPORT_EXTENSION}`,
+            new Uint8Array(buffer),
+          );
+        });
     };
 
     recorderRef.current = recorder;
     recorder.start();
+    startTimeRef.current = performance.now();
     setIsExporting(true);
     startSetPlayback();
   }, [isExporting, activeSet.slots.length, activeSet.name, engine, startSetPlayback]);
