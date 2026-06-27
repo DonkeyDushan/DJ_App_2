@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { registerStorageHandlers, unregisterStorageHandlers } from './storageHandlers';
@@ -6,8 +6,50 @@ import { registerStorageHandlers, unregisterStorageHandlers } from './storageHan
 const isDev = Boolean(process.env.VITE_DEV_SERVER_URL);
 const SUPPORTED_AUDIO_EXTENSIONS = new Set(['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a']);
 
-function normalizeSlashes(value: string): string {
-  return value.replace(/\\/g, '/');
+/**
+ * Custom URL scheme used to serve the bundled preloaded audio files.
+ * A custom scheme is required because the packaged renderer loads from a
+ * `file://` origin, where `fetch('/audio/...')` cannot reach assets packed
+ * inside `app.asar`. This scheme is handled in the main process via `fs`,
+ * which transparently reads from the asar archive.
+ */
+const PRELOADED_AUDIO_SCHEME = 'preloadedaudio';
+
+/** Host segment used in preloaded audio URLs (`preloadedaudio://audio/<file>`). */
+const PRELOADED_AUDIO_HOST = 'audio';
+
+/** Maps audio file extensions to the MIME type used in protocol responses. */
+const AUDIO_MIME_TYPES: Readonly<Record<string, string>> = Object.freeze({
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.flac': 'audio/flac',
+  '.aac': 'audio/aac',
+  '.m4a': 'audio/mp4',
+});
+
+/** Fallback MIME type for audio files with an unrecognised extension. */
+const FALLBACK_MIME_TYPE = 'application/octet-stream';
+
+/** Cached result of {@link resolvePreloadedDirectory}; `undefined` until resolved. */
+let cachedPreloadedDirectory: string | null | undefined;
+
+// Privileged scheme registration must run before the app is ready so the
+// renderer can `fetch()` preloaded audio over the custom scheme.
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: PRELOADED_AUDIO_SCHEME,
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
+  },
+]);
+
+function resolveAudioMimeType(fileName: string): string {
+  return AUDIO_MIME_TYPES[path.extname(fileName).toLowerCase()] ?? FALLBACK_MIME_TYPE;
 }
 
 async function getExistingDirectory(candidates: string[]): Promise<string | null> {
@@ -25,7 +67,11 @@ async function getExistingDirectory(candidates: string[]): Promise<string | null
   return null;
 }
 
-async function listPreloadedAudioFiles(): Promise<Array<{ fileName: string; src: string }>> {
+async function resolvePreloadedDirectory(): Promise<string | null> {
+  if (cachedPreloadedDirectory !== undefined) {
+    return cachedPreloadedDirectory;
+  }
+
   const appPath = app.getAppPath();
   const searchDirectories = [
     path.join(process.cwd(), 'public', 'audio', 'preloaded'),
@@ -34,7 +80,13 @@ async function listPreloadedAudioFiles(): Promise<Array<{ fileName: string; src:
     path.join(appPath, 'dist', 'audio', 'preloaded'),
   ];
 
-  const directory = await getExistingDirectory(searchDirectories);
+  cachedPreloadedDirectory = await getExistingDirectory(searchDirectories);
+
+  return cachedPreloadedDirectory;
+}
+
+async function listPreloadedAudioFiles(): Promise<Array<{ fileName: string; src: string }>> {
+  const directory = await resolvePreloadedDirectory();
   if (!directory) {
     return [];
   }
@@ -45,9 +97,43 @@ async function listPreloadedAudioFiles(): Promise<Array<{ fileName: string; src:
     .filter((entry) => entry.isFile() && SUPPORTED_AUDIO_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
     .map((entry) => ({
       fileName: entry.name,
-      src: normalizeSlashes(`/audio/preloaded/${encodeURIComponent(entry.name)}`),
+      src: `${PRELOADED_AUDIO_SCHEME}://${PRELOADED_AUDIO_HOST}/${encodeURIComponent(entry.name)}`,
     }))
     .sort((left, right) => left.fileName.localeCompare(right.fileName));
+}
+
+/**
+ * Resolves a preloaded audio request to a file response, reading the bytes via
+ * `fs` so the assets remain accessible even when packed inside `app.asar`.
+ * Guards against path traversal by rejecting any segment that is not a bare
+ * file name within the resolved preloaded directory.
+ */
+async function handlePreloadedAudioRequest(request: Request): Promise<Response> {
+  const fileName = decodeURIComponent(new URL(request.url).pathname.replace(/^\/+/, ''));
+
+  if (!fileName || fileName.includes('/') || fileName.includes('\\') || fileName.includes('..')) {
+    return new Response(null, { status: 400 });
+  }
+
+  const directory = await resolvePreloadedDirectory();
+  if (!directory) {
+    return new Response(null, { status: 404 });
+  }
+
+  try {
+    const data = await fs.readFile(path.join(directory, fileName));
+
+    return new Response(new Uint8Array(data), {
+      status: 200,
+      headers: {
+        'Content-Type': resolveAudioMimeType(fileName),
+        'Content-Length': String(data.byteLength),
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch {
+    return new Response(null, { status: 404 });
+  }
 }
 
 async function createWindow(): Promise<void> {
@@ -76,6 +162,7 @@ async function createWindow(): Promise<void> {
 
 app.whenReady().then(async () => {
   registerStorageHandlers();
+  protocol.handle(PRELOADED_AUDIO_SCHEME, handlePreloadedAudioRequest);
   ipcMain.handle('preloaded-audio:list', async () => listPreloadedAudioFiles());
 
   await createWindow();
@@ -96,4 +183,5 @@ app.on('window-all-closed', () => {
 app.on('will-quit', () => {
   unregisterStorageHandlers();
   ipcMain.removeHandler('preloaded-audio:list');
+  protocol.unhandle(PRELOADED_AUDIO_SCHEME);
 });

@@ -1,0 +1,27 @@
+{
+  "appId": "com.natsedlakova.djapp2",
+  "productName": "DJ App 2",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**",
+    "dist-electron/**"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "DJ App 2"
+  }
+}

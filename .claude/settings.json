@@ -8,7 +8,14 @@
       "Bash(Remove-Item \"c:\\\\Users\\\\natse\\\\OneDrive\\\\Desktop\\\\ahref\\\\DJ_App_2\\\\src\\\\components\\\\set\\\\SetTab.styles.ts\" -Force)",
       "Bash(Select-String \"src/\")",
       "Bash(echo \"=== EXIT $? ===\")",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "PowerShell(npm install --save-dev electron-builder)",
+      "PowerShell(npm run dist)",
+      "PowerShell(if \\(Test-Path \"release\"\\) { Remove-Item -Recurse -Force \"release\" -ErrorAction SilentlyContinue }; $out = \"C:\\\\Users\\\\natse\\\\dj-app-2-release\"; Write-Output \"Output -> $out\"; npx electron-builder --win -c.directories.output=\"$out\")",
+      "PowerShell(npx electron-builder --win \"-c.directories.output=C:\\\\Users\\\\natse\\\\dj-app-2-release\")",
+      "PowerShell(tsc -p electron/tsconfig.json)",
+      "PowerShell(if \\($?\\) { \"TSC OK\" })",
+      "PowerShell(npx tsc -p electron/tsconfig.json)"
     ]
   }
 }
