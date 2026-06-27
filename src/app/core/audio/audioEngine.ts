@@ -58,6 +58,13 @@ export class AudioEngine {
 
   private masterGain: GainNode | null = null;
 
+  /**
+   * Capture tap for audio export. When present, the master output is mirrored
+   * into this node's MediaStream so a MediaRecorder can record the live mix in
+   * real time without affecting the audible signal.
+   */
+  private captureNode: MediaStreamAudioDestinationNode | null = null;
+
   private reverbInputGain: GainNode | null = null;
 
   private delayInputGain: GainNode | null = null;
@@ -690,6 +697,35 @@ export class AudioEngine {
 
   async prepareContext(): Promise<void> {
     await this.ensureContext();
+  }
+
+  /**
+   * Begins mirroring the master output into a MediaStream for export. The tap
+   * runs in parallel with the speaker output, so recording is sample-for-sample
+   * what the user hears. Returns the stream to feed into a MediaRecorder.
+   */
+  async startMasterCapture(): Promise<MediaStream> {
+    const context = await this.ensureContext();
+    if (!this.masterGain) {
+      throw new Error('Master output is not ready.');
+    }
+
+    if (!this.captureNode) {
+      this.captureNode = context.createMediaStreamDestination();
+      this.masterGain.connect(this.captureNode);
+    }
+
+    return this.captureNode.stream;
+  }
+
+  /** Stops mirroring the master output into the export stream. */
+  stopMasterCapture(): void {
+    if (!this.captureNode) {
+      return;
+    }
+
+    this.masterGain?.disconnect(this.captureNode);
+    this.captureNode = null;
   }
 
   /**

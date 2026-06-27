@@ -1,4 +1,4 @@
-# Neon Mixer
+# DJ APP TURBO 2000
 
 A browser-based DJ mixer built with React, TypeScript, and the Web Audio API.
 

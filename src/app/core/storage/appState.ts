@@ -4,6 +4,7 @@
  */
 
 import type { TrackState } from '../types/trackData';
+import { markSessionDirty } from '../session/sessionDirtyStore';
 
 export type PersistedActiveState = {
   globalTempo: number;
@@ -19,6 +20,7 @@ export const getState = async <T>(key: string): Promise<T | null> => {
 };
 
 export const setState = (key: string, value: unknown): void => {
+  markSessionDirty();
   void store()
     .set(key, value)
     .catch((err: unknown) => {

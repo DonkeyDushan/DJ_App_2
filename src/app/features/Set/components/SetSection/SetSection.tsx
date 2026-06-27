@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { Download } from 'pixelarticons/react/Download';
 import { Reload } from 'pixelarticons/react/Reload';
 import { Save } from 'pixelarticons/react/Save';
 import { Waves } from 'pixelarticons/react/Waves';
@@ -39,9 +40,11 @@ interface SetSectionProps {
   isSetPlaying: boolean;
   currentSlotIndex: number | null;
   hasUnsavedChanges: boolean;
+  isExporting: boolean;
   onPlayPause: () => void;
   onSaveSet: () => void;
   onResetSet: () => void;
+  onExportSet: () => void;
   onUpdateSetName: (name: string) => void;
   onSetTotalDuration: (seconds: number) => void;
   onRemoveSlot: (slotId: string) => void;
@@ -66,9 +69,11 @@ const SetSectionInner = ({
   isSetPlaying,
   currentSlotIndex,
   hasUnsavedChanges,
+  isExporting,
   onPlayPause,
   onSaveSet,
   onResetSet,
+  onExportSet,
   onUpdateSetName,
   onSetTotalDuration,
   onRemoveSlot,
@@ -197,6 +202,18 @@ const SetSectionInner = ({
                 {STRINGS.set.minutes}
               </Typography>
             </Box>
+            <Tooltip title={STRINGS.set.exportAudio}>
+              <span>
+                <IconButton
+                  onClick={onExportSet}
+                  disabled={isSetPlaying || isExporting || !hasSlots}
+                  size="small"
+                  data-testid="set-export"
+                >
+                  <PixelIcon glyph={Download} />
+                </IconButton>
+              </span>
+            </Tooltip>
             <Tooltip title={STRINGS.topBar.resetSet}>
               <IconButton
                 onClick={onResetSet}

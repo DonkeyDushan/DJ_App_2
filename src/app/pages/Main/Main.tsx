@@ -9,8 +9,16 @@ import {
   MixLibrary,
   MixEditDialog,
 } from '../../features/Mixer';
-import { useSet, SetSection, SetLibrary } from '../../features/Set';
+import { useSet, SetSection, SetLibrary, SetExportDialog } from '../../features/Set';
 import type { MixColorKey } from '../../core';
+import {
+  useSessionDirty,
+  activateSessionDirty,
+  clearSessionDirty,
+  saveSessionToFile,
+  loadSessionFromFile,
+  startNewSession,
+} from '../../core';
 import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
 import {
   TopBar,
@@ -19,6 +27,7 @@ import {
   NameInputDialog,
 } from '../../components';
 import { useSetPlayback } from './hooks/useSetPlayback';
+import { useSetExport } from './hooks/useSetExport';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
 import type { MixDialogState } from './types/mixEditTarget';
 
@@ -36,8 +45,19 @@ const RENAME_TITLE_BY_TYPE: Record<RenameTarget['kind'], string> = {
   set: STRINGS.renameDialog.renameSetTitle,
 };
 
+/**
+ * Delay after mount before the session dirty tracker is armed. Must exceed the
+ * active-state persist debounce (500 ms) plus the initial async hydration so
+ * the hydration write-back is not mistaken for a user change. Cleared again on
+ * activation as a belt-and-braces guard.
+ */
+const SESSION_DIRTY_ACTIVATION_DELAY_MS = 1500;
+
+/** Which discard-confirmation prompt the session controls are awaiting. */
+type SessionConfirmKind = 'load' | 'new';
+
 export const Main = (): React.ReactElement => {
-  const { snapshot, tracks, activeMixId, actions: mixerActions } = useMixer();
+  const { snapshot, tracks, activeMixId, engine, actions: mixerActions } = useMixer();
   const {
     activeSet,
     sets,
@@ -49,11 +69,27 @@ export const Main = (): React.ReactElement => {
     actions: setActions,
   } = useSet();
 
+  const isDirty = useSessionDirty();
+
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [trimSoundId, setTrimSoundId] = useState<string | null>(null);
   const [mixDialog, setMixDialog] = useState<MixDialogState | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
+  const [sessionConfirm, setSessionConfirm] = useState<SessionConfirmKind | null>(
+    null,
+  );
+
+  // Arm the session dirty tracker only after initial hydration settles, so the
+  // restored state is treated as a clean, freshly opened session.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      activateSessionDirty();
+      clearSessionDirty();
+    }, SESSION_DIRTY_ACTIVATION_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
@@ -98,6 +134,70 @@ export const Main = (): React.ReactElement => {
     mixerActions,
     setActions,
   });
+
+  const { isExporting, startExport, cancelExport } = useSetExport({
+    engine,
+    activeSet,
+    setIsPlaying,
+    startSetPlayback: setActions.startSetPlayback,
+    stopSetPlayback: setActions.stopSetPlayback,
+    toggleTransport: mixerActions.toggleTransport,
+  });
+
+  const handleExportSet = useCallback(() => void startExport(), [startExport]);
+
+  const handleSaveSession = useCallback(() => void saveSessionToFile(), []);
+
+  const performLoadSession = useCallback(async () => {
+    const result = await loadSessionFromFile();
+    if (result.loaded) {
+      window.location.reload();
+
+      return;
+    }
+
+    if (result.error) {
+      window.alert(STRINGS.session.loadFailed);
+    }
+  }, []);
+
+  const performNewSession = useCallback(async () => {
+    await startNewSession();
+    window.location.reload();
+  }, []);
+
+  const handleLoadSession = useCallback(() => {
+    if (isDirty) {
+      setSessionConfirm('load');
+
+      return;
+    }
+
+    void performLoadSession();
+  }, [isDirty, performLoadSession]);
+
+  const handleNewSession = useCallback(() => {
+    if (isDirty) {
+      setSessionConfirm('new');
+
+      return;
+    }
+
+    void performNewSession();
+  }, [isDirty, performNewSession]);
+
+  const handleConfirmSession = useCallback(() => {
+    const action = sessionConfirm;
+    setSessionConfirm(null);
+
+    if (action === 'load') {
+      void performLoadSession();
+    } else if (action === 'new') {
+      void performNewSession();
+    }
+  }, [sessionConfirm, performLoadSession, performNewSession]);
+
+  const handleCloseSessionConfirm = useCallback(() => setSessionConfirm(null), []);
 
   const handleSave = useCallback(() => {
     const mixId = activeMixIdRef.current;
@@ -317,7 +417,12 @@ export const Main = (): React.ReactElement => {
         overflow: 'hidden',
       }}
     >
-      <TopBar />
+      <TopBar
+        isDirty={isDirty}
+        onSaveSession={handleSaveSession}
+        onLoadSession={handleLoadSession}
+        onNewSession={handleNewSession}
+      />
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <MixLibrary
@@ -449,9 +554,11 @@ export const Main = (): React.ReactElement => {
           isSetPlaying={setIsPlaying}
           currentSlotIndex={currentSlotIndex}
           hasUnsavedChanges={hasUnsavedChanges}
+          isExporting={isExporting}
           onPlayPause={handleSetPlayPause}
           onSaveSet={setActions.saveSet}
           onResetSet={setActions.resetSet}
+          onExportSet={handleExportSet}
           onUpdateSetName={setActions.updateSetName}
           onSetTotalDuration={setActions.setTotalDuration}
           onRemoveSlot={setActions.removeSlot}
@@ -529,6 +636,26 @@ export const Main = (): React.ReactElement => {
         onDelete={mixDialog?.kind === 'edit' ? handleDeleteFromMixEdit : undefined}
         onClose={handleCloseMixDialog}
       />
+
+      <ConfirmDialog
+        open={sessionConfirm !== null}
+        title={STRINGS.session.unsavedTitle}
+        message={
+          sessionConfirm === 'new'
+            ? STRINGS.session.newMessage
+            : STRINGS.session.loadMessage
+        }
+        confirmLabel={
+          sessionConfirm === 'new'
+            ? STRINGS.session.newConfirm
+            : STRINGS.session.loadConfirm
+        }
+        cancelLabel={STRINGS.session.cancel}
+        onConfirm={handleConfirmSession}
+        onClose={handleCloseSessionConfirm}
+      />
+
+      <SetExportDialog open={isExporting} onCancel={cancelExport} />
     </Box>
   );
 };

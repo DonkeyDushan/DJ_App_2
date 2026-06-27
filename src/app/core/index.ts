@@ -26,3 +26,17 @@ export { loadSavedMixes, persistSavedMixes } from './storage/mixStorage';
 export type { PersistedTrackPreset, TrackOverrides } from './storage/trackPresets';
 export { loadTrackPresets, persistTrackPresets, loadFavoriteIds, persistFavoriteIds, loadTrackOverrides, persistTrackOverrides } from './storage/trackPresets';
 export { loadSets, persistSets } from './storage/setStorage';
+
+// Session
+export {
+  saveSessionToFile,
+  loadSessionFromFile,
+  startNewSession,
+} from './session/sessionClient';
+export type { SessionLoadOutcome } from './session/sessionClient';
+export {
+  markSessionDirty,
+  clearSessionDirty,
+  activateSessionDirty,
+} from './session/sessionDirtyStore';
+export { useSessionDirty } from './session/useSessionDirty';

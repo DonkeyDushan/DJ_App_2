@@ -1,6 +1,6 @@
 export const STRINGS = {
   app: {
-    title: 'NEON MIXER',
+    title: 'DJ APP TURBO 2000',
     masterTransport: 'Master Transport',
     play: 'PLAY',
     playing: 'PLAYING',
@@ -172,5 +172,28 @@ export const STRINGS = {
     transitionCrossfade: 'Crossfade',
     setDefaultTransition: 'Default transition',
     seconds: 's',
+    exportAudio: 'Export set as audio',
+  },
+  session: {
+    save: 'Save session',
+    load: 'Load session',
+    new: 'New session',
+    unsaved: 'Unsaved changes',
+    saved: 'All changes saved',
+    unsavedTitle: 'UNSAVED CHANGES',
+    loadMessage:
+      'Loading a session replaces the current one. Unsaved changes will be lost. Continue?',
+    newMessage:
+      'Starting a new session clears all mixes, sets, sounds and track edits. Unsaved changes will be lost. Continue?',
+    loadConfirm: 'Load',
+    newConfirm: 'New session',
+    cancel: 'Cancel',
+    loadFailed: 'Could not load this session file.',
+  },
+  setExport: {
+    exportingTitle: 'EXPORTING SET',
+    exportingMessage:
+      'Recording the set in real time. This takes as long as the set itself — keep the app open until it finishes.',
+    cancel: 'Cancel',
   },
 } as const;
