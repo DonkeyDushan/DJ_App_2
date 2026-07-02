@@ -2,7 +2,7 @@
   "appId": "com.natsedlakova.djapp2",
   "productName": "DJ App 2",
   "directories": {
-    "output": "release"
+    "output": "C:/builds/dj-app-2"
   },
   "files": [
     "dist/**",
