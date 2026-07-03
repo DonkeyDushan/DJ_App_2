@@ -2,6 +2,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 
 import { MixerProvider } from './app/features/Mixer';
 import { SetProvider } from './app/features/Set';
+import { TutorialProvider } from './app/features/Tutorial';
 import { retroTheme } from './app/theme/theme';
 
 interface AppProvidersProps {
@@ -13,7 +14,7 @@ export const AppProviders = ({ children }: AppProvidersProps): React.ReactElemen
     <CssBaseline />
     <MixerProvider>
       <SetProvider>
-        {children}
+        <TutorialProvider>{children}</TutorialProvider>
       </SetProvider>
     </MixerProvider>
   </ThemeProvider>

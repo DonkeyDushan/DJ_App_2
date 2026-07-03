@@ -20,6 +20,7 @@ import {
   startNewSession,
 } from '../../core';
 import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
+import { useTutorial } from '../../features/Tutorial';
 import {
   TopBar,
   SaveLoadManager,
@@ -70,6 +71,8 @@ export const Main = (): React.ReactElement => {
   } = useSet();
 
   const isDirty = useSessionDirty();
+
+  const { start: startTutorial } = useTutorial();
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [trimSoundId, setTrimSoundId] = useState<string | null>(null);
@@ -422,6 +425,7 @@ export const Main = (): React.ReactElement => {
         onSaveSession={handleSaveSession}
         onLoadSession={handleLoadSession}
         onNewSession={handleNewSession}
+        onOpenTutorial={startTutorial}
       />
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

@@ -21,10 +21,13 @@ export const paperSx = (isActive: boolean): SxProps<Theme> => ({
   // Reveal the hover-only action buttons (preview, edit, and the favourite
   // button when the track is not favourited) while the card is hovered or
   // focused. They are removed from layout otherwise so the track name can use
-  // the freed width.
-  '&:hover [data-track-action], &:focus-within [data-track-action]': {
-    display: 'inline-flex',
-  },
+  // the freed width. The tutorial also forces them open via
+  // `data-tutorial-highlight` so the tour can point at controls the user is not
+  // physically hovering.
+  '&:hover [data-track-action], &:focus-within [data-track-action], &[data-tutorial-highlight="true"] [data-track-action]':
+    {
+      display: 'inline-flex',
+    },
 });
 
 export const rowSx: SxProps<Theme> = {
