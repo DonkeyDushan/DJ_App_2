@@ -10,7 +10,12 @@ import { computePopupPosition } from '../../utils/computePopupPosition';
 import { SPOTLIGHT_PADDING_PX } from '../../constants/tutorialLayout';
 import type { TargetRect } from '../../types/targetRect';
 import { TutorialPopup } from '../TutorialPopup/TutorialPopup';
-import { backdropSx, curtainSx, ringSx } from './TutorialOverlay.styles';
+import {
+  backdropSx,
+  blockerSx,
+  curtainSx,
+  ringSx,
+} from './TutorialOverlay.styles';
 
 /**
  * Expands a rect by `padding` on all sides and clamps it into the viewport, so
@@ -80,6 +85,10 @@ export const TutorialOverlay = (): React.ReactElement | null => {
 
   return createPortal(
     <>
+      {/* Transparent layer that makes the tour read-only: swallows all clicks
+          so nothing behind it (app, highlighted element, dialog) is clickable. */}
+      <Box sx={blockerSx} data-testid="tutorial-blocker" />
+
       {/* Four curtains tiling the viewport around the spotlight hole. */}
       <Box
         sx={curtainSx}

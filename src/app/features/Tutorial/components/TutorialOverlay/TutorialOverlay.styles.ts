@@ -8,15 +8,28 @@ import {
 
 /**
  * A single darkening curtain. Four of these tile the viewport around the
- * spotlight rect, leaving the highlighted element uncovered and fully
- * interactive. Each curtain captures pointer events so the rest of the app
- * cannot be clicked during the tour.
+ * spotlight rect for the dim effect only — click blocking is handled by the
+ * full-screen {@link blockerSx} layer, so curtains never capture pointer events.
  */
 export const curtainSx: SxProps<Theme> = {
   position: 'fixed',
   backgroundColor: CURTAIN_COLOR,
   zIndex: TUTORIAL_Z_INDEX,
+  pointerEvents: 'none',
+};
+
+/**
+ * Transparent full-screen layer that swallows every pointer event so nothing
+ * behind the tour — the app, the highlighted element, an open dialog — is
+ * clickable. Sits above the curtains and below the popup, making the tour
+ * effectively read-only: only the popup's own controls respond.
+ */
+export const blockerSx: SxProps<Theme> = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: TUTORIAL_Z_INDEX,
   pointerEvents: 'auto',
+  backgroundColor: 'transparent',
 };
 
 /**
