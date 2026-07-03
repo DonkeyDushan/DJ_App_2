@@ -91,6 +91,7 @@ const MixerHeaderInner = ({
             onClick={onOpenCustomSounds}
             disabled={isLocked}
             size="small"
+            data-testid="mixer-custom-sounds"
           >
             <PixelIcon glyph={Upload} />
           </IconButton>
@@ -105,38 +106,45 @@ const MixerHeaderInner = ({
           </IconButton>
         </Tooltip>
 
-        <Tooltip title={STRINGS.mixerHeader.save}>
-          <IconButton
-            onClick={onSave}
-            disabled={isLocked || !canSave}
-            size="small"
-            sx={{
-              color: 'pink.main',
-              '&:hover': {
-                color: 'pink.light',
-              },
-            }}
-          >
-            <PixelIcon glyph={Save} />
-          </IconButton>
-        </Tooltip>
+        <Box
+          sx={{ display: 'flex', gap: 0.75 }}
+          data-testid="mixer-save-group"
+        >
+          <Tooltip title={STRINGS.mixerHeader.save}>
+            <IconButton
+              onClick={onSave}
+              disabled={isLocked || !canSave}
+              size="small"
+              data-testid="mixer-save"
+              sx={{
+                color: 'pink.main',
+                '&:hover': {
+                  color: 'pink.light',
+                },
+              }}
+            >
+              <PixelIcon glyph={Save} />
+            </IconButton>
+          </Tooltip>
 
-        <Tooltip title={STRINGS.mixerHeader.saveNew}>
-          <IconButton
-            onClick={onSaveNew}
-            disabled={isLocked}
-            size="small"
-            sx={{
-              color: 'pink.main',
-              '&:hover': {
-                color: 'pink.light',
-              },
-            }}
-          >
-            <PixelIcon glyph={Save} />
-            <PixelIcon glyph={Plus} />
-          </IconButton>
-        </Tooltip>
+          <Tooltip title={STRINGS.mixerHeader.saveNew}>
+            <IconButton
+              onClick={onSaveNew}
+              disabled={isLocked}
+              size="small"
+              data-testid="mixer-save-new"
+              sx={{
+                color: 'pink.main',
+                '&:hover': {
+                  color: 'pink.light',
+                },
+              }}
+            >
+              <PixelIcon glyph={Save} />
+              <PixelIcon glyph={Plus} />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
     </Box>
   );

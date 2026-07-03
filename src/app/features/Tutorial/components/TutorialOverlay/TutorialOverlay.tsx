@@ -5,6 +5,7 @@ import { Box } from '@mui/material';
 import { useTutorial } from '../../TutorialContext';
 import { useTargetRect } from '../../hooks/useTargetRect';
 import { useTutorialKeyboard } from '../../hooks/useTutorialKeyboard';
+import { useDialogDock } from '../../hooks/useDialogDock';
 import { computePopupPosition } from '../../utils/computePopupPosition';
 import { SPOTLIGHT_PADDING_PX } from '../../constants/tutorialLayout';
 import type { TargetRect } from '../../types/targetRect';
@@ -36,6 +37,8 @@ export const TutorialOverlay = (): React.ReactElement | null => {
     useTutorial();
 
   useTutorialKeyboard(isActive, { onNext: next, onPrev: prev, onClose: stop });
+
+  useDialogDock(currentStep?.stage != null);
 
   const rawRect = useTargetRect(currentStep?.targetSelector ?? null);
 

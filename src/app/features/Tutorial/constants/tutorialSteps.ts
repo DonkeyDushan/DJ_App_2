@@ -2,15 +2,27 @@ import { STRINGS } from '../../../strings';
 import type { TutorialStep } from '../types/tutorialStep';
 
 /**
- * Selector matching any mixer track card. The overlay spotlights the first match
- * in document order, so the top-left track is highlighted as a representative
- * example of the whole grid.
+ * Selector for the demo track card the tour spotlights. The track grid tags one
+ * stable card (the first in display order) with `data-tutorial-track`, so the
+ * tour always points at the same, on-screen track regardless of virtualization.
  */
-const FIRST_TRACK_SELECTOR = '[data-testid^="track-card--"]';
+const DEMO_TRACK_SELECTOR = '[data-tutorial-track="true"]';
+
+/**
+ * MUI puts the `data-testid` on the Dialog root, which is a full-viewport
+ * container. Spotlighting that would cover the whole screen, so target the inner
+ * paper (the actual dialog box) instead.
+ */
+const TRACK_EDITOR_SELECTOR = '[data-testid="track-edit-modal"] .MuiDialog-paper';
+const CUSTOM_SOUNDS_SELECTOR =
+  '[data-testid="custom-sounds-dialog"] .MuiDialog-paper';
 
 /**
  * Ordered screens of the guided tour. Adding a step is a single entry here; the
  * overlay and progress counter derive everything from this array.
+ *
+ * Steps carrying a `stage` require the host to open a UI surface (edit modal,
+ * custom sounds dialog) before their target exists in the DOM.
  *
  * Frozen to prevent accidental mutation of shared reference data.
  */
@@ -23,45 +35,61 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = Object.freeze([
     placement: 'center',
   },
   {
-    key: 'mix-library',
-    targetSelector: '[data-testid="mix-library"]',
-    title: STRINGS.tutorial.mixLibrary.title,
-    body: STRINGS.tutorial.mixLibrary.body,
-    placement: 'right',
+    key: 'mixer',
+    targetSelector: '[data-testid="mixer-panel"]',
+    title: STRINGS.tutorial.mixer.title,
+    body: STRINGS.tutorial.mixer.body,
+    placement: 'bottom',
   },
   {
     key: 'track',
-    targetSelector: FIRST_TRACK_SELECTOR,
+    targetSelector: DEMO_TRACK_SELECTOR,
     title: STRINGS.tutorial.track.title,
     body: STRINGS.tutorial.track.body,
     placement: 'right',
   },
   {
-    key: 'track-grid',
-    targetSelector: '[data-testid="track-grid"]',
-    title: STRINGS.tutorial.trackGrid.title,
-    body: STRINGS.tutorial.trackGrid.body,
-    placement: 'top',
+    key: 'track-editor',
+    targetSelector: TRACK_EDITOR_SELECTOR,
+    title: STRINGS.tutorial.trackEditor.title,
+    body: STRINGS.tutorial.trackEditor.body,
+    placement: 'bottom',
+    stage: 'trackEditor',
   },
   {
-    key: 'set-section',
-    targetSelector: '[data-testid="set-section"]',
-    title: STRINGS.tutorial.setSection.title,
-    body: STRINGS.tutorial.setSection.body,
-    placement: 'top',
-  },
-  {
-    key: 'session',
-    targetSelector: '[data-testid="session-save"]',
-    title: STRINGS.tutorial.session.title,
-    body: STRINGS.tutorial.session.body,
+    key: 'custom-sounds-button',
+    targetSelector: '[data-testid="mixer-custom-sounds"]',
+    title: STRINGS.tutorial.customSoundsButton.title,
+    body: STRINGS.tutorial.customSoundsButton.body,
     placement: 'bottom',
   },
   {
-    key: 'outro',
-    targetSelector: null,
-    title: STRINGS.tutorial.outro.title,
-    body: STRINGS.tutorial.outro.body,
-    placement: 'center',
+    key: 'custom-sounds',
+    targetSelector: CUSTOM_SOUNDS_SELECTOR,
+    title: STRINGS.tutorial.customSounds.title,
+    body: STRINGS.tutorial.customSounds.body,
+    placement: 'bottom',
+    stage: 'customSounds',
+  },
+  {
+    key: 'check-tracks',
+    targetSelector: DEMO_TRACK_SELECTOR,
+    title: STRINGS.tutorial.checkTracks.title,
+    body: STRINGS.tutorial.checkTracks.body,
+    placement: 'right',
+  },
+  {
+    key: 'save-mix',
+    targetSelector: '[data-testid="mixer-save-group"]',
+    title: STRINGS.tutorial.saveMix.title,
+    body: STRINGS.tutorial.saveMix.body,
+    placement: 'bottom',
+  },
+  {
+    key: 'mix-library',
+    targetSelector: '[data-testid="mix-library"]',
+    title: STRINGS.tutorial.mixLibrary.title,
+    body: STRINGS.tutorial.mixLibrary.body,
+    placement: 'right',
   },
 ]);

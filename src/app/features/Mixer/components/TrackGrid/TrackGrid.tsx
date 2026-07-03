@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useVirtualizer, defaultRangeExtractor } from '@tanstack/react-virtual';
 
 import { Box, Stack, Typography } from '@mui/material';
@@ -90,11 +90,15 @@ type TrackGridProps = {
   onSaveToTrack: (trackId: string, settings: TrackSavedSettings) => void;
   onRenameTrack: (trackId: string, name: string) => void;
   onDeleteTrack: (trackId: string) => void;
+  /** When true, the tour drives the edit modal open for the demo track. */
+  openTutorialEditor?: boolean;
 };
 
 type VirtualTrackColumnProps = {
   columnTracks: TrackDefinition[];
   trackStates: Record<string, TrackState>;
+  /** Id of the demo track to tag with a stable tour selector, if in this column. */
+  tutorialTrackId: string | null;
   onToggle: (trackId: string, enabled: boolean) => void;
   onPlay: (trackId: string) => void;
   onEdit: (trackId: string) => void;
@@ -105,6 +109,7 @@ const VirtualTrackColumn = React.memo(
   ({
     columnTracks,
     trackStates,
+    tutorialTrackId,
     onToggle,
     onPlay,
     onEdit,
@@ -180,6 +185,7 @@ const VirtualTrackColumn = React.memo(
                 <TrackCard
                   track={track}
                   trackState={trackStates[track.id] ?? DEFAULT_TRACK_STATE}
+                  isTutorialTarget={track.id === tutorialTrackId}
                   onToggle={onToggle}
                   onPlay={onPlay}
                   onEdit={onEdit}
@@ -212,6 +218,7 @@ export const TrackGrid = ({
   onSaveToTrack,
   onRenameTrack,
   onDeleteTrack,
+  openTutorialEditor,
 }: TrackGridProps): React.ReactElement => {
   const [editTrackId, setEditTrackId] = useState<string | null>(null);
 
@@ -236,6 +243,33 @@ export const TrackGrid = ({
   // Overflow "other" into custom column
   grouped.custom.push(...grouped.other);
 
+  // First track in display order (favourites float to the top of the first
+  // non-empty column). Used as the tour's stable demo target and the track the
+  // tour opens in the edit modal.
+  let tutorialTrackId: string | null = null;
+  for (const { category } of COLUMNS) {
+    const columnTracks = grouped[category];
+    if (columnTracks.length === 0) continue;
+
+    tutorialTrackId = columnTracks
+      .slice()
+      .sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0))[0].id;
+    break;
+  }
+
+  // Let the tour drive the edit modal: open it for the demo track while the
+  // editor step is active, and close it again when the step is left.
+  useEffect(() => {
+    if (!openTutorialEditor || tutorialTrackId === null) return undefined;
+
+    setEditTrackId(tutorialTrackId);
+
+    return () =>
+      setEditTrackId((current) =>
+        current === tutorialTrackId ? null : current,
+      );
+  }, [openTutorialEditor, tutorialTrackId]);
+
   return (
     <>
       <Box sx={gridSx} data-testid="track-grid">
@@ -259,6 +293,7 @@ export const TrackGrid = ({
                   <VirtualTrackColumn
                     columnTracks={columnTracks}
                     trackStates={trackStates}
+                    tutorialTrackId={tutorialTrackId}
                     onToggle={onToggle}
                     onPlay={onPlay}
                     onEdit={setEditTrackId}

@@ -215,38 +215,46 @@ export const STRINGS = {
     next: 'Next',
     finish: 'Finish',
     close: 'Close tutorial',
-    /** e.g. "Step 2 / 6" — rendered with {@link stepOf}. */
+    /** e.g. "Step 2 / 9". */
     stepLabel: 'Step',
     stepSeparator: '/',
     /** Hint line shown in the popup footer. */
     keyboardHint: 'Enter / → next · ← back · Esc close',
     intro: {
       title: 'WELCOME TO DJ APP TURBO 2000',
-      body: 'Take a quick tour of the app. Use Enter or the arrow keys to move between steps, and Esc to leave the tour at any time.',
+      body: 'Take a quick tour of the app. Use Enter or the arrow keys to move between steps, and Esc to leave at any time.',
+    },
+    mixer: {
+      title: 'THE MIXER',
+      body: 'This is the mixer. Here you blend tracks together to create a mix.',
+    },
+    track: {
+      title: 'A TRACK',
+      body: 'This is a track. Hover it to reveal its buttons: play, favourite and edit.',
+    },
+    trackEditor: {
+      title: 'EDIT A TRACK',
+      body: 'In the editor you tweak a track’s volume, speed, EQ and effects.',
+    },
+    customSoundsButton: {
+      title: 'CUSTOM SOUNDS',
+      body: 'Open your custom sounds from this button.',
+    },
+    customSounds: {
+      title: 'CUSTOM SOUNDS',
+      body: 'Here you upload your own sounds and use them as tracks.',
+    },
+    checkTracks: {
+      title: 'BUILD A MIX',
+      body: 'Build a mix by checking the tracks that should play together.',
+    },
+    saveMix: {
+      title: 'SAVE',
+      body: 'Save your changes here. Save updates the current mix; Save New stores it as a copy.',
     },
     mixLibrary: {
       title: 'MIX LIBRARY',
-      body: 'Your saved mixes live here. Load one into the mixer, add it straight to a set, or create a brand-new mix to start from scratch.',
-    },
-    track: {
-      title: 'TRACKS',
-      body: 'Each sound is a track. Tick it to add it to the mix. Hover a track to reveal its controls: preview it, mark it as a favourite, or open the editor to tweak volume, speed, EQ and effects.',
-    },
-    trackGrid: {
-      title: 'THE MIXER',
-      body: 'Tracks are grouped by category — drums, arp, bass, keys, pad and your own custom sounds. Combine them to build a mix, then save it to the library.',
-    },
-    setSection: {
-      title: 'SET BUILDER',
-      body: 'Arrange your saved mixes on the timeline to build a full DJ set. Set the duration of each mix and the transition between them, then play or export the whole set.',
-    },
-    session: {
-      title: 'YOUR SESSION',
-      body: 'Everything — mixes, sets, sounds and edits — is your session. Save it to a file, load it back later, or start fresh from here.',
-    },
-    outro: {
-      title: 'YOU ARE READY',
-      body: 'That is the tour. Press the info button in the top bar whenever you want to see it again. Have fun mixing!',
+      body: 'Your saved mixes live here. Load them back into the mixer or add them to a set.',
     },
   },
 } as const;

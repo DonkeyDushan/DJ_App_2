@@ -82,7 +82,8 @@ export const Main = (): React.ReactElement => {
 
   const isDirty = useSessionDirty();
 
-  const { start: startTutorial } = useTutorial();
+  const { start: startTutorial, currentStep: tutorialStep } = useTutorial();
+  const tutorialStage = tutorialStep?.stage;
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [trimSoundId, setTrimSoundId] = useState<string | null>(null);
@@ -125,6 +126,12 @@ export const Main = (): React.ReactElement => {
     !Object.values(snapshot.trackStates).some((state) => state.enabled);
 
   useTutorialAutoStart(isSessionSettled && isSessionEmpty);
+
+  // The tour drives the custom sounds dialog for its final step; opening it on
+  // enter and closing it when the step is left (stage no longer matches).
+  useEffect(() => {
+    setCustomSoundsOpen(tutorialStage === 'customSounds');
+  }, [tutorialStage]);
 
   // Number of tracks currently checked into the in-progress mix, shown on the
   // placeholder "Untitled" card that stands in for the unsaved working mix.
@@ -566,6 +573,7 @@ export const Main = (): React.ReactElement => {
         />
 
         <Box
+          data-testid="mixer-panel"
           sx={{
             flex: 1,
             display: 'flex',
@@ -655,6 +663,7 @@ export const Main = (): React.ReactElement => {
               onSaveToTrack={mixerActions.saveTrackOverride}
               onRenameTrack={handleRenameTrack}
               onDeleteTrack={requestDeleteTrack}
+              openTutorialEditor={tutorialStage === 'trackEditor'}
             />
           </Box>
         </Box>

@@ -6,6 +6,14 @@
 export type TutorialPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center';
 
 /**
+ * UI stage a step needs the app to enter before it can spotlight its target.
+ * The host reacts to the active step's stage and opens the matching surface —
+ * `trackEditor` opens the track edit modal, `customSounds` opens the custom
+ * sounds dialog. Steps without a stage spotlight elements already on screen.
+ */
+export type TutorialStage = 'trackEditor' | 'customSounds';
+
+/**
  * A single screen of the guided tour. Steps are pure, serializable descriptors:
  * they carry a CSS selector to locate the element to spotlight (resolved at
  * runtime against the live DOM) plus the copy to show. No React nodes, no
@@ -26,6 +34,11 @@ export type TutorialStep = {
   readonly body: string;
   /** Anchor side for the popup relative to the target. */
   readonly placement: TutorialPlacement;
+  /**
+   * UI surface the host must open for this step. Omitted for steps whose target
+   * is already on screen.
+   */
+  readonly stage?: TutorialStage;
   /**
    * Extra padding in px added around the target rect for the spotlight cutout.
    * Overrides the default when a target needs more breathing room.
