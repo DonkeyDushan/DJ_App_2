@@ -22,6 +22,7 @@ interface MixerHeaderProps {
   isPlaying: boolean;
   globalTempo: number;
   activeMixId: string | null;
+  canSave: boolean;
   isLocked: boolean;
   onToggleTransport: () => void;
   onTempoChange: (tempo: number) => void;
@@ -35,6 +36,7 @@ const MixerHeaderInner = ({
   isPlaying,
   globalTempo,
   activeMixId,
+  canSave,
   isLocked,
   onToggleTransport,
   onTempoChange,
@@ -106,7 +108,7 @@ const MixerHeaderInner = ({
         <Tooltip title={STRINGS.mixerHeader.save}>
           <IconButton
             onClick={onSave}
-            disabled={isLocked || !activeMixId}
+            disabled={isLocked || !canSave}
             size="small"
             sx={{
               color: 'pink.main',

@@ -17,6 +17,8 @@ export const STRINGS = {
   mixLibrary: {
     newMix: 'NEW MIX',
     loadMix: 'Load mix',
+    unsavedMix: 'UNTITLED',
+    saveUnsavedMix: 'Save mix',
   },
   mixerHeader: {
     play: 'PLAY',
@@ -130,6 +132,15 @@ export const STRINGS = {
     renameSetTitle: 'RENAME SET',
     placeholder: 'Enter new name…',
     save: 'Save',
+    cancel: 'Cancel',
+  },
+  unsavedMixDialog: {
+    title: 'UNSAVED CHANGES',
+    message:
+      'The current mix has unsaved changes. Switching will discard them. Save first?',
+    save: 'Save',
+    saveNew: 'Save new',
+    discard: 'Discard & switch',
     cancel: 'Cancel',
   },
   mixEditDialog: {

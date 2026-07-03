@@ -8,6 +8,7 @@ import {
   TrackGrid,
   MixLibrary,
   MixEditDialog,
+  UnsavedChangesDialog,
 } from '../../features/Mixer';
 import { useSet, SetSection, SetLibrary, SetExportDialog } from '../../features/Set';
 import type { MixColorKey } from '../../core';
@@ -31,6 +32,7 @@ import { useSetPlayback } from './hooks/useSetPlayback';
 import { useSetExport } from './hooks/useSetExport';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
 import type { MixDialogState } from './types/mixEditTarget';
+import type { PendingMixSwitch } from './types/pendingMixSwitch';
 
 /** Confirmation message shown for each kind of deletable library item. */
 const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
@@ -58,7 +60,15 @@ const SESSION_DIRTY_ACTIVATION_DELAY_MS = 1500;
 type SessionConfirmKind = 'load' | 'new';
 
 export const Main = (): React.ReactElement => {
-  const { snapshot, tracks, activeMixId, engine, actions: mixerActions } = useMixer();
+  const {
+    snapshot,
+    tracks,
+    activeMixId,
+    isNewMix,
+    hasUnsavedMixChanges,
+    engine,
+    actions: mixerActions,
+  } = useMixer();
   const {
     activeSet,
     sets,
@@ -80,6 +90,9 @@ export const Main = (): React.ReactElement => {
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
   const [sessionConfirm, setSessionConfirm] = useState<SessionConfirmKind | null>(
+    null,
+  );
+  const [pendingSwitch, setPendingSwitch] = useState<PendingMixSwitch | null>(
     null,
   );
 
@@ -113,6 +126,21 @@ export const Main = (): React.ReactElement => {
 
   useTutorialAutoStart(isSessionSettled && isSessionEmpty);
 
+  // Number of tracks currently checked into the in-progress mix, shown on the
+  // placeholder "Untitled" card that stands in for the unsaved working mix.
+  const unsavedTrackCount = Object.values(snapshot.trackStates).filter(
+    (state) => state.enabled,
+  ).length;
+
+  // The placeholder "Untitled" card is shown while building an unsaved mix:
+  // either explicitly started via "New mix" (isNewMix), or by default when no
+  // saved mixes exist yet. It is hidden once a mix is selected or saved, and
+  // while a set is playing (the mixer is locked then).
+  const showUnsavedCard =
+    activeMixId === null &&
+    !setIsPlaying &&
+    (isNewMix || snapshot.savedMixes.length === 0);
+
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
   const tracksLookupRef = useRef(tracks);
@@ -134,6 +162,11 @@ export const Main = (): React.ReactElement => {
   actionsRef.current = mixerActions;
   const activeMixIdRef = useRef(activeMixId);
   activeMixIdRef.current = activeMixId;
+  // Keeps the mix-switch handlers referentially stable while still reading the
+  // latest dirty state, so the memoized MixLibrary does not re-render on every
+  // track toggle.
+  const hasUnsavedMixChangesRef = useRef(hasUnsavedMixChanges);
+  hasUnsavedMixChangesRef.current = hasUnsavedMixChanges;
 
   useEffect(() => {
     if (!pendingActionsRef.current) return;
@@ -245,11 +278,68 @@ export const Main = (): React.ReactElement => {
     [],
   );
 
-  const handleLoadMix = useCallback(
-    (mixId: string) => void mixerActions.loadMix(mixId),
-    [],
+  // Executes a requested mix switch immediately, bypassing the unsaved-changes
+  // guard. Used once the user has resolved the prompt.
+  const runMixSwitch = useCallback(
+    (target: PendingMixSwitch) => {
+      if (target.kind === 'load') {
+        void mixerActions.loadMix(target.mixId);
+      } else {
+        void mixerActions.clearMix();
+      }
+    },
+    [mixerActions],
   );
-  const handleNewMix = useCallback(() => void mixerActions.clearMix(), []);
+
+  const handleLoadMix = useCallback((mixId: string) => {
+    // Reloading the already-active mix would silently discard unsaved edits;
+    // it is a no-op instead (use Reset to revert deliberately).
+    if (mixId === activeMixIdRef.current) return;
+
+    if (hasUnsavedMixChangesRef.current) {
+      setPendingSwitch({ kind: 'load', mixId });
+
+      return;
+    }
+
+    void mixerActions.loadMix(mixId);
+  }, []);
+
+  const handleNewMix = useCallback(() => {
+    if (hasUnsavedMixChangesRef.current) {
+      setPendingSwitch({ kind: 'new' });
+
+      return;
+    }
+
+    void mixerActions.clearMix();
+  }, []);
+
+  const handleCancelSwitch = useCallback(() => setPendingSwitch(null), []);
+
+  const handleDiscardAndSwitch = useCallback(() => {
+    if (pendingSwitch) runMixSwitch(pendingSwitch);
+
+    setPendingSwitch(null);
+  }, [pendingSwitch, runMixSwitch]);
+
+  const handleSaveAndSwitch = useCallback(() => {
+    const mixId = activeMixIdRef.current;
+    if (mixId) mixerActions.overwriteMix(mixId);
+
+    if (pendingSwitch) runMixSwitch(pendingSwitch);
+
+    setPendingSwitch(null);
+  }, [pendingSwitch, runMixSwitch]);
+
+  // Defers the switch: opens the "save as new" dialog while keeping the pending
+  // switch alive. Once the new mix is named and saved, the switch runs.
+  const handleSaveNewAndSwitch = useCallback(() => {
+    setMixDialog({
+      kind: 'create',
+      initialName: STRINGS.saveLoadManager.defaultMixName,
+    });
+  }, []);
   const handleToggleTransport = useCallback(
     () => void mixerActions.toggleTransport(),
     [],
@@ -363,7 +453,12 @@ export const Main = (): React.ReactElement => {
 
   const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
   const handleCloseRename = useCallback(() => setRenameTarget(null), []);
-  const handleCloseMixDialog = useCallback(() => setMixDialog(null), []);
+  // Closing the mix dialog also aborts any switch that was waiting on a
+  // "save as new" — the user backed out, so they stay on the current mix.
+  const handleCloseMixDialog = useCallback(() => {
+    setMixDialog(null);
+    setPendingSwitch(null);
+  }, []);
 
   const handleSaveMixDialog = useCallback(
     (name: string, color: MixColorKey | null) => {
@@ -376,8 +471,15 @@ export const Main = (): React.ReactElement => {
       }
 
       setMixDialog(null);
+
+      // When the save was triggered to resolve a pending mix switch, run it now
+      // that the current work is safely persisted as a new mix.
+      if (pendingSwitch) {
+        runMixSwitch(pendingSwitch);
+        setPendingSwitch(null);
+      }
     },
-    [mixDialog, mixerActions],
+    [mixDialog, mixerActions, pendingSwitch, runMixSwitch],
   );
 
   const handleDeleteFromMixEdit = useCallback(() => {
@@ -453,9 +555,12 @@ export const Main = (): React.ReactElement => {
           activeMixId={activeMixId}
           playingMixId={playingMixId}
           isSetPlaybackActive={setIsPlaying}
+          showUnsavedCard={showUnsavedCard}
+          unsavedTrackCount={unsavedTrackCount}
           onAddToTimeline={setActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
+          onSaveUnsavedMix={handleSaveNew}
           onEditMix={requestEditMix}
           onDuplicateMix={mixerActions.duplicateMix}
         />
@@ -473,6 +578,7 @@ export const Main = (): React.ReactElement => {
             isPlaying={snapshot.transportPlaying}
             globalTempo={snapshot.globalTempo}
             activeMixId={activeMixId}
+            canSave={activeMixId !== null && hasUnsavedMixChanges}
             isLocked={setIsPlaying}
             onToggleTransport={handleToggleTransport}
             onTempoChange={handleTempoChange}
@@ -658,6 +764,15 @@ export const Main = (): React.ReactElement => {
         onSave={handleSaveMixDialog}
         onDelete={mixDialog?.kind === 'edit' ? handleDeleteFromMixEdit : undefined}
         onClose={handleCloseMixDialog}
+      />
+
+      <UnsavedChangesDialog
+        open={pendingSwitch !== null && mixDialog === null}
+        canOverwrite={activeMixId !== null}
+        onSaveOverwrite={handleSaveAndSwitch}
+        onSaveNew={handleSaveNewAndSwitch}
+        onDiscard={handleDiscardAndSwitch}
+        onClose={handleCancelSwitch}
       />
 
       <ConfirmDialog

@@ -27,6 +27,7 @@ type UseMixerActionsParams = {
   setPresets: Dispatch<SetStateAction<PersistedTrackPreset[]>>;
   setFavoriteIds: Dispatch<SetStateAction<Set<string>>>;
   setActiveMixId: Dispatch<SetStateAction<string | null>>;
+  setIsNewMix: Dispatch<SetStateAction<boolean>>;
 };
 
 export const useMixerActions = ({
@@ -40,6 +41,7 @@ export const useMixerActions = ({
   setPresets,
   setFavoriteIds,
   setActiveMixId,
+  setIsNewMix,
 }: UseMixerActionsParams): MixerActions =>
   useMemo(
     () => ({
@@ -52,6 +54,7 @@ export const useMixerActions = ({
         setSnapshot,
         setTracks,
         setActiveMixId,
+        setIsNewMix,
       }),
       ...buildPresetManagementActions({
         engine,
@@ -75,5 +78,6 @@ export const useMixerActions = ({
       setPresets,
       setFavoriteIds,
       setActiveMixId,
+      setIsNewMix,
     ],
   );
