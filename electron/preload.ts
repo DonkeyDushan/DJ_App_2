@@ -25,7 +25,24 @@ contextBridge.exposeInMainWorld('djApp', {
       id: string,
       patch: Partial<Omit<SoundMeta, 'id'>>,
     ): Promise<SoundMeta | null> => ipcRenderer.invoke('sounds:update', id, patch),
+    replace: (
+      id: string,
+      data: Uint8Array,
+      patch?: Partial<Omit<SoundMeta, 'id'>>,
+    ): Promise<SoundMeta | null> =>
+      ipcRenderer.invoke('sounds:replace', id, data, patch),
     remove: (id: string): Promise<void> => ipcRenderer.invoke('sounds:remove', id),
     read: (id: string): Promise<Uint8Array | null> => ipcRenderer.invoke('sounds:read', id),
+  },
+  session: {
+    save: (): Promise<{ saved: boolean; path?: string }> =>
+      ipcRenderer.invoke('session:save'),
+    load: (): Promise<{ loaded: boolean; error?: string }> =>
+      ipcRenderer.invoke('session:load'),
+    new: (): Promise<void> => ipcRenderer.invoke('session:new'),
+  },
+  files: {
+    saveAudio: (defaultName: string, data: Uint8Array): Promise<boolean> =>
+      ipcRenderer.invoke('file:save-audio', defaultName, data),
   },
 });

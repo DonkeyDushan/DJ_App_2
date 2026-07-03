@@ -9,30 +9,56 @@ export const gridSx: SxProps<Theme> = {
     lg: 'repeat(6, 1fr)',
   },
   gap: 2,
-  alignItems: 'start',
+  alignItems: 'stretch',
+  height: '100%',
+  minHeight: 0,
 };
 
-export const columnHeaderSx = (color: string): SxProps<Theme> => ({
+export const columnShellSx: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+  minHeight: 0,
+};
+
+export const columnScrollSx: SxProps<Theme> = {
+  overflowY: 'auto',
+  height: '100%',
+  minHeight: 0,
+  scrollbarWidth: 'none',
+  '&::-webkit-scrollbar': {
+    width: 0,
+    height: 0,
+  },
+  '&:hover': {
+    scrollbarWidth: 'thin',
+    '&::-webkit-scrollbar': {
+      width: '0.375rem',
+      height: '0.375rem',
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'transparent',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'rgba(255, 255, 255, 0.35)',
+      borderRadius: '999px',
+    },
+  },
+};
+
+export const columnHeaderSx: SxProps<Theme> = {
   display: 'block',
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.6rem',
+  fontSize: '1rem',
   letterSpacing: '0.15em',
-  color,
+  color: 'text.secondary',
   mb: 1,
-  textShadow: `0 0 8px ${color}88`,
-  borderBottom: `1px solid ${color}33`,
   pb: 0.5,
-});
-
-export const columnCountSx: SxProps<Theme> = {
-  fontSize: '0.55rem',
-  color: 'text.disabled',
-  ml: 0.75,
-  fontFamily: 'inherit',
+  borderBottom: (theme) => `1px solid ${theme.palette.text.secondary}`,
 };
 
 export const emptyColumnSx: SxProps<Theme> = {
   color: 'text.disabled',
-  fontSize: '0.65rem',
+  fontSize: '0.875rem',
   pl: 0.5,
 };

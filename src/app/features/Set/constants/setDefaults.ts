@@ -1,0 +1,17 @@
+/**
+ * Default values for new sets and slots.
+ */
+
+import type { TransitionKind } from '../../../core/types/transition';
+
+/** Default total set duration in seconds. */
+export const DEFAULT_TOTAL_DURATION_SECONDS = 180;
+
+/** Default duration for a newly added slot in seconds. */
+export const DEFAULT_SLOT_DURATION_SECONDS = 15;
+
+/** Default transition duration between slots in seconds. */
+export const DEFAULT_TRANSITION_DURATION_SECONDS = 8;
+
+/** Default transition kind for new slots and new sets. */
+export const DEFAULT_TRANSITION_KIND: TransitionKind = 'crossfade';

@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
 
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { PenSquare } from 'pixelarticons/react/PenSquare';
+import { Scissors } from 'pixelarticons/react/Scissors';
+import { Trash } from 'pixelarticons/react/Trash';
+import { Upload } from 'pixelarticons/react/Upload';
 import {
-  Avatar,
   Box,
   Button,
   Dialog,
@@ -13,15 +13,16 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
+import { Close } from 'pixelarticons/react/Close';
 
 import type { CustomSoundRecord } from '../../../../core/types/mixData';
 import { STRINGS } from '../../../../strings';
+import { PixelIcon } from '../../../../components';
 import { emptyStateSx, listItemSx } from './CustomSoundsDialog.styles';
 
 type CustomSoundsDialogProps = {
@@ -31,6 +32,7 @@ type CustomSoundsDialogProps = {
   onUpload: (file: File) => void;
   onDelete: (soundId: string) => void;
   onRename: (soundId: string) => void;
+  onTrim: (soundId: string) => void;
 };
 
 const S = STRINGS.customSoundsDialog;
@@ -42,6 +44,7 @@ const CustomSoundsDialogInner = ({
   onUpload,
   onDelete,
   onRename,
+  onTrim,
 }: CustomSoundsDialogProps): React.ReactElement => {
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
@@ -52,14 +55,19 @@ const CustomSoundsDialogInner = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" data-testid="custom-sounds-dialog">
-      <DialogTitle>{S.title}</DialogTitle>
+    <Dialog open={open} onClose={onClose} data-testid="custom-sounds-dialog">
+      <DialogTitle>
+        {S.title}
+        <IconButton size="small" onClick={onClose}>
+          <PixelIcon glyph={Close} />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Button
             component="label"
             variant="contained"
-            startIcon={<UploadFileIcon />}
+            startIcon={<PixelIcon glyph={Upload} />}
           >
             {S.uploadSound}
             <input
@@ -81,6 +89,16 @@ const CustomSoundsDialogInner = ({
                   key={sound.id}
                   secondaryAction={
                     <>
+                      <Tooltip title={S.trimSound}>
+                        <IconButton
+                          edge="end"
+                          aria-label="trim"
+                          onClick={() => onTrim(sound.id)}
+                          data-testid={`trim-sound--${sound.id}`}
+                        >
+                          <PixelIcon glyph={Scissors} />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title={S.renameSound}>
                         <IconButton
                           edge="end"
@@ -88,7 +106,7 @@ const CustomSoundsDialogInner = ({
                           onClick={() => onRename(sound.id)}
                           data-testid={`rename-sound--${sound.id}`}
                         >
-                          <DriveFileRenameOutlineIcon />
+                          <PixelIcon glyph={PenSquare} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title={S.deleteSound}>
@@ -98,7 +116,7 @@ const CustomSoundsDialogInner = ({
                           onClick={() => onDelete(sound.id)}
                           data-testid={`delete-sound--${sound.id}`}
                         >
-                          <DeleteForeverIcon />
+                          <PixelIcon glyph={Trash} />
                         </IconButton>
                       </Tooltip>
                     </>
@@ -106,13 +124,6 @@ const CustomSoundsDialogInner = ({
                   sx={listItemSx}
                   data-testid={`sound-item--${sound.id}`}
                 >
-                  <ListItemAvatar>
-                    <Avatar
-                      sx={{ bgcolor: 'secondary.main', color: '#090812' }}
-                    >
-                      {sound.name.slice(0, 1).toUpperCase()}
-                    </Avatar>
-                  </ListItemAvatar>
                   <ListItemText
                     primary={sound.name}
                     secondary={`${Math.round(sound.blob.size / 1024)} KB • ${sound.mimeType}`}

@@ -5,9 +5,14 @@
 
 import type { TrackDefinition, TrackState } from '../types/trackData';
 import type { CustomSoundRecord, MixerSnapshot } from '../types/mixData';
+import type { TransitionKind } from '../types/transition';
 import { createImpulseResponse } from './synthesis';
-import type { PlaybackHandle } from './audioTypes';
-import type { PlaybackListener, PlaybackState } from './audioTypes';
+import type {
+  PlaybackDeck,
+  PlaybackListener,
+  PlaybackState,
+  PlaybackHandle,
+} from './audioTypes';
 import {
   DELAY_FEEDBACK_GAIN,
   DELAY_FILTER_FREQ_HZ,
@@ -22,6 +27,7 @@ import {
   ONESHOT_START_LOOKAHEAD_S,
   RATE_TIME_CONSTANT,
   REVERB_WET_GAIN,
+  TRANSITION_STOP_GUARD_MS,
   VOLUME_TIME_CONSTANT,
 } from './audioConstants';
 import {
@@ -42,23 +48,46 @@ export type { PlaybackState, PlaybackListener };
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
-const getEffectiveRate = (trackState: TrackState, globalTempo: number): number =>
-  trackState.followsGlobalTempo ? globalTempo : trackState.speed;
+const getEffectiveRate = (
+  trackState: TrackState,
+  globalTempo: number,
+): number => (trackState.followsGlobalTempo ? globalTempo : trackState.speed);
 
 export class AudioEngine {
   private context: AudioContext | null = null;
 
   private masterGain: GainNode | null = null;
 
+  /**
+   * Capture tap for audio export. When present, the master output is mirrored
+   * into this node's MediaStream so a MediaRecorder can record the live mix in
+   * real time without affecting the audible signal.
+   */
+  private captureNode: MediaStreamAudioDestinationNode | null = null;
+
   private reverbInputGain: GainNode | null = null;
 
   private delayInputGain: GainNode | null = null;
 
-  private transportStartTime = 0;
-
   private transportActive = false;
 
-  private activeHandles = new Map<string, Set<PlaybackHandle>>();
+  /**
+   * Two playback decks. The foreground deck carries the audible mix; the other
+   * is idle until a fade/crossfade brings an incoming mix in on it.
+   */
+  private decks: readonly [PlaybackDeck, PlaybackDeck] = [
+    { gain: null, handles: new Map(), startTime: 0 },
+    { gain: null, handles: new Map(), startTime: 0 },
+  ];
+
+  private foregroundDeckIndex = 0;
+
+  /**
+   * Monotonic token invalidating in-flight transitions. Bumped whenever a new
+   * transition starts or transport stops, so a scheduled second phase (fade) or
+   * outgoing-deck stop (crossfade) is skipped if state has since moved on.
+   */
+  private transitionToken = 0;
 
   private demoBufferCache = new Map<string, AudioBuffer>();
 
@@ -66,12 +95,37 @@ export class AudioEngine {
 
   private playbackListeners = new Set<PlaybackListener>();
 
+  /**
+   * Empty listener set used for background-deck handle changes so the outgoing
+   * mix's start/stop never emits playback-state events for tracks that the
+   * foreground (incoming) mix may still be playing.
+   */
+  private readonly silentListeners = new Set<PlaybackListener>();
+
+  private get foregroundDeck(): PlaybackDeck {
+    return this.decks[this.foregroundDeckIndex];
+  }
+
+  private get backgroundDeck(): PlaybackDeck {
+    return this.decks[this.foregroundDeckIndex === 0 ? 1 : 0];
+  }
+
   async ensureContext(): Promise<AudioContext> {
     if (!this.context) {
       this.context = new AudioContext();
       this.masterGain = this.context.createGain();
       this.masterGain.gain.value = 1;
       this.masterGain.connect(this.context.destination);
+
+      // Each deck's fader sits between its track handles and the master output,
+      // so a deck can be faded as a whole without touching per-track volumes.
+      this.decks.forEach((deck) => {
+        if (!this.context || !this.masterGain) return;
+        const gain = this.context.createGain();
+        gain.gain.value = 1;
+        gain.connect(this.masterGain);
+        deck.gain = gain;
+      });
 
       this.reverbInputGain = buildReverbChain(
         this.context,
@@ -102,15 +156,13 @@ export class AudioEngine {
     track: TrackDefinition,
     trackState: TrackState,
     globalTempo: number,
+    startTime: number,
   ): number {
     if (!this.context) {
       return 0;
     }
 
-    const elapsed = Math.max(
-      0,
-      this.context.currentTime - this.transportStartTime,
-    );
+    const elapsed = Math.max(0, this.context.currentTime - startTime);
     const rate = getEffectiveRate(trackState, globalTempo);
 
     if (track.kind === 'custom') {
@@ -141,14 +193,15 @@ export class AudioEngine {
     trackState: TrackState,
     globalTempo: number,
     oneShot: boolean,
+    targetGain: GainNode,
   ): PlaybackHandle {
-    if (!this.context || !this.masterGain) {
+    if (!this.context) {
       throw new Error('Audio context is not ready.');
     }
 
     return createPlaybackHandle(
       this.context,
-      this.masterGain,
+      targetGain,
       this.reverbInputGain,
       this.delayInputGain,
       trackId,
@@ -164,12 +217,14 @@ export class AudioEngine {
     trackState: TrackState,
     customSounds: CustomSoundRecord[],
     globalTempo: number,
+    deck: PlaybackDeck,
+    listeners: Set<PlaybackListener>,
     alignToTransport = false,
   ): Promise<void> {
     const context = await this.ensureContext();
     const buffer = await this.getBuffer(track, customSounds);
 
-    if (!buffer || !this.masterGain) {
+    if (!buffer || !deck.gain) {
       return;
     }
 
@@ -179,13 +234,14 @@ export class AudioEngine {
       trackState,
       globalTempo,
       false,
+      deck.gain,
     );
     const startTime = context.currentTime + LOOP_START_LOOKAHEAD_S;
     const offset = alignToTransport
-      ? this.getLoopOffset(track, trackState, globalTempo)
+      ? this.getLoopOffset(track, trackState, globalTempo, deck.startTime)
       : 0;
     handle.source.start(startTime, offset);
-    registerHandle(handle, this.activeHandles, this.playbackListeners);
+    registerHandle(handle, deck.handles, listeners);
   }
 
   private async startOneShotTrack(
@@ -196,8 +252,9 @@ export class AudioEngine {
   ): Promise<void> {
     const context = await this.ensureContext();
     const buffer = await this.getBuffer(track, customSounds);
+    const deck = this.foregroundDeck;
 
-    if (!buffer || !this.masterGain) {
+    if (!buffer || !deck.gain) {
       return;
     }
 
@@ -207,10 +264,11 @@ export class AudioEngine {
       trackState,
       globalTempo,
       true,
+      deck.gain,
     );
     handle.source.loop = false;
     handle.source.start(context.currentTime + ONESHOT_START_LOOKAHEAD_S, 0);
-    registerHandle(handle, this.activeHandles, this.playbackListeners);
+    registerHandle(handle, deck.handles, this.playbackListeners);
   }
 
   private async fadeMaster(
@@ -235,13 +293,25 @@ export class AudioEngine {
   }
 
   async stopTransport(fadeOut = true): Promise<void> {
+    // Invalidate any in-flight transition so its scheduled phases are skipped.
+    this.transitionToken += 1;
+
     if (fadeOut) {
       await this.fadeMaster(0);
     }
 
-    const trackIds = Array.from(this.activeHandles.keys());
-    trackIds.forEach((trackId) => {
-      stopTrackHandles(trackId, this.activeHandles, this.playbackListeners);
+    this.decks.forEach((deck, index) => {
+      const listeners =
+        index === this.foregroundDeckIndex
+          ? this.playbackListeners
+          : this.silentListeners;
+      Array.from(deck.handles.keys()).forEach((trackId) => {
+        stopTrackHandles(trackId, deck.handles, listeners);
+      });
+      if (deck.gain) {
+        deck.gain.gain.cancelScheduledValues(this.context?.currentTime ?? 0);
+        deck.gain.gain.value = 1;
+      }
     });
 
     this.transportActive = false;
@@ -270,7 +340,9 @@ export class AudioEngine {
     const context = await this.ensureContext();
     await this.stopTransport(false);
     this.transportActive = true;
-    this.transportStartTime = context.currentTime - offsetSeconds;
+
+    const deck = this.foregroundDeck;
+    deck.startTime = context.currentTime - offsetSeconds;
 
     await Promise.all(
       tracks
@@ -281,6 +353,8 @@ export class AudioEngine {
             trackStates[track.id],
             customSounds,
             globalTempo,
+            deck,
+            this.playbackListeners,
             offsetSeconds > 0,
           ),
         ),
@@ -298,20 +372,201 @@ export class AudioEngine {
     await this.startTransport(tracks, trackStates, customSounds, globalTempo);
   }
 
+  /** Linearly ramps a deck's fader from its current value to `target`. */
+  private rampDeckGain(
+    deck: PlaybackDeck,
+    target: number,
+    durationSeconds: number,
+  ): void {
+    if (!deck.gain || !this.context) {
+      return;
+    }
+
+    const startTime = this.context.currentTime;
+    const startValue = deck.gain.gain.value;
+
+    deck.gain.gain.cancelScheduledValues(startTime);
+    deck.gain.gain.setValueAtTime(startValue, startTime);
+    deck.gain.gain.linearRampToValueAtTime(
+      clamp(target, 0, 1),
+      startTime + durationSeconds,
+    );
+  }
+
+  /** Stops every handle on a background deck without emitting UI events. */
+  private stopBackgroundDeck(deck: PlaybackDeck): void {
+    Array.from(deck.handles.keys()).forEach((trackId) => {
+      stopTrackHandles(trackId, deck.handles, this.silentListeners);
+    });
+    if (deck.gain) {
+      deck.gain.gain.cancelScheduledValues(this.context?.currentTime ?? 0);
+      deck.gain.gain.value = 1;
+    }
+  }
+
+  /** Starts a mix's enabled loops on a deck, aligned to that deck's clock. */
+  private async startDeckLoops(
+    deck: PlaybackDeck,
+    tracks: TrackDefinition[],
+    trackStates: Record<string, TrackState>,
+    customSounds: CustomSoundRecord[],
+    globalTempo: number,
+    listeners: Set<PlaybackListener>,
+    aligned: boolean,
+  ): Promise<void> {
+    await Promise.all(
+      tracks
+        .filter((track) => trackStates[track.id]?.enabled)
+        .map((track) =>
+          this.startLoopTrack(
+            track,
+            trackStates[track.id],
+            customSounds,
+            globalTempo,
+            deck,
+            listeners,
+            aligned,
+          ),
+        ),
+    );
+  }
+
+  /**
+   * Transitions from the currently playing mix to an incoming one.
+   *
+   * - `cut`: stops the current mix and starts the incoming one (a short master
+   *   fade guards against clicks) — identical to a plain mix (re)load.
+   * - `fade`: fades the outgoing deck to silence over half the duration, then
+   *   starts the incoming mix on the idle deck and fades it up over the other
+   *   half. The two never overlap.
+   * - `crossfade`: starts the incoming mix on the idle deck and ramps the two
+   *   decks past each other over the full duration so they overlap.
+   *
+   * For `fade`/`crossfade` the incoming deck becomes the foreground deck
+   * immediately, so live mixer edits and playback-state events follow the mix
+   * that will remain. `offsetSeconds` backdates the incoming deck's clock so
+   * its loops start at the phase they would occupy live.
+   */
+  async crossfadeTo(
+    tracks: TrackDefinition[],
+    trackStates: Record<string, TrackState>,
+    customSounds: CustomSoundRecord[],
+    globalTempo: number,
+    options: {
+      kind: TransitionKind;
+      durationSeconds: number;
+      offsetSeconds: number;
+    },
+  ): Promise<void> {
+    const { kind, durationSeconds, offsetSeconds } = options;
+
+    // A cut, or starting from a stopped transport, is a plain (re)load.
+    if (kind === 'cut' || !this.transportActive || durationSeconds <= 0) {
+      if (this.transportActive) {
+        await this.stopTransport(true);
+      }
+      await this.startTransport(
+        tracks,
+        trackStates,
+        customSounds,
+        globalTempo,
+        offsetSeconds,
+      );
+
+      return;
+    }
+
+    const context = await this.ensureContext();
+    this.transitionToken += 1;
+    const token = this.transitionToken;
+    const outgoing = this.foregroundDeck;
+    const incoming = this.backgroundDeck;
+
+    // The incoming mix is the one that survives — it becomes foreground now so
+    // live edits and UI events target it.
+    this.foregroundDeckIndex = this.foregroundDeckIndex === 0 ? 1 : 0;
+
+    if (kind === 'crossfade') {
+      incoming.startTime = context.currentTime - offsetSeconds;
+      if (incoming.gain) incoming.gain.gain.value = 0;
+      await this.startDeckLoops(
+        incoming,
+        tracks,
+        trackStates,
+        customSounds,
+        globalTempo,
+        this.playbackListeners,
+        offsetSeconds > 0,
+      );
+
+      // A stop/transition during the buffer-load above invalidates this run;
+      // tear down the loops we just started so they do not leak.
+      if (token !== this.transitionToken) {
+        this.stopBackgroundDeck(incoming);
+
+        return;
+      }
+
+      this.rampDeckGain(outgoing, 0, durationSeconds);
+      this.rampDeckGain(incoming, 1, durationSeconds);
+
+      window.setTimeout(() => {
+        if (token !== this.transitionToken) return;
+        this.stopBackgroundDeck(outgoing);
+      }, durationSeconds * 1000 + TRANSITION_STOP_GUARD_MS);
+
+      return;
+    }
+
+    // kind === 'fade': sequential fade through silence.
+    const halfSeconds = durationSeconds / 2;
+    this.rampDeckGain(outgoing, 0, halfSeconds);
+
+    window.setTimeout(() => {
+      if (token !== this.transitionToken) return;
+      void (async () => {
+        const ctx = this.context;
+        if (!ctx) return;
+
+        this.stopBackgroundDeck(outgoing);
+        incoming.startTime = ctx.currentTime - offsetSeconds;
+        if (incoming.gain) incoming.gain.gain.value = 0;
+        await this.startDeckLoops(
+          incoming,
+          tracks,
+          trackStates,
+          customSounds,
+          globalTempo,
+          this.playbackListeners,
+          offsetSeconds > 0,
+        );
+
+        if (token !== this.transitionToken) {
+          this.stopBackgroundDeck(incoming);
+
+          return;
+        }
+
+        this.rampDeckGain(incoming, 1, halfSeconds);
+      })();
+    }, halfSeconds * 1000);
+  }
+
   async playTrackOnce(
     track: TrackDefinition,
     trackState: TrackState,
     customSounds: CustomSoundRecord[],
     globalTempo: number,
   ): Promise<'started' | 'stopped'> {
+    const deck = this.foregroundDeck;
     const previewIsPlaying = derivePlaybackState(
-      this.activeHandles.get(track.id),
+      deck.handles.get(track.id),
     ).isPreviewPlaying;
 
     if (previewIsPlaying) {
       stopTrackHandles(
         track.id,
-        this.activeHandles,
+        deck.handles,
         this.playbackListeners,
         (handle) => handle.oneShot,
       );
@@ -319,11 +574,11 @@ export class AudioEngine {
       return 'stopped';
     }
 
-    const trackIds = Array.from(this.activeHandles.keys());
+    const trackIds = Array.from(deck.handles.keys());
     trackIds.forEach((trackId) => {
       stopTrackHandles(
         trackId,
-        this.activeHandles,
+        deck.handles,
         this.playbackListeners,
         (handle) => handle.oneShot,
       );
@@ -340,8 +595,10 @@ export class AudioEngine {
     customSounds: CustomSoundRecord[],
     globalTempo: number,
   ): Promise<void> {
+    const deck = this.foregroundDeck;
+
     if (!trackState.enabled) {
-      stopTrackHandles(track.id, this.activeHandles, this.playbackListeners);
+      stopTrackHandles(track.id, deck.handles, this.playbackListeners);
 
       return;
     }
@@ -350,18 +607,20 @@ export class AudioEngine {
       return;
     }
 
-    stopTrackHandles(track.id, this.activeHandles, this.playbackListeners);
+    stopTrackHandles(track.id, deck.handles, this.playbackListeners);
     await this.startLoopTrack(
       track,
       trackState,
       customSounds,
       globalTempo,
+      deck,
+      this.playbackListeners,
       true,
     );
   }
 
   updateTrackVolume(trackId: string, volume: number): void {
-    updateTrackHandles(trackId, this.activeHandles, (handle) => {
+    updateTrackHandles(trackId, this.foregroundDeck.handles, (handle) => {
       handle.gainNode.gain.setTargetAtTime(
         volume,
         this.context?.currentTime ?? 0,
@@ -371,7 +630,7 @@ export class AudioEngine {
   }
 
   updateTrackRate(trackId: string, rate: number): void {
-    updateTrackHandles(trackId, this.activeHandles, (handle) => {
+    updateTrackHandles(trackId, this.foregroundDeck.handles, (handle) => {
       handle.source.playbackRate.setTargetAtTime(
         rate,
         this.context?.currentTime ?? 0,
@@ -386,7 +645,7 @@ export class AudioEngine {
     eqMid: number,
     eqHigh: number,
   ): void {
-    updateTrackHandles(trackId, this.activeHandles, (handle) => {
+    updateTrackHandles(trackId, this.foregroundDeck.handles, (handle) => {
       handle.eqLowNode.gain.setTargetAtTime(
         eqLow,
         this.context?.currentTime ?? 0,
@@ -410,7 +669,7 @@ export class AudioEngine {
     reverbSend: number,
     delaySend: number,
   ): void {
-    updateTrackHandles(trackId, this.activeHandles, (handle) => {
+    updateTrackHandles(trackId, this.foregroundDeck.handles, (handle) => {
       handle.reverbSendNode.gain.setTargetAtTime(
         reverbSend,
         this.context?.currentTime ?? 0,
@@ -425,7 +684,7 @@ export class AudioEngine {
   }
 
   setTransportClock(startTime: number): void {
-    this.transportStartTime = startTime;
+    this.foregroundDeck.startTime = startTime;
   }
 
   subscribeToPlayback(listener: PlaybackListener): () => void {
@@ -438,6 +697,44 @@ export class AudioEngine {
 
   async prepareContext(): Promise<void> {
     await this.ensureContext();
+  }
+
+  /**
+   * Begins mirroring the master output into a MediaStream for export. The tap
+   * runs in parallel with the speaker output, so recording is sample-for-sample
+   * what the user hears. Returns the stream to feed into a MediaRecorder.
+   */
+  async startMasterCapture(): Promise<MediaStream> {
+    const context = await this.ensureContext();
+    if (!this.masterGain) {
+      throw new Error('Master output is not ready.');
+    }
+
+    if (!this.captureNode) {
+      this.captureNode = context.createMediaStreamDestination();
+      this.masterGain.connect(this.captureNode);
+    }
+
+    return this.captureNode.stream;
+  }
+
+  /** Stops mirroring the master output into the export stream. */
+  stopMasterCapture(): void {
+    if (!this.captureNode) {
+      return;
+    }
+
+    this.masterGain?.disconnect(this.captureNode);
+    this.captureNode = null;
+  }
+
+  /**
+   * Drops the cached decoded buffer for a custom sound so the next playback
+   * re-decodes it from the (possibly replaced) Blob. Called after a sound's
+   * bytes change, e.g. when its audio is trimmed.
+   */
+  invalidateCustomBuffer(soundId: string): void {
+    this.customBufferCache.delete(soundId);
   }
 }
 

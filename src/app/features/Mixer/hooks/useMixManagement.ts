@@ -11,11 +11,14 @@ import {
   loadCustomSounds,
   removeCustomSound,
   renameCustomSound as renameCustomSoundStorage,
+  replaceCustomSound as replaceCustomSoundStorage,
 } from '../../../core/storage/customSounds';
 import { loadSavedMixes, persistSavedMixes } from '../../../core/storage/mixStorage';
 import { loadFavoriteIds, loadTrackPresets } from '../../../core/storage/trackPresets';
-import type { SavedMix, MixerSnapshot } from '../../../core/types/mixData';
-import type { TrackDefinition } from '../../../core/types/trackData';
+import type { SavedMix, MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
+import type { MixColorKey } from '../../../core/constants/mixColors';
+import type { TransitionKind } from '../../../core/types/transition';
+import type { TrackDefinition, TrackState } from '../../../core/types/trackData';
 import { DEFAULT_SINGLE_TRACK_VALUES, MAX_SAVED_MIXES } from '../constants/trackDefaults';
 import type { MixerActions } from '../types/mixerContext';
 import {
@@ -26,7 +29,8 @@ import {
   presetToTrackDefinition,
   withMissingTrackStates,
 } from '../utils/trackBuilders';
-import { DEFAULT_TRACKS } from '../../../core/data/defaultTracks';
+import { DEFAULT_TRACKS, DEFAULT_GLOBAL_TEMPO } from '../../../core/data/defaultTracks';
+import { buildDuplicateMixName } from '../utils/duplicateMixName';
 
 type MixManagementParams = {
   engine: AudioEngine;
@@ -41,19 +45,78 @@ type MixManagementParams = {
 export type MixManagementActions = Pick<
   MixerActions,
   | 'loadMixAndPlay'
+  | 'transitionToMix'
   | 'loadInitialData'
   | 'addCustomSound'
   | 'deleteCustomSound'
   | 'renameCustomSound'
+  | 'replaceCustomSound'
   | 'saveMix'
   | 'loadMix'
   | 'overwriteMix'
   | 'clearMix'
   | 'resetMix'
   | 'deleteMix'
-  | 'renameMix'
-  | 'toggleMixFavorite'
+  | 'duplicateMix'
+  | 'updateMix'
 >;
+
+/**
+ * Builds the track-state map for a mix while honouring the two ownership rules:
+ *
+ * - `enabled` (whether a track is checked into the mix) is owned by the mix.
+ *   It is taken solely from the mix, so unsaved checks on the previously active
+ *   mix never leak into the one being loaded — a track defaults to unchecked
+ *   when the mix does not mention it.
+ * - All audio settings (volume, speed, EQ, effects, tempo follow) are owned by
+ *   the track and shared across every mix. They are carried over from the
+ *   current track state, so edits saved in the track editor remain in effect no
+ *   matter which mix is loaded.
+ *
+ * Playback flags are reset; callers re-derive them after starting audio.
+ */
+const buildMixTrackStates = (
+  currentTrackStates: Record<string, TrackState>,
+  mix: SavedMix,
+): Record<string, TrackState> => {
+  const nextTrackStates: Record<string, TrackState> = {};
+
+  for (const [trackId, currentState] of Object.entries(currentTrackStates)) {
+    nextTrackStates[trackId] = {
+      ...currentState,
+      enabled: mix.trackStates[trackId]?.enabled ?? false,
+      isPlaying: false,
+      isPreviewPlaying: false,
+    };
+  }
+
+  // Include any track the mix references that is not yet present in the current
+  // set, so its state is available once the track definition loads. No shared
+  // audio settings exist for it yet, so fall back to the mix's saved values.
+  for (const [trackId, savedState] of Object.entries(mix.trackStates)) {
+    if (nextTrackStates[trackId]) continue;
+
+    nextTrackStates[trackId] = {
+      ...DEFAULT_SINGLE_TRACK_VALUES,
+      ...savedState,
+      isPlaying: false,
+      isPreviewPlaying: false,
+    };
+  }
+
+  return nextTrackStates;
+};
+
+/** Marks every track as playing when enabled, used after a mix starts. */
+const toPlayingTrackStates = (
+  trackStates: Record<string, TrackState>,
+): Record<string, TrackState> =>
+  Object.fromEntries(
+    Object.entries(trackStates).map(([trackId, trackState]) => [
+      trackId,
+      { ...trackState, isPlaying: trackState.enabled, isPreviewPlaying: false },
+    ]),
+  );
 
 export const buildMixManagementActions = ({
   engine,
@@ -74,13 +137,10 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = { ...currentSnapshot.trackStates };
-    Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
-      nextTrackStates[trackId] = {
-        ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-        ...trackState,
-      };
-    });
+    const nextTrackStates = buildMixTrackStates(
+      currentSnapshot.trackStates,
+      mix,
+    );
 
     await engine.startTransport(
       currentTracks,
@@ -93,12 +153,42 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => ({
       ...current,
       globalTempo: mix.globalTempo,
-      trackStates: Object.fromEntries(
-        Object.entries(nextTrackStates).map(([trackId, trackState]) => [
-          trackId,
-          { ...trackState, isPlaying: trackState.enabled, isPreviewPlaying: false },
-        ]),
-      ),
+      trackStates: toPlayingTrackStates(nextTrackStates),
+      transportPlaying: true,
+    }));
+  },
+
+  transitionToMix: async (
+    mixId: string,
+    kind: TransitionKind,
+    durationSeconds: number,
+    offsetSeconds = 0,
+  ) => {
+    const currentSnapshot = snapshotRef.current;
+    const currentTracks = tracksRef.current;
+    const mix = currentSnapshot.savedMixes.find((entry) => entry.id === mixId);
+    if (!mix) return;
+
+    const nextTrackStates = buildMixTrackStates(
+      currentSnapshot.trackStates,
+      mix,
+    );
+
+    // The engine decides whether this overlaps (crossfade), passes through
+    // silence (fade), or hard-cuts — based on `kind` and whether it is playing.
+    await engine.crossfadeTo(
+      currentTracks,
+      nextTrackStates,
+      currentSnapshot.customSounds,
+      mix.globalTempo,
+      { kind, durationSeconds, offsetSeconds },
+    );
+
+    setActiveMixId(mixId);
+    setSnapshot((current) => ({
+      ...current,
+      globalTempo: mix.globalTempo,
+      trackStates: toPlayingTrackStates(nextTrackStates),
       transportPlaying: true,
     }));
   },
@@ -193,6 +283,44 @@ export const buildMixManagementActions = ({
     );
   },
 
+  replaceCustomSound: async (soundId: string, blob: Blob, mimeType: string) => {
+    const currentSnapshot = snapshotRef.current;
+    await replaceCustomSoundStorage(soundId, blob, mimeType);
+
+    // Drop the stale decoded buffer so the next playback re-decodes the
+    // trimmed audio rather than serving the cached full-length version.
+    engine.invalidateCustomBuffer(soundId);
+
+    const nextSounds = currentSnapshot.customSounds.map((sound) =>
+      sound.id === soundId ? { ...sound, blob, mimeType } : sound,
+    );
+
+    setSnapshot((current) => ({
+      ...current,
+      customSounds: current.customSounds.map((sound) =>
+        sound.id === soundId ? { ...sound, blob, mimeType } : sound,
+      ),
+    }));
+
+    // If the trimmed sound is currently looping, restart it so the change is
+    // audible immediately rather than only after the next transport start.
+    const track = tracksRef.current.find(
+      (entry) => entry.kind === 'custom' && entry.customSoundId === soundId,
+    );
+    const trackState = track
+      ? currentSnapshot.trackStates[track.id]
+      : undefined;
+
+    if (track && trackState?.enabled && currentSnapshot.transportPlaying) {
+      void engine.syncTrack(
+        track,
+        trackState,
+        nextSounds,
+        currentSnapshot.globalTempo,
+      );
+    }
+  },
+
   renameCustomSound: async (soundId: string, name: string) => {
     await renameCustomSoundStorage(soundId, name);
     setSnapshot((current) => ({
@@ -210,7 +338,7 @@ export const buildMixManagementActions = ({
     );
   },
 
-  saveMix: (name: string) => {
+  saveMix: (name: string, color: MixColorKey | null) => {
     const currentSnapshot = snapshotRef.current;
     const mix: SavedMix = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -223,6 +351,8 @@ export const buildMixManagementActions = ({
         ),
       ),
     };
+
+    if (color !== null) mix.color = color;
 
     const nextMixes = [mix, ...currentSnapshot.savedMixes].slice(0, MAX_SAVED_MIXES);
     persistSavedMixes(nextMixes);
@@ -240,18 +370,10 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = Object.fromEntries(
-      Object.entries(snapshotRef.current.trackStates).map(([id, state]) => [
-        id,
-        { ...state, isPlaying: false, isPreviewPlaying: false },
-      ]),
+    const nextTrackStates = buildMixTrackStates(
+      snapshotRef.current.trackStates,
+      mix,
     );
-    Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
-      nextTrackStates[trackId] = {
-        ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-        ...trackState,
-      };
-    });
 
     setActiveMixId(mixId);
     setSnapshot((current) => ({
@@ -303,6 +425,7 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => ({
       ...current,
       transportPlaying: false,
+      globalTempo: DEFAULT_GLOBAL_TEMPO,
       trackStates: Object.fromEntries(
         Object.entries(current.trackStates).map(([id, state]) => [
           id,
@@ -324,18 +447,10 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
 
-    const nextTrackStates = Object.fromEntries(
-      Object.entries(snapshotRef.current.trackStates).map(([id, state]) => [
-        id,
-        { ...state, isPlaying: false, isPreviewPlaying: false },
-      ]),
+    const nextTrackStates = buildMixTrackStates(
+      snapshotRef.current.trackStates,
+      mix,
     );
-    Object.entries(mix.trackStates).forEach(([trackId, trackState]) => {
-      nextTrackStates[trackId] = {
-        ...(nextTrackStates[trackId] ?? DEFAULT_SINGLE_TRACK_VALUES),
-        ...trackState,
-      };
-    });
 
     setSnapshot((current) => ({
       ...current,
@@ -363,22 +478,58 @@ export const buildMixManagementActions = ({
     setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
   },
 
-  renameMix: (mixId: string, name: string) => {
-    setSnapshot((current) => {
-      const nextMixes = current.savedMixes.map((m) =>
-        m.id === mixId ? { ...m, name } : m,
-      );
-      persistSavedMixes(nextMixes);
+  duplicateMix: (mixId: string) => {
+    const currentSnapshot = snapshotRef.current;
+    const source = currentSnapshot.savedMixes.find(
+      (entry) => entry.id === mixId,
+    );
+    if (!source) return;
 
-      return { ...current, savedMixes: nextMixes };
-    });
+    const duplicate: SavedMix = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: buildDuplicateMixName(source, currentSnapshot.savedMixes),
+      createdAt: Date.now(),
+      globalTempo: source.globalTempo,
+      trackStates: Object.fromEntries(
+        Object.entries(source.trackStates).map(([trackId, trackState]) => [
+          trackId,
+          { ...trackState },
+        ]),
+      ),
+    };
+
+    if (source.color !== undefined) duplicate.color = source.color;
+
+    const sourceIndex = currentSnapshot.savedMixes.findIndex(
+      (entry) => entry.id === mixId,
+    );
+    const nextMixes = [
+      ...currentSnapshot.savedMixes.slice(0, sourceIndex + 1),
+      duplicate,
+      ...currentSnapshot.savedMixes.slice(sourceIndex + 1),
+    ].slice(0, MAX_SAVED_MIXES);
+
+    persistSavedMixes(nextMixes);
+    setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
   },
 
-  toggleMixFavorite: (mixId: string) => {
+  updateMix: (mixId: string, patch: MixUpdate) => {
     setSnapshot((current) => {
-      const nextMixes = current.savedMixes.map((m) =>
-        m.id === mixId ? { ...m, isFavorite: !m.isFavorite } : m,
-      );
+      const nextMixes = current.savedMixes.map((m) => {
+        if (m.id !== mixId) return m;
+
+        const updated: SavedMix = { ...m };
+        if (patch.name !== undefined) updated.name = patch.name;
+        if (patch.color !== undefined) {
+          if (patch.color === null) {
+            delete updated.color;
+          } else {
+            updated.color = patch.color;
+          }
+        }
+
+        return updated;
+      });
       persistSavedMixes(nextMixes);
 
       return { ...current, savedMixes: nextMixes };

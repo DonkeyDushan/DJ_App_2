@@ -6,13 +6,13 @@ import type { SxProps, Theme } from '@mui/material';
 
 /** Save (overwrite) button. */
 export const saveButtonSx: SxProps<Theme> = {
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   fontFamily: 'Orbitron, monospace',
 };
 
 /** Save-as-new / confirm button — tinted with track color. */
 export const saveNewButtonSx = (color: string): SxProps<Theme> => ({
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   fontFamily: 'Orbitron, monospace',
   background: `linear-gradient(90deg, ${color}cc, ${color}88)`,
   color: '#000',
@@ -21,21 +21,21 @@ export const saveNewButtonSx = (color: string): SxProps<Theme> => ({
 
 /** Back button in save-new mode. */
 export const backButtonSx: SxProps<Theme> = {
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   color: 'text.disabled',
   mr: 'auto',
 };
 
 /** Rename button — leftmost destructive-adjacent action for non-original tracks. */
 export const renameButtonSx: SxProps<Theme> = {
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   fontFamily: 'Orbitron, monospace',
   color: 'text.secondary',
 };
 
 /** Delete button — destructive action for non-original tracks. */
 export const deleteButtonSx: SxProps<Theme> = {
-  fontSize: '0.7rem',
+  fontSize: '1rem',
   fontFamily: 'Orbitron, monospace',
   color: 'error.main',
   mr: 'auto',

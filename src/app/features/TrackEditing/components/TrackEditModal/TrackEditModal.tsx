@@ -8,8 +8,10 @@ import {
   Stack,
   Tooltip,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import RestoreIcon from '@mui/icons-material/Restore';
+import { Close } from 'pixelarticons/react/Close';
+import { Play } from 'pixelarticons/react/Play';
+import { Reload } from 'pixelarticons/react/Reload';
+import { Undo } from 'pixelarticons/react/Undo';
 
 import type {
   TrackCategory,
@@ -18,16 +20,22 @@ import type {
   TrackState,
 } from '../../../../core/types/trackData';
 import { STRINGS } from '../../../../strings';
+import { PixelIcon, PausePixelGlyph } from '../../../../components';
 import { useTrackEditState } from '../../hooks/useTrackEditState';
 import { TrackSlidersContent } from './components/TrackSlidersContent/TrackSlidersContent';
 import { PresetNameField } from './components/PresetNameField/PresetNameField';
 import { TrackSaveActions } from './components/TrackSaveActions/TrackSaveActions';
 import {
+  DEFAULT_TRACK_EQ,
+  DEFAULT_TRACK_FX_SEND,
+  DEFAULT_TRACK_SPEED,
+  DEFAULT_TRACK_VOLUME,
+} from '../../constants/trackEditDefaults';
+import {
   closeButtonSx,
-  colorDotSx,
-  dialogPaperSx,
-  dialogTitleSx,
   discardButtonSx,
+  previewButtonSx,
+  resetButtonSx,
 } from './TrackEditModal.styles';
 
 type TrackEditModalProps = {
@@ -35,6 +43,7 @@ type TrackEditModalProps = {
   track: TrackDefinition | null;
   trackState: TrackState | null;
   onClose: () => void;
+  onPlay: (trackId: string) => void;
   onSaveAsNew: (
     editedTrackId: string,
     name: string,
@@ -73,6 +82,7 @@ export const TrackEditModal = ({
   track,
   trackState,
   onClose,
+  onPlay,
   onSaveAsNew,
   onSaveOver,
   onSaveToTrack,
@@ -147,6 +157,28 @@ export const TrackEditModal = ({
     setDelaySend(original.delaySend);
   };
 
+  const handleResetToDefault = () => {
+    const defaults: TrackSavedSettings = {
+      volume: DEFAULT_TRACK_VOLUME,
+      speed: DEFAULT_TRACK_SPEED,
+      followsGlobalTempo: trackState.followsGlobalTempo,
+      eqLow: DEFAULT_TRACK_EQ,
+      eqMid: DEFAULT_TRACK_EQ,
+      eqHigh: DEFAULT_TRACK_EQ,
+      reverbSend: DEFAULT_TRACK_FX_SEND,
+      delaySend: DEFAULT_TRACK_FX_SEND,
+    };
+
+    onRestoreChanges(track.id, defaults);
+    setVolume(defaults.volume);
+    setSpeed(defaults.speed);
+    setEqLow(defaults.eqLow);
+    setEqMid(defaults.eqMid);
+    setEqHigh(defaults.eqHigh);
+    setReverbSend(defaults.reverbSend);
+    setDelaySend(defaults.delaySend);
+  };
+
   const handleCancel = () => {
     if (originalSettingsRef.current) {
       onRestoreChanges(track.id, originalSettingsRef.current);
@@ -175,7 +207,12 @@ export const TrackEditModal = ({
 
   const handleSaveOver = () => {
     if (!presetNameRef.current.trim()) return;
-    onSaveOver(track.id, presetNameRef.current.trim(), track.category, currentSettings);
+    onSaveOver(
+      track.id,
+      presetNameRef.current.trim(),
+      track.category,
+      currentSettings,
+    );
     setSaveNewMode(false);
     onClose();
   };
@@ -202,13 +239,34 @@ export const TrackEditModal = ({
     onClose();
   };
 
-  const handleVolumeChange = (v: number) => { setVolume(v); onVolumeChange(track.id, v); };
-  const handleSpeedChange = (v: number) => { setSpeed(v); onSpeedChange(track.id, v); };
-  const handleEqLowChange = (v: number) => { setEqLow(v); onEqChange(track.id, v, eqMid, eqHigh); };
-  const handleEqMidChange = (v: number) => { setEqMid(v); onEqChange(track.id, eqLow, v, eqHigh); };
-  const handleEqHighChange = (v: number) => { setEqHigh(v); onEqChange(track.id, eqLow, eqMid, v); };
-  const handleReverbChange = (v: number) => { setReverbSend(v); onEffectsChange(track.id, v, delaySend); };
-  const handleDelayChange = (v: number) => { setDelaySend(v); onEffectsChange(track.id, reverbSend, v); };
+  const handleVolumeChange = (v: number) => {
+    setVolume(v);
+    onVolumeChange(track.id, v);
+  };
+  const handleSpeedChange = (v: number) => {
+    setSpeed(v);
+    onSpeedChange(track.id, v);
+  };
+  const handleEqLowChange = (v: number) => {
+    setEqLow(v);
+    onEqChange(track.id, v, eqMid, eqHigh);
+  };
+  const handleEqMidChange = (v: number) => {
+    setEqMid(v);
+    onEqChange(track.id, eqLow, v, eqHigh);
+  };
+  const handleEqHighChange = (v: number) => {
+    setEqHigh(v);
+    onEqChange(track.id, eqLow, eqMid, v);
+  };
+  const handleReverbChange = (v: number) => {
+    setReverbSend(v);
+    onEffectsChange(track.id, v, delaySend);
+  };
+  const handleDelayChange = (v: number) => {
+    setDelaySend(v);
+    onEffectsChange(track.id, reverbSend, v);
+  };
 
   const S = STRINGS.trackEditModal;
 
@@ -216,28 +274,54 @@ export const TrackEditModal = ({
     <Dialog
       open={open}
       onClose={handleCancel}
-      maxWidth="xs"
-      fullWidth
-      slotProps={{ paper: { sx: dialogPaperSx(track.color) } }}
       data-testid="track-edit-modal"
+      slotProps={{ paper: { style: { minWidth: '540px' } } }}
     >
-      <DialogTitle sx={dialogTitleSx(track.color)}>
-        <Box sx={colorDotSx(track.color)} />
+      <DialogTitle>
         {S.title}
+        <Tooltip
+          title={trackState.isPreviewPlaying ? S.stopPreview : S.preview}
+        >
+          <IconButton
+            size="small"
+            onClick={() => onPlay(track.id)}
+            sx={previewButtonSx(trackState.isPreviewPlaying)}
+            data-testid="track-edit-preview"
+          >
+            {trackState.isPreviewPlaying ? (
+              <PixelIcon glyph={PausePixelGlyph} />
+            ) : (
+              <PixelIcon glyph={Play} />
+            )}
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={S.resetToDefault}>
+          <IconButton
+            size="small"
+            onClick={handleResetToDefault}
+            sx={resetButtonSx}
+            data-testid="track-edit-reset-default"
+          >
+            <PixelIcon glyph={Reload} />
+          </IconButton>
+        </Tooltip>
         <Tooltip title={S.discardChanges}>
-          <IconButton size="small" onClick={handleDiscardChanges} sx={discardButtonSx}>
-            <RestoreIcon fontSize="small" />
+          <IconButton
+            size="small"
+            onClick={handleDiscardChanges}
+            sx={discardButtonSx}
+          >
+            <PixelIcon glyph={Undo} />
           </IconButton>
         </Tooltip>
         <IconButton size="small" onClick={handleCancel} sx={closeButtonSx}>
-          <CloseIcon fontSize="small" />
+          <PixelIcon glyph={Close} />
         </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 0 }}>
         <Stack spacing={2}>
           <TrackSlidersContent
-            trackColor={track.color}
             volume={volume}
             speed={speed}
             eqLow={eqLow}

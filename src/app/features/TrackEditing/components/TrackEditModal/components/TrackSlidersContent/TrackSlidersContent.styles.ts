@@ -13,7 +13,7 @@ export const dividerSx: SxProps<Theme> = {
 /** Caption label above each slider group. */
 export const sectionLabelSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
-  color: 'text.disabled',
-  fontSize: '0.6rem',
+  color: 'common.white',
+  fontSize: '1rem',
   letterSpacing: '0.1em',
 };

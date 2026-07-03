@@ -5,8 +5,9 @@ export const headerRootSx: SxProps<Theme> = {
   alignItems: 'center',
   gap: 1.5,
   px: 1.5,
-  py: 1,
-  borderBottom: '1px solid rgba(255,255,255,0.06)',
+  py: 1.5,
+  borderBottom: '1px dashed',
+  borderColor: 'divider',
   flexShrink: 0,
   position: 'relative',
 };
@@ -19,7 +20,7 @@ export const tempoGroupSx: SxProps<Theme> = {
 
 export const bpmLabelSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
-  fontSize: '0.55rem',
+  fontSize: '0.875rem',
   fontWeight: 700,
   letterSpacing: '0.1em',
   color: 'text.secondary',
@@ -27,8 +28,8 @@ export const bpmLabelSx: SxProps<Theme> = {
 };
 
 export const bpmValueSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.85rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   color: 'primary.main',
   minWidth: '2.2rem',
   userSelect: 'none',

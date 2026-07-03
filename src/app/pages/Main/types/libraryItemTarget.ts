@@ -14,5 +14,4 @@ export type DeleteTarget =
 /** A library item targeted for renaming. */
 export type RenameTarget =
   | { kind: 'custom-sound'; id: string; name: string }
-  | { kind: 'mix'; id: string; name: string }
   | { kind: 'set'; id: string; name: string };

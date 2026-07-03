@@ -30,13 +30,13 @@ export interface TrackDefinition {
   name: string;
   kind: TrackKind;
   category: TrackCategory;
-  color: string;
   loopLengthSeconds: number;
   isFavorite?: boolean;
   savedSettings?: TrackSavedSettings;
   sourceTrackId?: string;
   preloadedSrc?: string;
   customSoundId?: string;
+  color: string;
 }
 
 export interface PreloadedAudioFile {

@@ -10,17 +10,10 @@ export const paperSx: SxProps<Theme> = {
   minWidth: '20rem',
 };
 
-/** Title typography style — Orbitron, small-caps look. */
-export const titleSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '0.75rem',
-  letterSpacing: '0.1em',
-};
-
 /** Monospace input for the name field. */
 export const inputSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.85rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   border: '1px solid rgba(255,255,255,0.15)',
   borderRadius: 1,
   px: 1,
@@ -31,14 +24,13 @@ export const inputSx: SxProps<Theme> = {
 
 /** Helper text below the input. */
 export const helperTextSx: SxProps<Theme> = {
-  fontFamily: 'Share Tech Mono, monospace',
-  fontSize: '0.6rem',
+  fontFamily: 'Mozilla Headline, monospace',
+  fontSize: '1rem',
   color: 'text.disabled',
   mt: 1,
 };
 
 /** Action button typography style. */
 export const buttonSx: SxProps<Theme> = {
-  fontFamily: 'Orbitron, monospace',
-  fontSize: '0.6rem',
+  fontSize: '1rem',
 };

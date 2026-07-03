@@ -6,11 +6,11 @@ export const rowSx: SxProps<Theme> = {
   gap: 2,
 };
 
-export const labelSx = (color: string | undefined): SxProps<Theme> => ({
+export const labelSx = (labelColor: string | undefined): SxProps<Theme> => ({
   fontFamily: 'Orbitron, monospace',
-  width: '3.25rem',
-  color: color ?? 'text.secondary',
-  fontSize: '0.65rem',
+  width: '4.25rem',
+  color: labelColor ?? 'text.secondary',
+  fontSize: '0.875rem',
   letterSpacing: '0.05em',
   flexShrink: 0,
 });
@@ -20,9 +20,9 @@ export const sliderSx = (color: string | undefined): SxProps<Theme> => ({
 });
 
 export const valueSx: SxProps<Theme> = {
-  width: '2.25rem',
+  width: '4.25rem',
   textAlign: 'right',
   color: 'text.disabled',
-  fontSize: '0.65rem',
+  fontSize: '0.875rem',
   flexShrink: 0,
 };

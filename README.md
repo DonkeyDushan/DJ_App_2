@@ -1,4 +1,4 @@
-# Neon Mixer
+# DJ APP TURBO 2000
 
 A browser-based DJ mixer built with React, TypeScript, and the Web Audio API.
 
@@ -62,3 +62,9 @@ Open [http://localhost:5173](http://localhost:5173).
 ## Editing UI text
 
 All user-visible strings (button labels, tooltips, dialog titles, etc.) are centralised in [src/strings.ts](src/strings.ts), organised by component.
+
+## Credits
+
+- Icons by [Pixelarticons](https://github.com/halfmage/pixelarticons) by Gerrit Halfmann, licensed under the MIT License.
+
+See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the full third-party license texts.

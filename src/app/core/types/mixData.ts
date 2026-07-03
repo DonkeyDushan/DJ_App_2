@@ -1,8 +1,9 @@
 /**
  * Core data types for saved mixes and mixer snapshots.
- * Used by Mixer and Session features.
+ * Used by Mixer and Set features.
  */
 
+import type { MixColorKey } from '../constants/mixColors';
 import type { TrackState } from './trackData';
 
 export interface CustomSoundRecord {
@@ -31,7 +32,16 @@ export interface SavedMix {
   createdAt: number;
   globalTempo: number;
   trackStates: Record<string, SavedMixTrackState>;
-  isFavorite?: boolean;
+  color?: MixColorKey;
+}
+
+/**
+ * Editable fields of a saved mix. A `null` color clears the accent;
+ * an omitted field leaves the current value untouched.
+ */
+export interface MixUpdate {
+  name?: string;
+  color?: MixColorKey | null;
 }
 
 export interface MixerSnapshot {

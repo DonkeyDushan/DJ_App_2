@@ -4,7 +4,9 @@
 
 import type { AudioEngine } from '../../../core/audio/audioEngine';
 import type { TrackCategory, TrackDefinition, TrackSavedSettings } from '../../../core/types/trackData';
-import type { MixerSnapshot } from '../../../core/types/mixData';
+import type { MixerSnapshot, MixUpdate } from '../../../core/types/mixData';
+import type { MixColorKey } from '../../../core/constants/mixColors';
+import type { TransitionKind } from '../../../core/types/transition';
 
 export type MixerActions = {
   toggleTrack: (trackId: string, enabled: boolean) => Promise<void>;
@@ -26,17 +28,29 @@ export type MixerActions = {
   toggleTransport: () => Promise<void>;
   restartTransport: () => Promise<void>;
   loadMixAndPlay: (mixId: string, offsetSeconds?: number) => Promise<void>;
+  transitionToMix: (
+    mixId: string,
+    kind: TransitionKind,
+    durationSeconds: number,
+    offsetSeconds?: number,
+  ) => Promise<void>;
   loadInitialData: () => Promise<void>;
   addCustomSound: (file: File) => Promise<void>;
   deleteCustomSound: (soundId: string) => Promise<void>;
   renameCustomSound: (soundId: string, name: string) => Promise<void>;
-  saveMix: (name: string) => void;
+  replaceCustomSound: (
+    soundId: string,
+    blob: Blob,
+    mimeType: string,
+  ) => Promise<void>;
+  saveMix: (name: string, color: MixColorKey | null) => void;
   loadMix: (mixId: string) => Promise<void>;
   overwriteMix: (mixId: string) => void;
   clearMix: () => Promise<void>;
   resetMix: () => Promise<void>;
   deleteMix: (mixId: string) => void;
-  renameMix: (mixId: string, name: string) => void;
+  duplicateMix: (mixId: string) => void;
+  updateMix: (mixId: string, patch: MixUpdate) => void;
   saveTrackPreset: (
     sourceTrackId: string,
     name: string,
@@ -52,7 +66,6 @@ export type MixerActions = {
   renameTrackPreset: (presetId: string, name: string) => void;
   toggleFavorite: (trackId: string) => void;
   saveTrackOverride: (trackId: string, settings: TrackSavedSettings) => void;
-  toggleMixFavorite: (mixId: string) => void;
 };
 
 export type MixerContextValue = {

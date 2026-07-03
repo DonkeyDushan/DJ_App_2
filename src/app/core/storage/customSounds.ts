@@ -4,6 +4,7 @@
  */
 
 import type { CustomSoundRecord } from '../types/mixData';
+import { markSessionDirty } from '../session/sessionDirtyStore';
 
 const sounds = () => window.djApp!.sounds!;
 
@@ -28,6 +29,7 @@ export const loadCustomSounds = async (): Promise<CustomSoundRecord[]> => {
 };
 
 export const addCustomSound = async (file: File): Promise<CustomSoundRecord> => {
+  markSessionDirty();
   const data = new Uint8Array(await file.arrayBuffer());
   const meta = await sounds().add(
     {
@@ -45,9 +47,21 @@ export const renameCustomSound = async (
   soundId: string,
   name: string,
 ): Promise<void> => {
+  markSessionDirty();
   await sounds().update(soundId, { name });
 };
 
+export const replaceCustomSound = async (
+  soundId: string,
+  blob: Blob,
+  mimeType: string,
+): Promise<void> => {
+  markSessionDirty();
+  const data = new Uint8Array(await blob.arrayBuffer());
+  await sounds().replace(soundId, data, { mimeType });
+};
+
 export const removeCustomSound = async (soundId: string): Promise<void> => {
+  markSessionDirty();
   await sounds().remove(soundId);
 };

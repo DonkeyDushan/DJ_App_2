@@ -1,21 +1,11 @@
 import React from 'react';
-import { Box, Divider, Stack, Typography } from '@mui/material';
+import { Box, Divider, Stack, Typography, useTheme } from '@mui/material';
 
 import { STRINGS } from '../../../../../../strings';
 import { SliderRow } from '../../../SliderRow/SliderRow';
 import { dividerSx, sectionLabelSx } from './TrackSlidersContent.styles';
 
-/** EQ slider colors — fixed per band. */
-const EQ_LOW_COLOR = '#40d9ff';
-const EQ_MID_COLOR = '#9f6bff';
-const EQ_HIGH_COLOR = '#ff8f4f';
-
-/** FX send slider colors — fixed per send. */
-const REVERB_COLOR = '#6cff9f';
-const DELAY_COLOR = '#ffd84f';
-
 type TrackSlidersContentProps = {
-  trackColor: string;
   volume: number;
   speed: number;
   eqLow: number;
@@ -33,7 +23,6 @@ type TrackSlidersContentProps = {
 };
 
 export const TrackSlidersContent = ({
-  trackColor,
   volume,
   speed,
   eqLow,
@@ -49,6 +38,8 @@ export const TrackSlidersContent = ({
   onReverbChange,
   onDelayChange,
 }: TrackSlidersContentProps): React.ReactElement => {
+  const theme = useTheme();
+
   const S = STRINGS.trackEditModal;
 
   return (
@@ -66,7 +57,8 @@ export const TrackSlidersContent = ({
             step={0.05}
             onChange={onVolumeChange}
             valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
-            color={trackColor}
+            color={theme.palette.blue.main}
+            labelColor={theme.palette.blue.light}
           />
           <SliderRow
             label={S.speed}
@@ -76,6 +68,8 @@ export const TrackSlidersContent = ({
             step={0.05}
             onChange={onSpeedChange}
             valueLabelFormat={(v) => `${v.toFixed(2)}x`}
+            color={theme.palette.teal.main}
+            labelColor={theme.palette.teal.light}
           />
         </Stack>
       </Box>
@@ -95,7 +89,8 @@ export const TrackSlidersContent = ({
             step={0.5}
             onChange={onEqLowChange}
             valueLabelFormat={(v) => `${v > 0 ? '+' : ''}${v} dB`}
-            color={EQ_LOW_COLOR}
+            color={theme.palette.yellow.main}
+            labelColor={theme.palette.yellow.light}
           />
           <SliderRow
             label={S.mid}
@@ -105,7 +100,8 @@ export const TrackSlidersContent = ({
             step={0.5}
             onChange={onEqMidChange}
             valueLabelFormat={(v) => `${v > 0 ? '+' : ''}${v} dB`}
-            color={EQ_MID_COLOR}
+            color={theme.palette.orange.main}
+            labelColor={theme.palette.orange.light}
           />
           <SliderRow
             label={S.high}
@@ -115,7 +111,8 @@ export const TrackSlidersContent = ({
             step={0.5}
             onChange={onEqHighChange}
             valueLabelFormat={(v) => `${v > 0 ? '+' : ''}${v} dB`}
-            color={EQ_HIGH_COLOR}
+            color={theme.palette.red.main}
+            labelColor={theme.palette.red.light}
           />
         </Stack>
       </Box>
@@ -135,7 +132,8 @@ export const TrackSlidersContent = ({
             step={0.05}
             onChange={onReverbChange}
             valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
-            color={REVERB_COLOR}
+            color={theme.palette.pink.main}
+            labelColor={theme.palette.pink.light}
           />
           <SliderRow
             label={S.delay}
@@ -145,7 +143,8 @@ export const TrackSlidersContent = ({
             step={0.05}
             onChange={onDelayChange}
             valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
-            color={DELAY_COLOR}
+            color={theme.palette.purple.main}
+            labelColor={theme.palette.purple.light}
           />
         </Stack>
       </Box>

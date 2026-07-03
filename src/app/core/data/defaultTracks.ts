@@ -33,7 +33,6 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     name: 'DRUMS',
     kind: 'demo',
     category: 'drums',
-    color: '#ff4fd8',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/drums.wav',
   },
@@ -42,7 +41,6 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     name: 'BASS',
     kind: 'demo',
     category: 'bass',
-    color: '#40d9ff',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/bass.wav',
   },
@@ -51,7 +49,6 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     name: 'KEYS',
     kind: 'demo',
     category: 'keys',
-    color: '#9f6bff',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/keys.wav',
   },
@@ -60,7 +57,6 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     name: 'ARP',
     kind: 'demo',
     category: 'arp',
-    color: '#ff8f4f',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/arp.wav',
   },
@@ -69,22 +65,10 @@ export const DEFAULT_TRACKS: TrackDefinition[] = [
     name: 'PAD',
     kind: 'demo',
     category: 'pad',
-    color: '#6cff9f',
     loopLengthSeconds: 8,
     preloadedSrc: 'audio/preloaded/pad.wav',
   },
 ];
-
-/** Colour palette cycling for dynamically loaded preloaded audio files. */
-const PRELOADED_COLORS = Object.freeze([
-  '#ff4fd8',
-  '#40d9ff',
-  '#9f6bff',
-  '#ff8f4f',
-  '#6cff9f',
-  '#ffd84f',
-  '#68f0ff',
-]);
 
 const normalizeFileName = (fileName: string): string =>
   fileName.replace(/\.[^.]+$/, '');
@@ -109,7 +93,6 @@ export const createPreloadedTrackDefinitions = (
       name: displayName,
       kind: 'demo',
       category: detectCategory(file.fileName),
-      color: PRELOADED_COLORS[index % PRELOADED_COLORS.length],
       loopLengthSeconds: 8,
       preloadedSrc: file.src,
     };
@@ -138,14 +121,12 @@ export const createDefaultTrackState = (): Record<string, TrackState> =>
 export const createCustomTrackDefinition = (
   id: string,
   name: string,
-  color: string,
   loopLengthSeconds: number,
 ): TrackDefinition => ({
   id,
   name,
   kind: 'custom',
   category: 'custom',
-  color,
   loopLengthSeconds,
   customSoundId: id,
 });

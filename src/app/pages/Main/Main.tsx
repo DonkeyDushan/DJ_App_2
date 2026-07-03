@@ -2,19 +2,34 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
-import { useMixer, MixerHeader, TrackGrid } from '../../features/Mixer';
-import { useSession, SetSection, SetLibrary } from '../../features/Session';
-import { CustomSoundsDialog } from '../../features/TrackEditing';
+import {
+  useMixer,
+  MixerHeader,
+  TrackGrid,
+  MixLibrary,
+  MixEditDialog,
+} from '../../features/Mixer';
+import { useSet, SetSection, SetLibrary, SetExportDialog } from '../../features/Set';
+import type { MixColorKey } from '../../core';
+import {
+  useSessionDirty,
+  activateSessionDirty,
+  clearSessionDirty,
+  saveSessionToFile,
+  loadSessionFromFile,
+  startNewSession,
+} from '../../core';
+import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
 import {
   TopBar,
   SaveLoadManager,
   ConfirmDialog,
   NameInputDialog,
 } from '../../components';
-import { SaveMixDialog } from './components/SaveMixDialog/SaveMixDialog';
-import { MixLibrarySidebar } from './components/MixLibrarySidebar/MixLibrarySidebar';
 import { useSetPlayback } from './hooks/useSetPlayback';
+import { useSetExport } from './hooks/useSetExport';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
+import type { MixDialogState } from './types/mixEditTarget';
 
 /** Confirmation message shown for each kind of deletable library item. */
 const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
@@ -27,28 +42,54 @@ const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
 /** Dialog title shown for each kind of renameable library item. */
 const RENAME_TITLE_BY_TYPE: Record<RenameTarget['kind'], string> = {
   'custom-sound': STRINGS.renameDialog.renameSoundTitle,
-  mix: STRINGS.renameDialog.renameMixTitle,
   set: STRINGS.renameDialog.renameSetTitle,
 };
 
+/**
+ * Delay after mount before the session dirty tracker is armed. Must exceed the
+ * active-state persist debounce (500 ms) plus the initial async hydration so
+ * the hydration write-back is not mistaken for a user change. Cleared again on
+ * activation as a belt-and-braces guard.
+ */
+const SESSION_DIRTY_ACTIVATION_DELAY_MS = 1500;
+
+/** Which discard-confirmation prompt the session controls are awaiting. */
+type SessionConfirmKind = 'load' | 'new';
+
 export const Main = (): React.ReactElement => {
-  const { snapshot, tracks, activeMixId, actions: mixerActions } = useMixer();
+  const { snapshot, tracks, activeMixId, engine, actions: mixerActions } = useMixer();
   const {
-    activeSession,
-    sessions,
+    activeSet,
+    sets,
     setIsPlaying,
     currentSlotIndex,
     slotOffsetSeconds,
     playingMixId,
     hasUnsavedChanges,
-    actions: sessionActions,
-  } = useSession();
+    actions: setActions,
+  } = useSet();
+
+  const isDirty = useSessionDirty();
 
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
-  const [saveNewMixOpen, setSaveNewMixOpen] = useState(false);
-  const [mixDialogInitialName, setMixDialogInitialName] = useState('');
+  const [trimSoundId, setTrimSoundId] = useState<string | null>(null);
+  const [mixDialog, setMixDialog] = useState<MixDialogState | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
+  const [sessionConfirm, setSessionConfirm] = useState<SessionConfirmKind | null>(
+    null,
+  );
+
+  // Arm the session dirty tracker only after initial hydration settles, so the
+  // restored state is treated as a clean, freshly opened session.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      activateSessionDirty();
+      clearSessionDirty();
+    }, SESSION_DIRTY_ACTIVATION_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
@@ -58,8 +99,8 @@ export const Main = (): React.ReactElement => {
   soundsLookupRef.current = snapshot.customSounds;
   const mixesLookupRef = useRef(snapshot.savedMixes);
   mixesLookupRef.current = snapshot.savedMixes;
-  const sessionsLookupRef = useRef(sessions);
-  sessionsLookupRef.current = sessions;
+  const setsLookupRef = useRef(sets);
+  setsLookupRef.current = sets;
 
   const pendingActionsRef = useRef<{
     presetId: string;
@@ -89,37 +130,90 @@ export const Main = (): React.ReactElement => {
     setIsPlaying,
     currentSlotIndex,
     slotOffsetSeconds,
-    activeSession,
+    activeSet,
     mixerActions,
-    sessionActions,
+    setActions,
   });
+
+  const { isExporting, startExport, cancelExport } = useSetExport({
+    engine,
+    activeSet,
+    setIsPlaying,
+    startSetPlayback: setActions.startSetPlayback,
+    stopSetPlayback: setActions.stopSetPlayback,
+    toggleTransport: mixerActions.toggleTransport,
+  });
+
+  const handleExportSet = useCallback(() => void startExport(), [startExport]);
+
+  const handleSaveSession = useCallback(() => void saveSessionToFile(), []);
+
+  const performLoadSession = useCallback(async () => {
+    const result = await loadSessionFromFile();
+    if (result.loaded) {
+      window.location.reload();
+
+      return;
+    }
+
+    if (result.error) {
+      window.alert(STRINGS.session.loadFailed);
+    }
+  }, []);
+
+  const performNewSession = useCallback(async () => {
+    await startNewSession();
+    window.location.reload();
+  }, []);
+
+  const handleLoadSession = useCallback(() => {
+    if (isDirty) {
+      setSessionConfirm('load');
+
+      return;
+    }
+
+    void performLoadSession();
+  }, [isDirty, performLoadSession]);
+
+  const handleNewSession = useCallback(() => {
+    if (isDirty) {
+      setSessionConfirm('new');
+
+      return;
+    }
+
+    void performNewSession();
+  }, [isDirty, performNewSession]);
+
+  const handleConfirmSession = useCallback(() => {
+    const action = sessionConfirm;
+    setSessionConfirm(null);
+
+    if (action === 'load') {
+      void performLoadSession();
+    } else if (action === 'new') {
+      void performNewSession();
+    }
+  }, [sessionConfirm, performLoadSession, performNewSession]);
+
+  const handleCloseSessionConfirm = useCallback(() => setSessionConfirm(null), []);
 
   const handleSave = useCallback(() => {
     const mixId = activeMixIdRef.current;
     if (mixId) {
       mixerActions.overwriteMix(mixId);
     } else {
-      setMixDialogInitialName('');
-      setSaveNewMixOpen(true);
+      setMixDialog({ kind: 'create', initialName: '' });
     }
   }, []);
 
   const handleSaveNew = useCallback(() => {
-    setMixDialogInitialName(STRINGS.saveLoadManager.defaultMixName);
-    setSaveNewMixOpen(true);
+    setMixDialog({
+      kind: 'create',
+      initialName: STRINGS.saveLoadManager.defaultMixName,
+    });
   }, []);
-
-  const handleConfirmSaveNew = useCallback((name: string) => {
-    if (name.trim()) {
-      mixerActions.saveMix(name.trim());
-    }
-    setSaveNewMixOpen(false);
-  }, []);
-
-  const handleCloseSaveMixDialog = useCallback(
-    () => setSaveNewMixOpen(false),
-    [],
-  );
   const handleOpenCustomSounds = useCallback(
     () => setCustomSoundsOpen(true),
     [],
@@ -197,6 +291,24 @@ export const Main = (): React.ReactElement => {
     });
   }, []);
 
+  const requestTrimSound = useCallback((soundId: string) => {
+    setTrimSoundId(soundId);
+  }, []);
+
+  const handleCloseTrim = useCallback(() => setTrimSoundId(null), []);
+
+  const handleSaveTrim = useCallback(
+    (soundId: string, blob: Blob, mimeType: string) => {
+      mixerActions
+        .replaceCustomSound(soundId, blob, mimeType)
+        .then(() => setTrimSoundId(null))
+        .catch((error: unknown) => {
+          console.error('[trim] Failed to save trimmed sound', error);
+        });
+    },
+    [mixerActions],
+  );
+
   const requestRenameSound = useCallback((soundId: string) => {
     const sound = soundsLookupRef.current.find((s) => s.id === soundId);
     setRenameTarget({
@@ -206,32 +318,52 @@ export const Main = (): React.ReactElement => {
     });
   }, []);
 
-  const requestDeleteMix = useCallback((mixId: string) => {
+  const requestEditMix = useCallback((mixId: string) => {
     const mix = mixesLookupRef.current.find((m) => m.id === mixId);
-    setDeleteTarget({ kind: 'mix', id: mixId, name: mix?.name ?? mixId });
+    if (!mix) return;
+
+    setMixDialog({ kind: 'edit', id: mixId, name: mix.name, color: mix.color ?? null });
   }, []);
 
-  const requestRenameMix = useCallback((mixId: string) => {
-    const mix = mixesLookupRef.current.find((m) => m.id === mixId);
-    setRenameTarget({ kind: 'mix', id: mixId, name: mix?.name ?? mixId });
-  }, []);
-
-  const requestDeleteSet = useCallback((sessionId: string) => {
-    const session = sessionsLookupRef.current.find((s) => s.id === sessionId);
+  const requestDeleteSet = useCallback((setId: string) => {
+    const set = setsLookupRef.current.find((s) => s.id === setId);
     setDeleteTarget({
       kind: 'set',
-      id: sessionId,
-      name: session?.name ?? sessionId,
+      id: setId,
+      name: set?.name ?? setId,
     });
   }, []);
 
-  const requestRenameSet = useCallback((sessionId: string) => {
-    const session = sessionsLookupRef.current.find((s) => s.id === sessionId);
-    setRenameTarget({ kind: 'set', id: sessionId, name: session?.name ?? '' });
+  const requestRenameSet = useCallback((setId: string) => {
+    const set = setsLookupRef.current.find((s) => s.id === setId);
+    setRenameTarget({ kind: 'set', id: setId, name: set?.name ?? '' });
   }, []);
 
   const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
   const handleCloseRename = useCallback(() => setRenameTarget(null), []);
+  const handleCloseMixDialog = useCallback(() => setMixDialog(null), []);
+
+  const handleSaveMixDialog = useCallback(
+    (name: string, color: MixColorKey | null) => {
+      if (!mixDialog) return;
+
+      if (mixDialog.kind === 'create') {
+        mixerActions.saveMix(name, color);
+      } else {
+        mixerActions.updateMix(mixDialog.id, { name, color });
+      }
+
+      setMixDialog(null);
+    },
+    [mixDialog, mixerActions],
+  );
+
+  const handleDeleteFromMixEdit = useCallback(() => {
+    if (mixDialog?.kind === 'edit')
+      setDeleteTarget({ kind: 'mix', id: mixDialog.id, name: mixDialog.name });
+
+    setMixDialog(null);
+  }, [mixDialog]);
 
   const handleConfirmDelete = useCallback(() => {
     if (!deleteTarget) return;
@@ -247,14 +379,14 @@ export const Main = (): React.ReactElement => {
         mixerActions.deleteMix(deleteTarget.id);
         break;
       case 'set':
-        sessionActions.deleteSession(deleteTarget.id);
+        setActions.deleteSet(deleteTarget.id);
         break;
       default:
         break;
     }
 
     setDeleteTarget(null);
-  }, [deleteTarget, mixerActions, sessionActions]);
+  }, [deleteTarget, mixerActions, setActions]);
 
   const handleConfirmRename = useCallback(
     (name: string) => {
@@ -264,11 +396,8 @@ export const Main = (): React.ReactElement => {
         case 'custom-sound':
           void mixerActions.renameCustomSound(renameTarget.id, name);
           break;
-        case 'mix':
-          mixerActions.renameMix(renameTarget.id, name);
-          break;
         case 'set':
-          sessionActions.renameSession(renameTarget.id, name);
+          setActions.renameSet(renameTarget.id, name);
           break;
         default:
           break;
@@ -276,7 +405,7 @@ export const Main = (): React.ReactElement => {
 
       setRenameTarget(null);
     },
-    [renameTarget, mixerActions, sessionActions],
+    [renameTarget, mixerActions, setActions],
   );
 
   return (
@@ -288,20 +417,24 @@ export const Main = (): React.ReactElement => {
         overflow: 'hidden',
       }}
     >
-      <TopBar />
+      <TopBar
+        isDirty={isDirty}
+        onSaveSession={handleSaveSession}
+        onLoadSession={handleLoadSession}
+        onNewSession={handleNewSession}
+      />
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <MixLibrarySidebar
+        <MixLibrary
           mixes={snapshot.savedMixes}
           activeMixId={activeMixId}
           playingMixId={playingMixId}
           isSetPlaybackActive={setIsPlaying}
-          onToggleFavorite={mixerActions.toggleMixFavorite}
-          onAddToTimeline={sessionActions.addSlot}
+          onAddToTimeline={setActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
-          onRenameMix={requestRenameMix}
-          onDeleteMix={requestDeleteMix}
+          onEditMix={requestEditMix}
+          onDuplicateMix={mixerActions.duplicateMix}
         />
 
         <Box
@@ -329,7 +462,7 @@ export const Main = (): React.ReactElement => {
           <Box
             sx={{
               flex: 1,
-              overflow: 'auto',
+              overflow: 'hidden',
               px: 1.5,
               py: 1,
               pointerEvents: setIsPlaying ? 'none' : undefined,
@@ -402,35 +535,39 @@ export const Main = (): React.ReactElement => {
         sx={{
           display: 'flex',
           flex: 0.6,
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <SetLibrary
-          sessions={sessions}
-          activeSessionId={activeSession.id}
-          isSetPlaybackActive={setIsPlaying}
-          onLoad={sessionActions.loadSession}
+          sets={sets}
+          activeSetId={activeSet.id}
+          onLoad={setActions.loadSet}
           onDelete={requestDeleteSet}
           onRename={requestRenameSet}
-          onNewSet={sessionActions.newSession}
+          onNewSet={setActions.newSet}
         />
 
         <SetSection
-          activeSession={activeSession}
+          activeSet={activeSet}
           mixes={snapshot.savedMixes}
-          tracks={tracks}
           isSetPlaying={setIsPlaying}
           currentSlotIndex={currentSlotIndex}
           hasUnsavedChanges={hasUnsavedChanges}
+          isExporting={isExporting}
           onPlayPause={handleSetPlayPause}
-          onSaveSet={sessionActions.saveSession}
-          onResetSet={sessionActions.resetSession}
-          onSetSessionName={sessionActions.setSessionName}
-          onSetTotalDuration={sessionActions.setTotalDuration}
-          onRemoveSlot={sessionActions.removeSlot}
-          onDuplicateSlot={sessionActions.duplicateSlot}
-          onSetSlotDuration={sessionActions.setSlotDuration}
-          onReorderSlots={sessionActions.reorderSlots}
+          onSaveSet={setActions.saveSet}
+          onResetSet={setActions.resetSet}
+          onExportSet={handleExportSet}
+          onUpdateSetName={setActions.updateSetName}
+          onSetTotalDuration={setActions.setTotalDuration}
+          onRemoveSlot={setActions.removeSlot}
+          onDuplicateSlot={setActions.duplicateSlot}
+          onSetSlotDuration={setActions.setSlotDuration}
+          onSetSlotTransitionKind={setActions.setSlotTransitionKind}
+          onSetSlotTransitionDuration={setActions.setSlotTransitionDuration}
+          onSetDefaultTransition={setActions.updateSetDefaultTransition}
+          onReorderSlots={setActions.reorderSlots}
           onSeekSlot={handleSeek}
         />
       </Box>
@@ -442,14 +579,20 @@ export const Main = (): React.ReactElement => {
         onUpload={handleUploadSound}
         onDelete={requestDeleteSound}
         onRename={requestRenameSound}
+        onTrim={requestTrimSound}
       />
 
-      <SaveMixDialog
-        open={saveNewMixOpen}
-        initialName={mixDialogInitialName}
-        onConfirm={handleConfirmSaveNew}
-        onClose={handleCloseSaveMixDialog}
+      <SoundTrimDialog
+        open={trimSoundId !== null}
+        sound={
+          trimSoundId !== null
+            ? snapshot.customSounds.find((s) => s.id === trimSoundId) ?? null
+            : null
+        }
+        onClose={handleCloseTrim}
+        onSave={handleSaveTrim}
       />
+
 
       {/* Legacy SaveLoadManager kept for mix load only */}
       <SaveLoadManager
@@ -457,7 +600,7 @@ export const Main = (): React.ReactElement => {
         loadOpen={false}
         mixes={snapshot.savedMixes}
         onClose={() => {}}
-        onSave={(name) => mixerActions.saveMix(name)}
+        onSave={(name) => mixerActions.saveMix(name, null)}
         onLoad={(mixId) => void mixerActions.loadMix(mixId)}
         onDelete={(mixId) => mixerActions.deleteMix(mixId)}
       />
@@ -483,6 +626,36 @@ export const Main = (): React.ReactElement => {
         onConfirm={handleConfirmRename}
         onClose={handleCloseRename}
       />
+
+      <MixEditDialog
+        open={mixDialog !== null}
+        mode={mixDialog?.kind ?? 'create'}
+        initialName={mixDialog?.kind === 'edit' ? mixDialog.name : (mixDialog?.initialName ?? '')}
+        initialColor={mixDialog?.kind === 'edit' ? mixDialog.color : null}
+        onSave={handleSaveMixDialog}
+        onDelete={mixDialog?.kind === 'edit' ? handleDeleteFromMixEdit : undefined}
+        onClose={handleCloseMixDialog}
+      />
+
+      <ConfirmDialog
+        open={sessionConfirm !== null}
+        title={STRINGS.session.unsavedTitle}
+        message={
+          sessionConfirm === 'new'
+            ? STRINGS.session.newMessage
+            : STRINGS.session.loadMessage
+        }
+        confirmLabel={
+          sessionConfirm === 'new'
+            ? STRINGS.session.newConfirm
+            : STRINGS.session.loadConfirm
+        }
+        cancelLabel={STRINGS.session.cancel}
+        onConfirm={handleConfirmSession}
+        onClose={handleCloseSessionConfirm}
+      />
+
+      <SetExportDialog open={isExporting} onCancel={cancelExport} />
     </Box>
   );
 };

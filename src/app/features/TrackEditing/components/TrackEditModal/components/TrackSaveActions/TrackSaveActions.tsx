@@ -1,11 +1,12 @@
 import React from 'react';
 import { Button, DialogActions, IconButton, Tooltip } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import SaveIcon from '@mui/icons-material/Save';
+import { PenSquare } from 'pixelarticons/react/PenSquare';
+import { PlusBox } from 'pixelarticons/react/PlusBox';
+import { Save } from 'pixelarticons/react/Save';
+import { Trash } from 'pixelarticons/react/Trash';
 
 import { STRINGS } from '../../../../../../strings';
+import { PixelIcon } from '../../../../../../components';
 import {
   backButtonSx,
   deleteButtonSx,
@@ -63,7 +64,7 @@ export const TrackSaveActions = ({
         <Button
           variant="contained"
           size="small"
-          startIcon={<DriveFileRenameOutlineIcon />}
+          startIcon={<PixelIcon glyph={PenSquare} />}
           onClick={onConfirmRename}
           disabled={!presetNameValid}
           sx={saveNewButtonSx(trackColor)}
@@ -90,7 +91,7 @@ export const TrackSaveActions = ({
             sx={deleteButtonSx}
             data-testid="track-edit-delete"
           >
-            <DeleteOutlineIcon />
+            <PixelIcon glyph={Trash} />
           </IconButton>
         </Tooltip>
       )}
@@ -102,7 +103,7 @@ export const TrackSaveActions = ({
             sx={renameButtonSx}
             data-testid="track-edit-rename"
           >
-            <DriveFileRenameOutlineIcon />
+            <PixelIcon glyph={PenSquare} />
           </IconButton>
         </Tooltip>
       )}
@@ -114,7 +115,7 @@ export const TrackSaveActions = ({
           <Button
             variant="outlined"
             size="small"
-            startIcon={<SaveIcon />}
+            startIcon={<PixelIcon glyph={Save} />}
             onClick={onSave}
             color="secondary"
             sx={saveButtonSx}
@@ -129,7 +130,7 @@ export const TrackSaveActions = ({
           <Button
             variant="contained"
             size="small"
-            startIcon={<AddCircleOutlineIcon />}
+            startIcon={<PixelIcon glyph={PlusBox} />}
             onClick={onSaveNewClick}
             sx={saveNewButtonSx(trackColor)}
           >
@@ -140,7 +141,7 @@ export const TrackSaveActions = ({
         <Button
           variant="contained"
           size="small"
-          startIcon={<AddCircleOutlineIcon />}
+          startIcon={<PixelIcon glyph={PlusBox} />}
           onClick={onConfirmSaveNew}
           disabled={!presetNameValid}
           sx={saveNewButtonSx(trackColor)}

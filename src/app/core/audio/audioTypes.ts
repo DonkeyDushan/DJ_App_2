@@ -15,6 +15,18 @@ export type PlaybackHandle = {
   oneShot: boolean;
 };
 
+/**
+ * One independent playback bus. Two decks let an outgoing and an incoming mix
+ * play at once so the engine can crossfade between them. Each deck owns its
+ * gain (the fader), its active handles, and its own loop clock (`startTime`)
+ * for phase-aligned loop offsets.
+ */
+export type PlaybackDeck = {
+  gain: GainNode | null;
+  handles: Map<string, Set<PlaybackHandle>>;
+  startTime: number;
+};
+
 /** Snapshot of whether a track is playing and/or being previewed. */
 export type PlaybackState = {
   isPlaying: boolean;

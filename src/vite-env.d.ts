@@ -23,8 +23,21 @@ interface Window {
         id: string,
         patch: Partial<Omit<SoundMeta, 'id'>>,
       ) => Promise<SoundMeta | null>;
+      replace: (
+        id: string,
+        data: Uint8Array,
+        patch?: Partial<Omit<SoundMeta, 'id'>>,
+      ) => Promise<SoundMeta | null>;
       remove: (id: string) => Promise<void>;
       read: (id: string) => Promise<Uint8Array | null>;
+    };
+    session?: {
+      save: () => Promise<{ saved: boolean; path?: string }>;
+      load: () => Promise<{ loaded: boolean; error?: string }>;
+      new: () => Promise<void>;
+    };
+    files?: {
+      saveAudio: (defaultName: string, data: Uint8Array) => Promise<boolean>;
     };
   };
 }
