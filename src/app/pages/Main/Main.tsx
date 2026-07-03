@@ -20,7 +20,7 @@ import {
   startNewSession,
 } from '../../core';
 import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
-import { useTutorial } from '../../features/Tutorial';
+import { useTutorial, useTutorialAutoStart } from '../../features/Tutorial';
 import {
   TopBar,
   SaveLoadManager,
@@ -83,16 +83,35 @@ export const Main = (): React.ReactElement => {
     null,
   );
 
+  // Flips true once initial hydration has settled, gating any check that must
+  // observe the fully loaded session rather than the empty default state.
+  const [isSessionSettled, setIsSessionSettled] = useState(false);
+
   // Arm the session dirty tracker only after initial hydration settles, so the
   // restored state is treated as a clean, freshly opened session.
   useEffect(() => {
     const timer = setTimeout(() => {
       activateSessionDirty();
       clearSessionDirty();
+      setIsSessionSettled(true);
     }, SESSION_DIRTY_ACTIVATION_DELAY_MS);
 
     return () => clearTimeout(timer);
   }, []);
+
+  // A "clear" session: nothing saved and nothing in progress. The mixer always
+  // ships default tracks, so those are ignored; only user-created content and
+  // active edits count. Used to auto-launch the tutorial for first-time users.
+  const isSessionEmpty =
+    snapshot.savedMixes.length === 0 &&
+    snapshot.customSounds.length === 0 &&
+    sets.length === 0 &&
+    activeSet.slots.length === 0 &&
+    activeMixId === null &&
+    !tracks.some((track) => track.sourceTrackId != null) &&
+    !Object.values(snapshot.trackStates).some((state) => state.enabled);
+
+  useTutorialAutoStart(isSessionSettled && isSessionEmpty);
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.

@@ -38,7 +38,7 @@ export const useTargetRect = (selector: string | null): TargetRect | null => {
     if (selector === null) {
       setRect(null);
 
-      return;
+      return undefined;
     }
 
     const element = document.querySelector(selector);
@@ -46,7 +46,7 @@ export const useTargetRect = (selector: string | null): TargetRect | null => {
     if (element === null) {
       setRect(null);
 
-      return;
+      return undefined;
     }
 
     element.setAttribute(HIGHLIGHT_ATTRIBUTE, 'true');

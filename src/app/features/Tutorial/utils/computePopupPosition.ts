@@ -1,4 +1,5 @@
 import {
+  POPUP_ESTIMATED_HEIGHT_PX,
   POPUP_GAP_PX,
   POPUP_WIDTH_PX,
   VIEWPORT_MARGIN_PX,
@@ -7,14 +8,13 @@ import type { TargetRect } from '../types/targetRect';
 import type { TutorialPlacement } from '../types/tutorialStep';
 
 /**
- * Absolute geometry for the popup card, in viewport pixels. `transform` shifts
- * the card relative to the `(top, left)` anchor so the same anchor point can
- * represent different edges (e.g. the card's right edge for a `left` placement).
+ * Absolute viewport position of the popup card's top-left corner, in pixels.
+ * Already clamped inside the viewport, so it is applied directly with no
+ * transform.
  */
 export type PopupPosition = {
   readonly top: number;
   readonly left: number;
-  readonly transform: string;
 };
 
 /** Clamps `value` into the inclusive `[min, max]` range. */
@@ -22,62 +22,60 @@ const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
 
 /**
- * Places a centered, target-less popup in the middle of the viewport — used for
- * intro / outro steps.
- */
-const centeredPosition = (): PopupPosition => ({
-  top: window.innerHeight / 2,
-  left: window.innerWidth / 2,
-  transform: 'translate(-50%, -50%)',
-});
-
-/**
- * Computes where to render the instruction popup for a given target rect and
- * placement. Horizontal anchors (top/bottom) are clamped so the card's half
- * width stays on screen; vertical anchors (left/right) are clamped likewise.
- * When there is no rect (`null`) or a `center` placement, the popup is centered.
+ * Computes the top-left corner at which to render the instruction popup for a
+ * given target rect and placement, then clamps it so the whole card stays
+ * within the viewport margins. Works from the card's estimated size, so edge
+ * placements against large targets (a full-height panel, the whole track grid)
+ * never fall off screen. A `null` rect or `center` placement centers the card.
  */
 export const computePopupPosition = (
   rect: TargetRect | null,
   placement: TutorialPlacement,
 ): PopupPosition => {
+  const width = POPUP_WIDTH_PX;
+  const height = POPUP_ESTIMATED_HEIGHT_PX;
+
+  const maxLeft = window.innerWidth - VIEWPORT_MARGIN_PX - width;
+  const maxTop = window.innerHeight - VIEWPORT_MARGIN_PX - height;
+
+  const centeredLeft = (window.innerWidth - width) / 2;
+  const centeredTop = (window.innerHeight - height) / 2;
+
   if (rect === null || placement === 'center') {
-    return centeredPosition();
+    return { top: centeredTop, left: centeredLeft };
   }
 
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
-  const halfWidth = POPUP_WIDTH_PX / 2;
 
-  const minCenterX = VIEWPORT_MARGIN_PX + halfWidth;
-  const maxCenterX = window.innerWidth - VIEWPORT_MARGIN_PX - halfWidth;
+  let top: number;
+  let left: number;
 
   switch (placement) {
     case 'top':
-      return {
-        top: rect.top - POPUP_GAP_PX,
-        left: clamp(centerX, minCenterX, maxCenterX),
-        transform: 'translate(-50%, -100%)',
-      };
+      top = rect.top - POPUP_GAP_PX - height;
+      left = centerX - width / 2;
+      break;
     case 'bottom':
-      return {
-        top: rect.top + rect.height + POPUP_GAP_PX,
-        left: clamp(centerX, minCenterX, maxCenterX),
-        transform: 'translate(-50%, 0)',
-      };
+      top = rect.top + rect.height + POPUP_GAP_PX;
+      left = centerX - width / 2;
+      break;
     case 'left':
-      return {
-        top: centerY,
-        left: rect.left - POPUP_GAP_PX,
-        transform: 'translate(-100%, -50%)',
-      };
+      top = centerY - height / 2;
+      left = rect.left - POPUP_GAP_PX - width;
+      break;
     case 'right':
-      return {
-        top: centerY,
-        left: rect.left + rect.width + POPUP_GAP_PX,
-        transform: 'translate(0, -50%)',
-      };
+      top = centerY - height / 2;
+      left = rect.left + rect.width + POPUP_GAP_PX;
+      break;
     default:
-      return centeredPosition();
+      top = centeredTop;
+      left = centeredLeft;
+      break;
   }
+
+  return {
+    top: clamp(top, VIEWPORT_MARGIN_PX, Math.max(VIEWPORT_MARGIN_PX, maxTop)),
+    left: clamp(left, VIEWPORT_MARGIN_PX, Math.max(VIEWPORT_MARGIN_PX, maxLeft)),
+  };
 };

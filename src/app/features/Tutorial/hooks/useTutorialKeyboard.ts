@@ -17,7 +17,7 @@ export const useTutorialKeyboard = (
   { onNext, onPrev, onClose }: TutorialKeyboardHandlers,
 ): void => {
   useEffect(() => {
-    if (!active) return;
+    if (!active) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent): void => {
       switch (event.key) {

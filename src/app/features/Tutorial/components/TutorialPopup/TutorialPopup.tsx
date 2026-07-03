@@ -48,7 +48,6 @@ const TutorialPopupInner = ({
       style={{
         top: position.top,
         left: position.left,
-        transform: position.transform,
       }}
       role="dialog"
       aria-modal="true"

@@ -23,6 +23,14 @@ export const SPOTLIGHT_PADDING_PX = 8;
 export const POPUP_WIDTH_PX = 340;
 
 /**
+ * Approximate rendered height in px of the popup card. The card grows with its
+ * copy, so this is only used to clamp the card fully inside the viewport when
+ * an anchored position would push it off an edge — a slight over-estimate is
+ * safer than under, so the bottom edge is never clipped.
+ */
+export const POPUP_ESTIMATED_HEIGHT_PX = 260;
+
+/**
  * Gap in px between the spotlight edge and the popup card, so the pointer/arrow
  * side of the popup does not touch the highlighted element.
  */

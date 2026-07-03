@@ -1,19 +1,12 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { TUTORIAL_STEPS } from './constants/tutorialSteps';
+import { TutorialContext } from './TutorialContext';
 import { TutorialOverlay } from './components/TutorialOverlay/TutorialOverlay';
 import type { TutorialContextValue } from './types/tutorialContext';
 
 /** Sentinel index used while the tour is not running. */
 const INACTIVE_INDEX = -1;
-
-const TutorialContext = createContext<TutorialContextValue | null>(null);
 
 type TutorialProviderProps = {
   children: React.ReactNode;
@@ -21,7 +14,7 @@ type TutorialProviderProps = {
 
 /**
  * Owns the tutorial state machine and renders the overlay for the whole app.
- * Wrap the app once; any descendant can drive the tour via {@link useTutorial}.
+ * Wrap the app once; any descendant can drive the tour via `useTutorial`.
  */
 export const TutorialProvider = ({
   children,
@@ -43,9 +36,7 @@ export const TutorialProvider = ({
   }, []);
 
   const prev = useCallback(() => {
-    setStepIndex((current) =>
-      current <= 0 ? current : current - 1,
-    );
+    setStepIndex((current) => (current <= 0 ? current : current - 1));
   }, []);
 
   const value = useMemo<TutorialContextValue>(() => {
@@ -69,18 +60,4 @@ export const TutorialProvider = ({
       <TutorialOverlay />
     </TutorialContext.Provider>
   );
-};
-
-/**
- * Access the tutorial controls and progress. Throws if used outside
- * {@link TutorialProvider} so misuse fails loudly during development.
- */
-export const useTutorial = (): TutorialContextValue => {
-  const context = useContext(TutorialContext);
-
-  if (context === null) {
-    throw new Error('useTutorial must be used within a TutorialProvider');
-  }
-
-  return context;
 };
