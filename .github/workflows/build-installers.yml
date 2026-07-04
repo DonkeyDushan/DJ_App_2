@@ -14,8 +14,9 @@ on:
       - 'v*'
 
 # The local electron-builder.json points `directories.output` at an absolute
-# Windows path (C:/builds/...), which is invalid on the macOS runner. Every job
-# overrides it to a relative `release/` folder via -c.directories.output.
+# Windows path (C:/builds/...), which is invalid on the macOS runner. CI uses
+# electron-builder.ci.json instead: it extends the base config and only
+# overrides the output folder to a relative `release/`.
 env:
   NODE_VERSION: '20'
   OUTPUT_DIR: release
@@ -47,10 +48,10 @@ jobs:
       - name: Package macOS installer
         # CSC_IDENTITY_AUTO_DISCOVERY=false builds an UNSIGNED .dmg (no Apple
         # Developer certificate needed). Users open it via right-click -> Open.
+        # --publish never: uploads are handled by action-gh-release below.
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --mac -c.directories.output=${{ env.OUTPUT_DIR }}
+        run: npx electron-builder --mac --config electron-builder.ci.json --publish never
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
@@ -89,9 +90,8 @@ jobs:
 
       - name: Package Windows installers
         # Builds both x64 and ia32 NSIS installers per electron-builder.json.
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win -c.directories.output=${{ env.OUTPUT_DIR }}
+        # --publish never: uploads are handled by action-gh-release below.
+        run: npx electron-builder --win --config electron-builder.ci.json --publish never
 
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v4
