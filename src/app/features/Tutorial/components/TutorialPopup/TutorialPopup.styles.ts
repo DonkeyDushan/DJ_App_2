@@ -1,6 +1,9 @@
 import type { SxProps, Theme } from '@mui/material';
 
-import { POPUP_WIDTH_PX, TUTORIAL_Z_INDEX } from '../../constants/tutorialLayout';
+import {
+  POPUP_WIDTH_PX,
+  TUTORIAL_Z_INDEX,
+} from '../../constants/tutorialLayout';
 
 export const rootSx: SxProps<Theme> = {
   position: 'fixed',
@@ -26,12 +29,14 @@ export const tabsSx: SxProps<Theme> = {
     minHeight: 0,
     py: 0.75,
     fontFamily: 'Orbitron, monospace',
-    fontSize: '0.75rem',
+    fontSize: '0.875rem',
     letterSpacing: '0.08em',
     color: 'text.secondary',
   },
   '& .MuiTab-root.Mui-selected': {
-    color: 'primary.main',
+    color: '#000',
+    backgroundColor: 'primary.main',
+    fontWeight: 700,
   },
   '& .MuiTabs-indicator': {
     backgroundColor: 'primary.main',
@@ -72,12 +77,4 @@ export const navSx: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
   gap: 1,
-};
-
-export const hintSx: SxProps<Theme> = {
-  fontSize: '0.6875rem',
-  letterSpacing: '0.06em',
-  color: 'text.secondary',
-  opacity: 0.7,
-  userSelect: 'none',
 };

@@ -13,7 +13,8 @@ const DEMO_TRACK_SELECTOR = '[data-tutorial-track="true"]';
  * container. Spotlighting that would cover the whole screen, so target the inner
  * paper (the actual dialog box) instead.
  */
-const TRACK_EDITOR_SELECTOR = '[data-testid="track-edit-modal"] .MuiDialog-paper';
+const TRACK_EDITOR_SELECTOR =
+  '[data-testid="track-edit-modal"] .MuiDialog-paper';
 const CUSTOM_SOUNDS_SELECTOR =
   '[data-testid="custom-sounds-dialog"] .MuiDialog-paper';
 
@@ -125,15 +126,15 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = Object.freeze([
     body: STRINGS.tutorial.mixLibrary.body,
     placement: 'right',
   },
-  // ── Set ──────────────────────────────────────────────────────────────────
   {
     key: 'new-mix',
-    topic: 'set',
+    topic: 'mixer',
     targetSelector: '[data-testid="mix-new-button"]',
     title: STRINGS.tutorial.newMix.title,
     body: STRINGS.tutorial.newMix.body,
     placement: 'right',
   },
+  // ── Set ──────────────────────────────────────────────────────────────────
   {
     key: 'add-to-set',
     topic: 'set',

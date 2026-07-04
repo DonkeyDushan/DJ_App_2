@@ -19,7 +19,6 @@ import type { PopupPosition } from '../../utils/computePopupPosition';
 import {
   bodySx,
   footerSx,
-  hintSx,
   navSx,
   progressSx,
   rootSx,
@@ -102,7 +101,12 @@ const TutorialPopupInner = ({
       </Tabs>
 
       <Box
-        sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 1,
+        }}
       >
         <Typography sx={titleSx}>{title}</Typography>
 
@@ -118,13 +122,9 @@ const TutorialPopupInner = ({
       </Box>
 
       <Typography sx={bodySx}>{body}</Typography>
-
-      <Typography sx={hintSx}>{STRINGS.tutorial.keyboardHint}</Typography>
-
       <Box sx={footerSx}>
         <Typography sx={progressSx}>
-          {STRINGS.tutorial.stepLabel} {stepIndex + 1}{' '}
-          {STRINGS.tutorial.stepSeparator} {stepCount}
+          {stepIndex + 1} {STRINGS.tutorial.stepSeparator} {stepCount}
         </Typography>
 
         <Box sx={navSx}>

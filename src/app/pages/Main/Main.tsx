@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
@@ -20,7 +20,11 @@ import {
   startNewSession,
 } from '../../core';
 import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
-import { useTutorial, useTutorialAutoStart } from '../../features/Tutorial';
+import {
+  useTutorial,
+  useTutorialAutoStart,
+  TUTORIAL_DEMO_MIX,
+} from '../../features/Tutorial';
 import {
   TopBar,
   SaveLoadManager,
@@ -135,6 +139,18 @@ export const Main = (): React.ReactElement => {
   useEffect(() => {
     setCustomSoundsOpen(tutorialStage === 'customSounds');
   }, [tutorialStage]);
+
+  // While the tour runs with an empty library, show a throwaway demo mix so the
+  // "add to set" step has a real card to point at. It is display-only (the tour
+  // is read-only) and never touches the store, so it vanishes when the tour ends
+  // or the user saves a real mix.
+  const libraryMixes = useMemo(
+    () =>
+      tutorialStep !== null && snapshot.savedMixes.length === 0
+        ? [TUTORIAL_DEMO_MIX]
+        : snapshot.savedMixes,
+    [tutorialStep, snapshot.savedMixes],
+  );
 
   // Number of tracks currently checked into the in-progress mix, shown on the
   // placeholder "Untitled" card that stands in for the unsaved working mix.
@@ -632,7 +648,7 @@ export const Main = (): React.ReactElement => {
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <MixLibrary
-          mixes={snapshot.savedMixes}
+          mixes={libraryMixes}
           activeMixId={activeMixId}
           playingMixId={playingMixId}
           isSetPlaybackActive={setIsPlaying}
