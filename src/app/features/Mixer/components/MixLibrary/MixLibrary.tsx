@@ -5,6 +5,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { STRINGS } from '../../../../strings';
 import type { SavedMix } from '../../../../core/types/mixData';
 import { MixLibraryCard } from '../MixLibraryCard/MixLibraryCard';
+import { UnsavedMixCard } from '../UnsavedMixCard/UnsavedMixCard';
 import { PixelIcon } from '../../../../components';
 import {
   emptyLabelSx,
@@ -19,9 +20,12 @@ interface MixLibraryProps {
   activeMixId: string | null;
   playingMixId: string | null;
   isSetPlaybackActive: boolean;
+  showUnsavedCard: boolean;
+  unsavedTrackCount: number;
   onAddToTimeline: (mixId: string) => void;
   onLoadMix: (mixId: string) => void;
   onNewMix: () => void;
+  onSaveUnsavedMix: () => void;
   onEditMix: (mixId: string) => void;
   onDuplicateMix: (mixId: string) => void;
 }
@@ -31,9 +35,12 @@ const MixLibraryInner = ({
   activeMixId,
   playingMixId,
   isSetPlaybackActive,
+  showUnsavedCard,
+  unsavedTrackCount,
   onAddToTimeline,
   onLoadMix,
   onNewMix,
+  onSaveUnsavedMix,
   onEditMix,
   onDuplicateMix,
 }: MixLibraryProps): React.ReactElement => (
@@ -45,6 +52,7 @@ const MixLibraryInner = ({
         <IconButton
           onClick={onNewMix}
           size="small"
+          data-testid="mix-new-button"
           sx={{
             color: 'pink.main',
             '&:hover': {
@@ -58,6 +66,13 @@ const MixLibraryInner = ({
     </Box>
 
     <Box sx={listSx}>
+      {showUnsavedCard && (
+        <UnsavedMixCard
+          trackCount={unsavedTrackCount}
+          onSave={onSaveUnsavedMix}
+        />
+      )}
+
       {mixes.length === 0 ? (
         <Typography sx={emptyLabelSx}>{STRINGS.set.noMixes}</Typography>
       ) : (

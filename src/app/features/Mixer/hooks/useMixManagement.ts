@@ -40,6 +40,7 @@ type MixManagementParams = {
   setSnapshot: Dispatch<SetStateAction<MixerSnapshot>>;
   setTracks: Dispatch<SetStateAction<TrackDefinition[]>>;
   setActiveMixId: Dispatch<SetStateAction<string | null>>;
+  setIsNewMix: Dispatch<SetStateAction<boolean>>;
 };
 
 export type MixManagementActions = Pick<
@@ -126,6 +127,7 @@ export const buildMixManagementActions = ({
   setSnapshot,
   setTracks,
   setActiveMixId,
+  setIsNewMix,
 }: MixManagementParams): MixManagementActions => ({
   loadMixAndPlay: async (mixId: string, offsetSeconds = 0) => {
     const currentSnapshot = snapshotRef.current;
@@ -185,6 +187,7 @@ export const buildMixManagementActions = ({
     );
 
     setActiveMixId(mixId);
+    setIsNewMix(false);
     setSnapshot((current) => ({
       ...current,
       globalTempo: mix.globalTempo,
@@ -357,6 +360,11 @@ export const buildMixManagementActions = ({
     const nextMixes = [mix, ...currentSnapshot.savedMixes].slice(0, MAX_SAVED_MIXES);
     persistSavedMixes(nextMixes);
     setSnapshot((current) => ({ ...current, savedMixes: nextMixes }));
+
+    // The freshly saved mix becomes the active selection, replacing the
+    // in-progress "Untitled" card with its real, persisted counterpart.
+    setActiveMixId(mix.id);
+    setIsNewMix(false);
   },
 
   loadMix: async (mixId: string) => {
@@ -376,6 +384,7 @@ export const buildMixManagementActions = ({
     );
 
     setActiveMixId(mixId);
+    setIsNewMix(false);
     setSnapshot((current) => ({
       ...current,
       globalTempo: mix.globalTempo,
@@ -422,6 +431,7 @@ export const buildMixManagementActions = ({
       await engine.stopTransport(true);
     }
     setActiveMixId(null);
+    setIsNewMix(true);
     setSnapshot((current) => ({
       ...current,
       transportPlaying: false,

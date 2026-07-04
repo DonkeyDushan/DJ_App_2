@@ -5,6 +5,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { STRINGS } from '../../../../strings';
 import type { DJSet } from '../../../../core/types/setData';
 import { SetLibraryCard } from '../SetLibraryCard/SetLibraryCard';
+import { UnsavedSetCard } from '../UnsavedSetCard/UnsavedSetCard';
 import { PixelIcon } from '../../../../components';
 import {
   emptyLabelSx,
@@ -18,19 +19,27 @@ import {
 interface SetLibraryProps {
   sets: DJSet[];
   activeSetId: string;
+  showUnsavedCard: boolean;
+  unsavedSlotCount: number;
+  unsavedDurationSeconds: number;
   onLoad: (setId: string) => void;
   onDelete: (setId: string) => void;
   onRename: (setId: string) => void;
   onNewSet: () => void;
+  onSaveUnsavedSet: () => void;
 }
 
 const SetLibraryInner = ({
   sets,
   activeSetId,
+  showUnsavedCard,
+  unsavedSlotCount,
+  unsavedDurationSeconds,
   onLoad,
   onDelete,
   onRename,
   onNewSet,
+  onSaveUnsavedSet,
 }: SetLibraryProps): React.ReactElement => (
   <Box sx={panelSx} data-testid="set-library">
     <Box sx={headerRowSx}>
@@ -40,6 +49,7 @@ const SetLibraryInner = ({
         <IconButton
           onClick={onNewSet}
           size="small"
+          data-testid="set-new-button"
           sx={{
             color: 'pink.main',
             '&:hover': {
@@ -54,6 +64,14 @@ const SetLibraryInner = ({
 
     <Box sx={listWrapperSx}>
       <Box sx={listSx}>
+        {showUnsavedCard && (
+          <UnsavedSetCard
+            slotCount={unsavedSlotCount}
+            durationSeconds={unsavedDurationSeconds}
+            onSave={onSaveUnsavedSet}
+          />
+        )}
+
         {sets.length === 0 ? (
           <Typography sx={emptyLabelSx}>{STRINGS.set.noSets}</Typography>
         ) : (

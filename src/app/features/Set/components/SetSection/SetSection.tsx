@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Download } from 'pixelarticons/react/Download';
-import { Reload } from 'pixelarticons/react/Reload';
+import { Delete } from 'pixelarticons/react/Delete';
 import { Save } from 'pixelarticons/react/Save';
 import { Waves } from 'pixelarticons/react/Waves';
 import {
@@ -134,15 +134,21 @@ const SetSectionInner = ({
             isPlaying={isSetPlaying}
             onToggleTransport={onPlayPause}
             disabled={!hasSlots}
+            testId="set-play"
           />
 
-          <SetNameInput
-            key={activeSet.id}
-            initialName={activeSet.name}
-            onCommit={onUpdateSetName}
-            placeholder={STRINGS.set.setNamePlaceholder}
-            sx={nameInputSx}
-          />
+          <Box
+            data-testid="set-name"
+            sx={{ display: 'flex', flex: 1, minWidth: 0 }}
+          >
+            <SetNameInput
+              key={activeSet.id}
+              initialName={activeSet.name}
+              onCommit={onUpdateSetName}
+              placeholder={STRINGS.set.setNamePlaceholder}
+              sx={nameInputSx}
+            />
+          </Box>
 
           {isSetPlaying && currentSlotIndex !== null && (
             <Typography
@@ -183,7 +189,10 @@ const SetSectionInner = ({
               </IconButton>
             </Tooltip>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+              data-testid="set-duration"
+            >
               <Typography sx={durationLabelSx}>
                 {STRINGS.set.totalDuration}
               </Typography>
@@ -219,8 +228,9 @@ const SetSectionInner = ({
                 onClick={onResetSet}
                 disabled={isSetPlaying || !hasUnsavedChanges}
                 size="small"
+                data-testid="set-reset"
               >
-                <PixelIcon glyph={Reload} />
+                <PixelIcon glyph={Delete} />
               </IconButton>
             </Tooltip>
             <Tooltip title={STRINGS.topBar.saveSet}>
@@ -228,6 +238,7 @@ const SetSectionInner = ({
                 onClick={onSaveSet}
                 disabled={isSetPlaying}
                 size="small"
+                data-testid="set-save"
                 sx={{
                   color: 'pink.main',
                   '&:hover': {
@@ -252,10 +263,7 @@ const SetSectionInner = ({
             kind={activeSet.defaultTransitionKind}
             durationSeconds={activeSet.defaultTransitionDuration}
             onChangeKind={(kind) =>
-              onSetDefaultTransition(
-                kind,
-                activeSet.defaultTransitionDuration,
-              )
+              onSetDefaultTransition(kind, activeSet.defaultTransitionDuration)
             }
             onChangeDuration={(durationSeconds) =>
               onSetDefaultTransition(

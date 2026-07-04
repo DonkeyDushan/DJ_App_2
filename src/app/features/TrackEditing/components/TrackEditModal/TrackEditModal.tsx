@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { Close } from 'pixelarticons/react/Close';
 import { Play } from 'pixelarticons/react/Play';
-import { Reload } from 'pixelarticons/react/Reload';
+import { Delete } from 'pixelarticons/react/Delete';
 import { Undo } from 'pixelarticons/react/Undo';
 
 import type {
@@ -302,7 +302,7 @@ export const TrackEditModal = ({
             sx={resetButtonSx}
             data-testid="track-edit-reset-default"
           >
-            <PixelIcon glyph={Reload} />
+            <PixelIcon glyph={Delete} />
           </IconButton>
         </Tooltip>
         <Tooltip title={S.discardChanges}>

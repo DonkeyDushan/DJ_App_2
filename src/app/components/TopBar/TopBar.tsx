@@ -3,6 +3,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { Save } from 'pixelarticons/react/Save';
 import { Folder } from 'pixelarticons/react/Folder';
 import { Reload } from 'pixelarticons/react/Reload';
+import { InfoBox } from 'pixelarticons/react/InfoBox';
 
 import { STRINGS } from '../../../strings';
 import { PixelIcon } from '../PixelIcon/PixelIcon';
@@ -18,6 +19,7 @@ interface TopBarProps {
   onSaveSession: () => void;
   onLoadSession: () => void;
   onNewSession: () => void;
+  onOpenTutorial: () => void;
 }
 
 const TopBarInner = ({
@@ -25,6 +27,7 @@ const TopBarInner = ({
   onSaveSession,
   onLoadSession,
   onNewSession,
+  onOpenTutorial,
 }: TopBarProps): React.ReactElement => (
   <Box sx={rootSx} data-testid="top-bar">
     <Typography sx={titleSx}>{STRINGS.app.title}</Typography>
@@ -64,6 +67,15 @@ const TopBarInner = ({
           data-testid="session-new"
         >
           <PixelIcon glyph={Reload} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={STRINGS.tutorial.open}>
+        <IconButton
+          onClick={onOpenTutorial}
+          size="small"
+          data-testid="tutorial-open"
+        >
+          <PixelIcon glyph={InfoBox} />
         </IconButton>
       </Tooltip>
     </Box>

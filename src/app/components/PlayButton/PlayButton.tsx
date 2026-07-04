@@ -10,15 +10,23 @@ const PlayButtonComponent = ({
   isPlaying,
   onToggleTransport,
   disabled = false,
+  testId,
 }: {
   isPlaying: boolean;
   onToggleTransport: () => void;
   disabled?: boolean;
+  /** Optional test hook forwarded to the button (e.g. for the tour to target). */
+  testId?: string;
 }): React.ReactElement => (
   <Tooltip
     title={isPlaying ? STRINGS.mixerHeader.stop : STRINGS.mixerHeader.play}
   >
-    <IconButton onClick={onToggleTransport} disabled={disabled} sx={buttonSx}>
+    <IconButton
+      onClick={onToggleTransport}
+      disabled={disabled}
+      sx={buttonSx}
+      data-testid={testId}
+    >
       {isPlaying ? (
         <PixelIcon glyph={PausePixelGlyph} />
       ) : (

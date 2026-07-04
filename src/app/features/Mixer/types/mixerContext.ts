@@ -73,5 +73,17 @@ export type MixerContextValue = {
   tracks: TrackDefinition[];
   engine: AudioEngine;
   activeMixId: string | null;
+  /**
+   * True while the user is building a brand-new mix that has not been saved
+   * yet (either explicitly via "New mix" or by default when no saved mixes
+   * exist). Drives the placeholder "Untitled" card in the mix library.
+   */
+  isNewMix: boolean;
+  /**
+   * True when the working mixer state differs from the mix it was loaded from
+   * (or, for a new mix, has any enabled track). Gates the header "Save" button
+   * and triggers the unsaved-changes prompt when switching mixes.
+   */
+  hasUnsavedMixChanges: boolean;
   actions: MixerActions;
 };

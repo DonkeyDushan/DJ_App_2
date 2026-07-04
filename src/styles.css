@@ -49,3 +49,16 @@ textarea {
 ::selection {
   background: rgba(255, 79, 216, 0.35);
 }
+
+/* Tutorial: while a dialog step is active, dock the open dialog toward the top
+   (still horizontally centered) so the instruction popup can sit below it
+   without overlapping. MUI centers the dialog paper via the container's
+   flexbox; overriding align-items docks it to the top, and the margin adds a
+   small gutter from the viewport edge. */
+body[data-tutorial-dialog='top'] .MuiDialog-container {
+  align-items: flex-start;
+}
+
+body[data-tutorial-dialog='top'] .MuiDialog-paper {
+  margin-top: 4vh;
+}

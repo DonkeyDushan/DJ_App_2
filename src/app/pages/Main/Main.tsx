@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
 import { STRINGS } from '../../../strings';
@@ -21,15 +21,23 @@ import {
 } from '../../core';
 import { CustomSoundsDialog, SoundTrimDialog } from '../../features/TrackEditing';
 import {
+  useTutorial,
+  useTutorialAutoStart,
+  TUTORIAL_DEMO_MIX,
+} from '../../features/Tutorial';
+import {
   TopBar,
   SaveLoadManager,
   ConfirmDialog,
   NameInputDialog,
+  UnsavedChangesDialog,
 } from '../../components';
 import { useSetPlayback } from './hooks/useSetPlayback';
 import { useSetExport } from './hooks/useSetExport';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
 import type { MixDialogState } from './types/mixEditTarget';
+import type { PendingMixSwitch } from './types/pendingMixSwitch';
+import type { PendingSetSwitch } from './types/pendingSetSwitch';
 
 /** Confirmation message shown for each kind of deletable library item. */
 const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
@@ -57,7 +65,15 @@ const SESSION_DIRTY_ACTIVATION_DELAY_MS = 1500;
 type SessionConfirmKind = 'load' | 'new';
 
 export const Main = (): React.ReactElement => {
-  const { snapshot, tracks, activeMixId, engine, actions: mixerActions } = useMixer();
+  const {
+    snapshot,
+    tracks,
+    activeMixId,
+    isNewMix,
+    hasUnsavedMixChanges,
+    engine,
+    actions: mixerActions,
+  } = useMixer();
   const {
     activeSet,
     sets,
@@ -71,6 +87,9 @@ export const Main = (): React.ReactElement => {
 
   const isDirty = useSessionDirty();
 
+  const { start: startTutorial, currentStep: tutorialStep } = useTutorial();
+  const tutorialStage = tutorialStep?.stage;
+
   const [customSoundsOpen, setCustomSoundsOpen] = useState(false);
   const [trimSoundId, setTrimSoundId] = useState<string | null>(null);
   const [mixDialog, setMixDialog] = useState<MixDialogState | null>(null);
@@ -79,6 +98,15 @@ export const Main = (): React.ReactElement => {
   const [sessionConfirm, setSessionConfirm] = useState<SessionConfirmKind | null>(
     null,
   );
+  const [pendingSwitch, setPendingSwitch] = useState<PendingMixSwitch | null>(
+    null,
+  );
+  const [pendingSetSwitch, setPendingSetSwitch] =
+    useState<PendingSetSwitch | null>(null);
+
+  // Flips true once initial hydration has settled, gating any check that must
+  // observe the fully loaded session rather than the empty default state.
+  const [isSessionSettled, setIsSessionSettled] = useState(false);
 
   // Arm the session dirty tracker only after initial hydration settles, so the
   // restored state is treated as a clean, freshly opened session.
@@ -86,10 +114,68 @@ export const Main = (): React.ReactElement => {
     const timer = setTimeout(() => {
       activateSessionDirty();
       clearSessionDirty();
+      setIsSessionSettled(true);
     }, SESSION_DIRTY_ACTIVATION_DELAY_MS);
 
     return () => clearTimeout(timer);
   }, []);
+
+  // A "clear" session: nothing saved and nothing in progress. The mixer always
+  // ships default tracks, so those are ignored; only user-created content and
+  // active edits count. Used to auto-launch the tutorial for first-time users.
+  const isSessionEmpty =
+    snapshot.savedMixes.length === 0 &&
+    snapshot.customSounds.length === 0 &&
+    sets.length === 0 &&
+    activeSet.slots.length === 0 &&
+    activeMixId === null &&
+    !tracks.some((track) => track.sourceTrackId != null) &&
+    !Object.values(snapshot.trackStates).some((state) => state.enabled);
+
+  useTutorialAutoStart(isSessionSettled && isSessionEmpty);
+
+  // The tour drives the custom sounds dialog for its final step; opening it on
+  // enter and closing it when the step is left (stage no longer matches).
+  useEffect(() => {
+    setCustomSoundsOpen(tutorialStage === 'customSounds');
+  }, [tutorialStage]);
+
+  // While the tour runs with an empty library, show a throwaway demo mix so the
+  // "add to set" step has a real card to point at. It is display-only (the tour
+  // is read-only) and never touches the store, so it vanishes when the tour ends
+  // or the user saves a real mix.
+  const libraryMixes = useMemo(
+    () =>
+      tutorialStep !== null && snapshot.savedMixes.length === 0
+        ? [TUTORIAL_DEMO_MIX]
+        : snapshot.savedMixes,
+    [tutorialStep, snapshot.savedMixes],
+  );
+
+  // Number of tracks currently checked into the in-progress mix, shown on the
+  // placeholder "Untitled" card that stands in for the unsaved working mix.
+  const unsavedTrackCount = Object.values(snapshot.trackStates).filter(
+    (state) => state.enabled,
+  ).length;
+
+  // The placeholder "Untitled" card is shown while building an unsaved mix:
+  // either explicitly started via "New mix" (isNewMix), or by default when no
+  // saved mixes exist yet. It is hidden once a mix is selected or saved, and
+  // while a set is playing (the mixer is locked then).
+  const showUnsavedCard =
+    activeMixId === null &&
+    !setIsPlaying &&
+    (isNewMix || snapshot.savedMixes.length === 0);
+
+  // The working set is a draft — never persisted — until its id appears in the
+  // saved list. While it is a draft, the placeholder "Untitled" set card stands
+  // in for it at the top of the set library.
+  const isSetUnsaved = !sets.some((set) => set.id === activeSet.id);
+  const unsavedSetSlotCount = activeSet.slots.length;
+  const unsavedSetDurationSeconds = activeSet.slots.reduce(
+    (sum, slot) => sum + slot.durationSeconds,
+    0,
+  );
 
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
@@ -112,6 +198,16 @@ export const Main = (): React.ReactElement => {
   actionsRef.current = mixerActions;
   const activeMixIdRef = useRef(activeMixId);
   activeMixIdRef.current = activeMixId;
+  // Keeps the mix-switch handlers referentially stable while still reading the
+  // latest dirty state, so the memoized MixLibrary does not re-render on every
+  // track toggle.
+  const hasUnsavedMixChangesRef = useRef(hasUnsavedMixChanges);
+  hasUnsavedMixChangesRef.current = hasUnsavedMixChanges;
+  // Same stable-handler pattern for the set library switch guard.
+  const hasUnsavedSetChangesRef = useRef(hasUnsavedChanges);
+  hasUnsavedSetChangesRef.current = hasUnsavedChanges;
+  const activeSetIdRef = useRef(activeSet.id);
+  activeSetIdRef.current = activeSet.id;
 
   useEffect(() => {
     if (!pendingActionsRef.current) return;
@@ -223,11 +319,124 @@ export const Main = (): React.ReactElement => {
     [],
   );
 
-  const handleLoadMix = useCallback(
-    (mixId: string) => void mixerActions.loadMix(mixId),
-    [],
+  // Executes a requested mix switch immediately, bypassing the unsaved-changes
+  // guard. Used once the user has resolved the prompt.
+  const runMixSwitch = useCallback(
+    (target: PendingMixSwitch) => {
+      if (target.kind === 'load') {
+        void mixerActions.loadMix(target.mixId);
+      } else {
+        void mixerActions.clearMix();
+      }
+    },
+    [mixerActions],
   );
-  const handleNewMix = useCallback(() => void mixerActions.clearMix(), []);
+
+  const handleLoadMix = useCallback((mixId: string) => {
+    // Reloading the already-active mix would silently discard unsaved edits;
+    // it is a no-op instead (use Reset to revert deliberately).
+    if (mixId === activeMixIdRef.current) return;
+
+    if (hasUnsavedMixChangesRef.current) {
+      setPendingSwitch({ kind: 'load', mixId });
+
+      return;
+    }
+
+    void mixerActions.loadMix(mixId);
+  }, []);
+
+  const handleNewMix = useCallback(() => {
+    if (hasUnsavedMixChangesRef.current) {
+      setPendingSwitch({ kind: 'new' });
+
+      return;
+    }
+
+    void mixerActions.clearMix();
+  }, []);
+
+  const handleCancelSwitch = useCallback(() => setPendingSwitch(null), []);
+
+  const handleDiscardAndSwitch = useCallback(() => {
+    if (pendingSwitch) runMixSwitch(pendingSwitch);
+
+    setPendingSwitch(null);
+  }, [pendingSwitch, runMixSwitch]);
+
+  const handleSaveAndSwitch = useCallback(() => {
+    const mixId = activeMixIdRef.current;
+    if (mixId) mixerActions.overwriteMix(mixId);
+
+    if (pendingSwitch) runMixSwitch(pendingSwitch);
+
+    setPendingSwitch(null);
+  }, [pendingSwitch, runMixSwitch]);
+
+  // Defers the switch: opens the "save as new" dialog while keeping the pending
+  // switch alive. Once the new mix is named and saved, the switch runs.
+  const handleSaveNewAndSwitch = useCallback(() => {
+    setMixDialog({
+      kind: 'create',
+      initialName: STRINGS.saveLoadManager.defaultMixName,
+    });
+  }, []);
+
+  // --- Set library switch guard (mirrors the mix switch guard above) ---
+
+  const runSetSwitch = useCallback(
+    (target: PendingSetSwitch) => {
+      if (target.kind === 'load') {
+        setActions.loadSet(target.setId);
+      } else {
+        setActions.newSet();
+      }
+    },
+    [setActions],
+  );
+
+  const handleLoadSet = useCallback(
+    (setId: string) => {
+      // Reloading the already-active set would silently discard unsaved edits;
+      // no-op instead (use Reset to revert deliberately).
+      if (setId === activeSetIdRef.current) return;
+
+      if (hasUnsavedSetChangesRef.current) {
+        setPendingSetSwitch({ kind: 'load', setId });
+
+        return;
+      }
+
+      setActions.loadSet(setId);
+    },
+    [setActions],
+  );
+
+  const handleNewSet = useCallback(() => {
+    if (hasUnsavedSetChangesRef.current) {
+      setPendingSetSwitch({ kind: 'new' });
+
+      return;
+    }
+
+    setActions.newSet();
+  }, [setActions]);
+
+  const handleCancelSetSwitch = useCallback(() => setPendingSetSwitch(null), []);
+
+  const handleDiscardSetAndSwitch = useCallback(() => {
+    if (pendingSetSwitch) runSetSwitch(pendingSetSwitch);
+
+    setPendingSetSwitch(null);
+  }, [pendingSetSwitch, runSetSwitch]);
+
+  const handleSaveSetAndSwitch = useCallback(() => {
+    setActions.saveSet();
+
+    if (pendingSetSwitch) runSetSwitch(pendingSetSwitch);
+
+    setPendingSetSwitch(null);
+  }, [pendingSetSwitch, runSetSwitch, setActions]);
   const handleToggleTransport = useCallback(
     () => void mixerActions.toggleTransport(),
     [],
@@ -341,7 +550,12 @@ export const Main = (): React.ReactElement => {
 
   const handleCloseDelete = useCallback(() => setDeleteTarget(null), []);
   const handleCloseRename = useCallback(() => setRenameTarget(null), []);
-  const handleCloseMixDialog = useCallback(() => setMixDialog(null), []);
+  // Closing the mix dialog also aborts any switch that was waiting on a
+  // "save as new" — the user backed out, so they stay on the current mix.
+  const handleCloseMixDialog = useCallback(() => {
+    setMixDialog(null);
+    setPendingSwitch(null);
+  }, []);
 
   const handleSaveMixDialog = useCallback(
     (name: string, color: MixColorKey | null) => {
@@ -354,8 +568,15 @@ export const Main = (): React.ReactElement => {
       }
 
       setMixDialog(null);
+
+      // When the save was triggered to resolve a pending mix switch, run it now
+      // that the current work is safely persisted as a new mix.
+      if (pendingSwitch) {
+        runMixSwitch(pendingSwitch);
+        setPendingSwitch(null);
+      }
     },
-    [mixDialog, mixerActions],
+    [mixDialog, mixerActions, pendingSwitch, runMixSwitch],
   );
 
   const handleDeleteFromMixEdit = useCallback(() => {
@@ -422,22 +643,27 @@ export const Main = (): React.ReactElement => {
         onSaveSession={handleSaveSession}
         onLoadSession={handleLoadSession}
         onNewSession={handleNewSession}
+        onOpenTutorial={startTutorial}
       />
 
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <MixLibrary
-          mixes={snapshot.savedMixes}
+          mixes={libraryMixes}
           activeMixId={activeMixId}
           playingMixId={playingMixId}
           isSetPlaybackActive={setIsPlaying}
+          showUnsavedCard={showUnsavedCard}
+          unsavedTrackCount={unsavedTrackCount}
           onAddToTimeline={setActions.addSlot}
           onLoadMix={handleLoadMix}
           onNewMix={handleNewMix}
+          onSaveUnsavedMix={handleSaveNew}
           onEditMix={requestEditMix}
           onDuplicateMix={mixerActions.duplicateMix}
         />
 
         <Box
+          data-testid="mixer-panel"
           sx={{
             flex: 1,
             display: 'flex',
@@ -449,7 +675,7 @@ export const Main = (): React.ReactElement => {
           <MixerHeader
             isPlaying={snapshot.transportPlaying}
             globalTempo={snapshot.globalTempo}
-            activeMixId={activeMixId}
+            canSave={activeMixId !== null && hasUnsavedMixChanges}
             isLocked={setIsPlaying}
             onToggleTransport={handleToggleTransport}
             onTempoChange={handleTempoChange}
@@ -526,6 +752,7 @@ export const Main = (): React.ReactElement => {
               onSaveToTrack={mixerActions.saveTrackOverride}
               onRenameTrack={handleRenameTrack}
               onDeleteTrack={requestDeleteTrack}
+              openTutorialEditor={tutorialStage === 'trackEditor'}
             />
           </Box>
         </Box>
@@ -542,10 +769,14 @@ export const Main = (): React.ReactElement => {
         <SetLibrary
           sets={sets}
           activeSetId={activeSet.id}
-          onLoad={setActions.loadSet}
+          showUnsavedCard={isSetUnsaved}
+          unsavedSlotCount={unsavedSetSlotCount}
+          unsavedDurationSeconds={unsavedSetDurationSeconds}
+          onLoad={handleLoadSet}
           onDelete={requestDeleteSet}
           onRename={requestRenameSet}
-          onNewSet={setActions.newSet}
+          onNewSet={handleNewSet}
+          onSaveUnsavedSet={setActions.saveSet}
         />
 
         <SetSection
@@ -635,6 +866,32 @@ export const Main = (): React.ReactElement => {
         onSave={handleSaveMixDialog}
         onDelete={mixDialog?.kind === 'edit' ? handleDeleteFromMixEdit : undefined}
         onClose={handleCloseMixDialog}
+      />
+
+      <UnsavedChangesDialog
+        open={pendingSwitch !== null && mixDialog === null}
+        title={STRINGS.unsavedMixDialog.title}
+        message={STRINGS.unsavedMixDialog.message}
+        discardLabel={STRINGS.unsavedMixDialog.discard}
+        cancelLabel={STRINGS.unsavedMixDialog.cancel}
+        onDiscard={handleDiscardAndSwitch}
+        onClose={handleCancelSwitch}
+        saveLabel={activeMixId !== null ? STRINGS.unsavedMixDialog.save : undefined}
+        onSave={activeMixId !== null ? handleSaveAndSwitch : undefined}
+        saveNewLabel={STRINGS.unsavedMixDialog.saveNew}
+        onSaveNew={handleSaveNewAndSwitch}
+      />
+
+      <UnsavedChangesDialog
+        open={pendingSetSwitch !== null}
+        title={STRINGS.unsavedSetDialog.title}
+        message={STRINGS.unsavedSetDialog.message}
+        discardLabel={STRINGS.unsavedSetDialog.discard}
+        cancelLabel={STRINGS.unsavedSetDialog.cancel}
+        onDiscard={handleDiscardSetAndSwitch}
+        onClose={handleCancelSetSwitch}
+        saveLabel={STRINGS.unsavedSetDialog.save}
+        onSave={handleSaveSetAndSwitch}
       />
 
       <ConfirmDialog

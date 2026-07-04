@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Reload } from 'pixelarticons/react/Reload';
+import { Delete } from 'pixelarticons/react/Delete';
 import { Save } from 'pixelarticons/react/Save';
 import { Upload } from 'pixelarticons/react/Upload';
 import { Box, IconButton, Slider, Tooltip, Typography } from '@mui/material';
@@ -21,7 +21,7 @@ const BASE_BPM = 120;
 interface MixerHeaderProps {
   isPlaying: boolean;
   globalTempo: number;
-  activeMixId: string | null;
+  canSave: boolean;
   isLocked: boolean;
   onToggleTransport: () => void;
   onTempoChange: (tempo: number) => void;
@@ -34,7 +34,7 @@ interface MixerHeaderProps {
 const MixerHeaderInner = ({
   isPlaying,
   globalTempo,
-  activeMixId,
+  canSave,
   isLocked,
   onToggleTransport,
   onTempoChange,
@@ -66,9 +66,10 @@ const MixerHeaderInner = ({
         isPlaying={isPlaying}
         disabled={isLocked}
         onToggleTransport={onToggleTransport}
+        testId="mixer-play"
       />
 
-      <Box sx={tempoGroupSx}>
+      <Box sx={tempoGroupSx} data-testid="mixer-tempo">
         <Typography sx={bpmLabelSx}>{STRINGS.mixerHeader.bpm}</Typography>
         <Typography sx={bpmValueSx}>{bpm}</Typography>
         <Slider
@@ -89,6 +90,7 @@ const MixerHeaderInner = ({
             onClick={onOpenCustomSounds}
             disabled={isLocked}
             size="small"
+            data-testid="mixer-custom-sounds"
           >
             <PixelIcon glyph={Upload} />
           </IconButton>
@@ -96,45 +98,49 @@ const MixerHeaderInner = ({
         <Tooltip title={STRINGS.mixerHeader.reset}>
           <IconButton
             onClick={onReset}
-            disabled={isLocked || !activeMixId}
+            disabled={isLocked || !canSave}
             size="small"
           >
-            <PixelIcon glyph={Reload} />
+            <PixelIcon glyph={Delete} />
           </IconButton>
         </Tooltip>
 
-        <Tooltip title={STRINGS.mixerHeader.save}>
-          <IconButton
-            onClick={onSave}
-            disabled={isLocked || !activeMixId}
-            size="small"
-            sx={{
-              color: 'pink.main',
-              '&:hover': {
-                color: 'pink.light',
-              },
-            }}
-          >
-            <PixelIcon glyph={Save} />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 0.75 }} data-testid="mixer-save-group">
+          <Tooltip title={STRINGS.mixerHeader.save}>
+            <IconButton
+              onClick={onSave}
+              disabled={isLocked || !canSave}
+              size="small"
+              data-testid="mixer-save"
+              sx={{
+                color: 'pink.main',
+                '&:hover': {
+                  color: 'pink.light',
+                },
+              }}
+            >
+              <PixelIcon glyph={Save} />
+            </IconButton>
+          </Tooltip>
 
-        <Tooltip title={STRINGS.mixerHeader.saveNew}>
-          <IconButton
-            onClick={onSaveNew}
-            disabled={isLocked}
-            size="small"
-            sx={{
-              color: 'pink.main',
-              '&:hover': {
-                color: 'pink.light',
-              },
-            }}
-          >
-            <PixelIcon glyph={Save} />
-            <PixelIcon glyph={Plus} />
-          </IconButton>
-        </Tooltip>
+          <Tooltip title={STRINGS.mixerHeader.saveNew}>
+            <IconButton
+              onClick={onSaveNew}
+              disabled={isLocked}
+              size="small"
+              data-testid="mixer-save-new"
+              sx={{
+                color: 'pink.main',
+                '&:hover': {
+                  color: 'pink.light',
+                },
+              }}
+            >
+              <PixelIcon glyph={Save} />
+              <PixelIcon glyph={Plus} />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
     </Box>
   );

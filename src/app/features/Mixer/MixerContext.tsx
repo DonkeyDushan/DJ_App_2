@@ -12,6 +12,7 @@ import type { PersistedTrackPreset } from '../../core/storage/trackPresets';
 import type { TrackDefinition } from '../../core/types/trackData';
 import type { MixerContextValue } from './types/mixerContext';
 import { createInitialSnapshot } from './utils/trackBuilders';
+import { isMixDirty } from './utils/isMixDirty';
 import { useInitialLoad } from './hooks/useInitialLoad';
 import { usePersistActiveState } from './hooks/usePersistActiveState';
 import { usePlaybackSync } from './hooks/usePlaybackSync';
@@ -29,6 +30,7 @@ export const MixerProvider = ({
   const [, setPresets] = useState<PersistedTrackPreset[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [activeMixId, setActiveMixId] = useState<string | null>(null);
+  const [isNewMix, setIsNewMix] = useState(false);
   const engine = useMemo(() => new AudioEngine(), []);
 
   const snapshotRef = useRef(snapshot);
@@ -55,18 +57,28 @@ export const MixerProvider = ({
     setPresets,
     setFavoriteIds,
     setActiveMixId,
+    setIsNewMix,
   });
 
-  const value = useMemo<MixerContextValue>(
-    () => ({
+  const value = useMemo<MixerContextValue>(() => {
+    const activeMix = activeMixId
+      ? snapshot.savedMixes.find((mix) => mix.id === activeMixId) ?? null
+      : null;
+
+    return {
       snapshot,
       tracks,
       engine,
       activeMixId,
+      isNewMix,
+      hasUnsavedMixChanges: isMixDirty(
+        activeMix,
+        snapshot.trackStates,
+        snapshot.globalTempo,
+      ),
       actions,
-    }),
-    [actions, activeMixId, engine, snapshot, tracks],
-  );
+    };
+  }, [actions, activeMixId, isNewMix, engine, snapshot, tracks]);
 
   return (
     <MixerContext.Provider value={value}>{children}</MixerContext.Provider>

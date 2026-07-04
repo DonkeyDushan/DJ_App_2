@@ -37,6 +37,8 @@ import {
 type TrackCardProps = {
   track: TrackDefinition;
   trackState: TrackState;
+  /** Marks this card as the tour's demo target, exposing a stable selector. */
+  isTutorialTarget?: boolean;
   onToggle: (trackId: string, enabled: boolean) => void;
   onPlay: (trackId: string) => void;
   onEdit: (trackId: string) => void;
@@ -46,6 +48,7 @@ type TrackCardProps = {
 const TrackCardInner = ({
   track,
   trackState,
+  isTutorialTarget,
   onToggle,
   onPlay,
   onEdit,
@@ -55,7 +58,11 @@ const TrackCardInner = ({
     (trackState.isPlaying && trackState.enabled) || trackState.isPreviewPlaying;
 
   return (
-    <Paper sx={paperSx(isActive)} data-testid={`track-card--${track.id}`}>
+    <Paper
+      sx={paperSx(isActive)}
+      data-testid={`track-card--${track.id}`}
+      data-tutorial-track={isTutorialTarget ? 'true' : undefined}
+    >
       <Box sx={rowSx}>
         <FormControlLabel
           sx={{ minWidth: '50px' }}

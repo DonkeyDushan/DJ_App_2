@@ -17,6 +17,8 @@ export const STRINGS = {
   mixLibrary: {
     newMix: 'NEW MIX',
     loadMix: 'Load mix',
+    unsavedMix: 'UNTITLED',
+    saveUnsavedMix: 'Save mix',
   },
   mixerHeader: {
     play: 'PLAY',
@@ -132,6 +134,23 @@ export const STRINGS = {
     save: 'Save',
     cancel: 'Cancel',
   },
+  unsavedMixDialog: {
+    title: 'UNSAVED CHANGES',
+    message:
+      'The current mix has unsaved changes. Switching will discard them. Save first?',
+    save: 'Save',
+    saveNew: 'Save new',
+    discard: 'Discard & switch',
+    cancel: 'Cancel',
+  },
+  unsavedSetDialog: {
+    title: 'UNSAVED CHANGES',
+    message:
+      'The current set has unsaved changes. Switching will discard them. Save first?',
+    save: 'Save',
+    discard: 'Discard & switch',
+    cancel: 'Cancel',
+  },
   mixEditDialog: {
     createTitle: 'SAVE MIX',
     editTitle: 'EDIT MIX',
@@ -163,6 +182,8 @@ export const STRINGS = {
     duplicateSlot: 'Duplicate',
     savedSets: 'SAVED SETS',
     noSets: 'No saved sets yet.',
+    unsavedSet: 'UNTITLED',
+    saveUnsavedSet: 'Save set',
     loadSet: 'Load',
     deleteSet: 'Delete',
     renameSet: 'Rename set',
@@ -195,5 +216,137 @@ export const STRINGS = {
     exportingMessage:
       'Recording the set in real time. This takes as long as the set itself — keep the app open until it finishes.',
     cancel: 'Cancel',
+  },
+  tutorial: {
+    /** Tooltip on the top-bar button that starts the guided tour. */
+    open: 'Show tutorial',
+    /** Footer navigation buttons and progress. */
+    back: 'Back',
+    next: 'Next',
+    finish: 'Finish',
+    close: 'Close tutorial',
+    /** e.g. "Step 2 / 9". */
+    stepLabel: 'Step',
+    stepSeparator: '/',
+    /** Hint line shown in the popup footer. */
+    keyboardHint: 'Enter / → next · ← back · Esc close',
+    intro: {
+      title: 'WELCOME TO DJ APP TURBO 2000',
+      body: 'Take a quick tour of the app. Use Enter or the arrow keys to move between steps, and Esc to leave at any time.',
+    },
+    mixer: {
+      title: 'THE MIXER',
+      body: 'This is the mixer. Here you blend tracks together to create a mix.',
+    },
+    globalTempo: {
+      title: 'GLOBAL TEMPO',
+      body: 'Here you can change the speed for the whole mix.',
+    },
+    track: {
+      title: 'A TRACK',
+      body: 'This is a track. Hover it to reveal its buttons: play, favourite and edit.',
+    },
+    trackEditor: {
+      title: 'EDIT A TRACK',
+      body: 'In the editor you tweak a track’s volume, speed, EQ and effects. Tracks are shared across mixes, so an edit applies to every mix that uses the track.',
+    },
+    customSoundsButton: {
+      title: 'CUSTOM SOUNDS',
+      body: 'Open your custom sounds from this button.',
+    },
+    customSounds: {
+      title: 'CUSTOM SOUNDS',
+      body: 'Here you upload your own sounds and use them as tracks.',
+    },
+    checkTracks: {
+      title: 'BUILD A MIX',
+      body: 'Build a mix by checking the tracks that should play together.',
+    },
+    playMix: {
+      title: 'PLAY THE MIX',
+      body: 'Play your mix here to hear how the tracks sound together.',
+    },
+    saveMix: {
+      title: 'SAVE',
+      body: 'Save your changes here. "Save" updates the current mix; "Save New" stores it as a new mix.',
+    },
+    mixLibrary: {
+      title: 'MIX LIBRARY',
+      body: 'Your saved mixes live here. Load them back into the mixer or add them to a set.',
+    },
+    /** Labels for the topic tabs at the top of the popup. */
+    topics: {
+      mixer: 'Mixer',
+      set: 'Set',
+      session: 'Session',
+    },
+    newMix: {
+      title: 'NEW MIX',
+      body: 'This button creates a new, empty mix.',
+    },
+    addToSet: {
+      title: 'ADD TO SET',
+      body: 'This button adds a mix to your set.',
+    },
+    setEditor: {
+      title: 'SET EDITOR',
+      body: 'This is where you build and edit a set.',
+    },
+    setLibrary: {
+      title: 'SET LIBRARY',
+      body: 'Here is your library of saved sets.',
+    },
+    setTimeline: {
+      title: 'TIMELINE',
+      body: 'This timeline shows the mixes added to your set. Reorder them, change how long each one plays, and change the transition effect between mixes.',
+    },
+    playSet: {
+      title: 'PLAY THE SET',
+      body: 'Play the whole set from here.',
+    },
+    setName: {
+      title: 'SET NAME',
+      body: 'Rename your set here.',
+    },
+    setDefaultTransition: {
+      title: 'DEFAULT TRANSITION',
+      body: 'The default transition applied to mixes you add to the set.',
+    },
+    setDuration: {
+      title: 'TOTAL LENGTH',
+      body: 'The total length of the set.',
+    },
+    setReset: {
+      title: 'RESET CHANGES',
+      body: 'Reset the set’s unsaved changes.',
+    },
+    setSave: {
+      title: 'SAVE SET',
+      body: 'Save your set here.',
+    },
+    setExport: {
+      title: 'EXPORT AUDIO',
+      body: 'Download the set as an audio file. This takes a while and is optional — you can also just play it inside the app.',
+    },
+    newSet: {
+      title: 'NEW SET',
+      body: 'Create a new, empty set with this button.',
+    },
+    session: {
+      title: 'YOUR SESSION',
+      body: 'Everything you do — track edits, custom sounds, mixes and sets — is stored in your session. Even after you close the app, your session and changes are remembered until you reset them yourself.',
+    },
+    sessionSave: {
+      title: 'SAVE SESSION',
+      body: 'Save your session with this button — it creates a file with your session data.',
+    },
+    sessionLoad: {
+      title: 'LOAD SESSION',
+      body: 'Load an older session from a file like this.',
+    },
+    sessionNew: {
+      title: 'NEW SESSION',
+      body: 'Create a fresh, empty session with this button.',
+    },
   },
 } as const;

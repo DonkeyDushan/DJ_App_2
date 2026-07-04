@@ -1,18 +1,15 @@
 {
   "appId": "com.natsedlakova.djapp2",
-  "productName": "DJ App 2",
+  "productName": "DJ APP TURBO 2000",
   "directories": {
     "output": "C:/builds/dj-app-2"
   },
-  "files": [
-    "dist/**",
-    "dist-electron/**"
-  ],
+  "files": ["dist/**", "dist-electron/**"],
   "win": {
     "target": [
       {
         "target": "nsis",
-        "arch": ["x64"]
+        "arch": ["x64", "ia32"]
       }
     ]
   },
@@ -22,6 +19,18 @@
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "DJ App 2"
+    "shortcutName": "DJ APP TURBO 2000"
+  },
+  "mac": {
+    "category": "public.app-category.music",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ]
+  },
+  "dmg": {
+    "title": "DJ APP TURBO 2000"
   }
 }
