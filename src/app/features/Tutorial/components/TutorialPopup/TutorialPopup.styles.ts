@@ -17,6 +17,27 @@ export const rootSx: SxProps<Theme> = {
   boxShadow: '0 0 24px rgba(229, 28, 132, 0.35)',
 };
 
+export const tabsSx: SxProps<Theme> = {
+  minHeight: 0,
+  mb: 0.5,
+  borderBottom: '1px solid',
+  borderColor: 'divider',
+  '& .MuiTab-root': {
+    minHeight: 0,
+    py: 0.75,
+    fontFamily: 'Orbitron, monospace',
+    fontSize: '0.75rem',
+    letterSpacing: '0.08em',
+    color: 'text.secondary',
+  },
+  '& .MuiTab-root.Mui-selected': {
+    color: 'primary.main',
+  },
+  '& .MuiTabs-indicator': {
+    backgroundColor: 'primary.main',
+  },
+};
+
 export const titleSx: SxProps<Theme> = {
   fontFamily: 'Orbitron, monospace',
   fontSize: '1rem',

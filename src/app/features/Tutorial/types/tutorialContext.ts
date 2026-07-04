@@ -22,4 +22,6 @@ export type TutorialContextValue = {
   readonly next: () => void;
   /** Return to the previous step; no-op on the first step. */
   readonly prev: () => void;
+  /** Jump directly to a step by index (used by the topic tabs). */
+  readonly goToStep: (index: number) => void;
 };

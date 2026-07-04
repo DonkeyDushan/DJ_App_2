@@ -6,6 +6,12 @@
 export type TutorialPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center';
 
 /**
+ * Top-level topic a step belongs to. Steps are grouped by topic so the popup can
+ * show tabs that jump straight to the first step of each area.
+ */
+export type TutorialTopic = 'mixer' | 'set' | 'session';
+
+/**
  * UI stage a step needs the app to enter before it can spotlight its target.
  * The host reacts to the active step's stage and opens the matching surface —
  * `trackEditor` opens the track edit modal, `customSounds` opens the custom
@@ -22,6 +28,8 @@ export type TutorialStage = 'trackEditor' | 'customSounds';
 export type TutorialStep = {
   /** Stable identifier for the step (used as React key and for test hooks). */
   readonly key: string;
+  /** Topic this step belongs to; drives the popup's topic tabs. */
+  readonly topic: TutorialTopic;
   /**
    * CSS selector for the element to spotlight. The first match in the document
    * is used. `null` renders a centered modal with a plain dark backdrop and no

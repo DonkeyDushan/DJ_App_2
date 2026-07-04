@@ -28,7 +28,7 @@ export const POPUP_WIDTH_PX = 340;
  * an anchored position would push it off an edge — a slight over-estimate is
  * safer than under, so the bottom edge is never clipped.
  */
-export const POPUP_ESTIMATED_HEIGHT_PX = 260;
+export const POPUP_ESTIMATED_HEIGHT_PX = 300;
 
 /**
  * Gap in px between the spotlight edge and the popup card, so the pointer/arrow

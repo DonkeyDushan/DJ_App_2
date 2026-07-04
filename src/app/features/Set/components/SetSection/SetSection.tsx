@@ -134,15 +134,18 @@ const SetSectionInner = ({
             isPlaying={isSetPlaying}
             onToggleTransport={onPlayPause}
             disabled={!hasSlots}
+            testId="set-play"
           />
 
-          <SetNameInput
-            key={activeSet.id}
-            initialName={activeSet.name}
-            onCommit={onUpdateSetName}
-            placeholder={STRINGS.set.setNamePlaceholder}
-            sx={nameInputSx}
-          />
+          <Box data-testid="set-name" sx={{ display: 'flex', flex: 1, minWidth: 0 }}>
+            <SetNameInput
+              key={activeSet.id}
+              initialName={activeSet.name}
+              onCommit={onUpdateSetName}
+              placeholder={STRINGS.set.setNamePlaceholder}
+              sx={nameInputSx}
+            />
+          </Box>
 
           {isSetPlaying && currentSlotIndex !== null && (
             <Typography
@@ -183,7 +186,10 @@ const SetSectionInner = ({
               </IconButton>
             </Tooltip>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+              data-testid="set-duration"
+            >
               <Typography sx={durationLabelSx}>
                 {STRINGS.set.totalDuration}
               </Typography>
@@ -219,6 +225,7 @@ const SetSectionInner = ({
                 onClick={onResetSet}
                 disabled={isSetPlaying || !hasUnsavedChanges}
                 size="small"
+                data-testid="set-reset"
               >
                 <PixelIcon glyph={Reload} />
               </IconButton>
@@ -228,6 +235,7 @@ const SetSectionInner = ({
                 onClick={onSaveSet}
                 disabled={isSetPlaying}
                 size="small"
+                data-testid="set-save"
                 sx={{
                   color: 'pink.main',
                   '&:hover': {

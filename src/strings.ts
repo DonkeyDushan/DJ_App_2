@@ -274,5 +274,79 @@ export const STRINGS = {
       title: 'MIX LIBRARY',
       body: 'Your saved mixes live here. Load them back into the mixer or add them to a set.',
     },
+    /** Labels for the topic tabs at the top of the popup. */
+    topics: {
+      mixer: 'Mixer',
+      set: 'Set',
+      session: 'Session',
+    },
+    newMix: {
+      title: 'NEW MIX',
+      body: 'This button creates a new, empty mix.',
+    },
+    addToSet: {
+      title: 'ADD TO SET',
+      body: 'This button adds a mix to your set.',
+    },
+    setEditor: {
+      title: 'SET EDITOR',
+      body: 'This is where you build and edit a set.',
+    },
+    setLibrary: {
+      title: 'SET LIBRARY',
+      body: 'Here is your library of saved sets.',
+    },
+    setTimeline: {
+      title: 'TIMELINE',
+      body: 'This timeline shows the mixes added to your set. Reorder them, change how long each one plays, and change the transition effect between mixes.',
+    },
+    playSet: {
+      title: 'PLAY THE SET',
+      body: 'Play the whole set from here.',
+    },
+    setName: {
+      title: 'SET NAME',
+      body: 'Rename your set here.',
+    },
+    setDefaultTransition: {
+      title: 'DEFAULT TRANSITION',
+      body: 'The default transition applied to mixes you add to the set.',
+    },
+    setDuration: {
+      title: 'TOTAL LENGTH',
+      body: 'The total length of the set.',
+    },
+    setReset: {
+      title: 'RESET CHANGES',
+      body: 'Reset the set’s unsaved changes.',
+    },
+    setSave: {
+      title: 'SAVE SET',
+      body: 'Save your set here.',
+    },
+    setExport: {
+      title: 'EXPORT AUDIO',
+      body: 'Download the set as an audio file. This takes a while and is optional — you can also just play it inside the app.',
+    },
+    newSet: {
+      title: 'NEW SET',
+      body: 'Create a new, empty set with this button.',
+    },
+    session: {
+      title: 'YOUR SESSION',
+      body: 'Everything you do — track edits, custom sounds, mixes and sets — is stored in your session. Even after you close the app, your session and changes are remembered until you reset them yourself.',
+    },
+    sessionSave: {
+      title: 'SAVE SESSION',
+      body: 'Save your session with this button — it creates a file with your session data.',
+    },
+    sessionLoad: {
+      title: 'LOAD SESSION',
+      body: 'Load an older session from a file like this.',
+    },
+    sessionNew: {
+      title: 'NEW SESSION',
+      body: 'Create a fresh, empty session with this button.',
+    },
   },
 } as const;

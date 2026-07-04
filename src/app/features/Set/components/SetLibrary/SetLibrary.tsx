@@ -49,6 +49,7 @@ const SetLibraryInner = ({
         <IconButton
           onClick={onNewSet}
           size="small"
+          data-testid="set-new-button"
           sx={{
             color: 'pink.main',
             '&:hover': {

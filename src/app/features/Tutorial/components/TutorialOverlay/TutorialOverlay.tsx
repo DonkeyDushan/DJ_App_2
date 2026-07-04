@@ -38,8 +38,16 @@ const padRect = (rect: TargetRect, padding: number): TargetRect => {
  * steps fall back to a plain backdrop with a centered popup.
  */
 export const TutorialOverlay = (): React.ReactElement | null => {
-  const { isActive, currentStep, stepIndex, stepCount, next, prev, stop } =
-    useTutorial();
+  const {
+    isActive,
+    currentStep,
+    stepIndex,
+    stepCount,
+    next,
+    prev,
+    stop,
+    goToStep,
+  } = useTutorial();
 
   useTutorialKeyboard(isActive, { onNext: next, onPrev: prev, onClose: stop });
 
@@ -60,6 +68,8 @@ export const TutorialOverlay = (): React.ReactElement | null => {
     <TutorialPopup
       title={currentStep.title}
       body={currentStep.body}
+      topic={currentStep.topic}
+      onGoToStep={goToStep}
       stepIndex={stepIndex}
       stepCount={stepCount}
       position={position}

@@ -39,6 +39,12 @@ export const TutorialProvider = ({
     setStepIndex((current) => (current <= 0 ? current : current - 1));
   }, []);
 
+  const goToStep = useCallback((index: number) => {
+    setStepIndex((current) =>
+      index < 0 || index >= TUTORIAL_STEPS.length ? current : index,
+    );
+  }, []);
+
   const value = useMemo<TutorialContextValue>(() => {
     const isActive = stepIndex !== INACTIVE_INDEX;
 
@@ -51,8 +57,9 @@ export const TutorialProvider = ({
       stop,
       next,
       prev,
+      goToStep,
     };
-  }, [stepIndex, start, stop, next, prev]);
+  }, [stepIndex, start, stop, next, prev, goToStep]);
 
   return (
     <TutorialContext.Provider value={value}>

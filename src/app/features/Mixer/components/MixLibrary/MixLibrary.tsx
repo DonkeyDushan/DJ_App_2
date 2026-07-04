@@ -52,6 +52,7 @@ const MixLibraryInner = ({
         <IconButton
           onClick={onNewMix}
           size="small"
+          data-testid="mix-new-button"
           sx={{
             color: 'pink.main',
             '&:hover': {
