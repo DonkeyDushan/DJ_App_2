@@ -258,7 +258,7 @@ export const STRINGS = {
     },
     saveMix: {
       title: 'SAVE',
-      body: 'Save your changes here. Save updates the current mix; Save New stores it as a copy.',
+      body: 'Save your changes here. "Save" updates the current mix; "Save New" stores it as a new mix.',
     },
     mixLibrary: {
       title: 'MIX LIBRARY',
