@@ -1,7 +1,7 @@
 {
   "name": "dj-app-2",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Electron DJ mixing app with React, TypeScript, Vite, MUI, Airbnb ESLint and Prettier.",
   "main": "dist-electron/main.js",
   "scripts": {
