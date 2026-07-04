@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Download } from 'pixelarticons/react/Download';
-import { Reload } from 'pixelarticons/react/Reload';
+import { Delete } from 'pixelarticons/react/Delete';
 import { Save } from 'pixelarticons/react/Save';
 import { Waves } from 'pixelarticons/react/Waves';
 import {
@@ -137,7 +137,10 @@ const SetSectionInner = ({
             testId="set-play"
           />
 
-          <Box data-testid="set-name" sx={{ display: 'flex', flex: 1, minWidth: 0 }}>
+          <Box
+            data-testid="set-name"
+            sx={{ display: 'flex', flex: 1, minWidth: 0 }}
+          >
             <SetNameInput
               key={activeSet.id}
               initialName={activeSet.name}
@@ -227,7 +230,7 @@ const SetSectionInner = ({
                 size="small"
                 data-testid="set-reset"
               >
-                <PixelIcon glyph={Reload} />
+                <PixelIcon glyph={Delete} />
               </IconButton>
             </Tooltip>
             <Tooltip title={STRINGS.topBar.saveSet}>
@@ -260,10 +263,7 @@ const SetSectionInner = ({
             kind={activeSet.defaultTransitionKind}
             durationSeconds={activeSet.defaultTransitionDuration}
             onChangeKind={(kind) =>
-              onSetDefaultTransition(
-                kind,
-                activeSet.defaultTransitionDuration,
-              )
+              onSetDefaultTransition(kind, activeSet.defaultTransitionDuration)
             }
             onChangeDuration={(durationSeconds) =>
               onSetDefaultTransition(

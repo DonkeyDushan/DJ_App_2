@@ -1,13 +1,10 @@
 {
   "appId": "com.natsedlakova.djapp2",
-  "productName": "DJ App 2",
+  "productName": "DJ APP TURBO 2000",
   "directories": {
     "output": "C:/builds/dj-app-2"
   },
-  "files": [
-    "dist/**",
-    "dist-electron/**"
-  ],
+  "files": ["dist/**", "dist-electron/**"],
   "win": {
     "target": [
       {

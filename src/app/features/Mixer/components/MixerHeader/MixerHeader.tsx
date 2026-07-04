@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Reload } from 'pixelarticons/react/Reload';
+import { Delete } from 'pixelarticons/react/Delete';
 import { Save } from 'pixelarticons/react/Save';
 import { Upload } from 'pixelarticons/react/Upload';
 import { Box, IconButton, Slider, Tooltip, Typography } from '@mui/material';
@@ -21,7 +21,6 @@ const BASE_BPM = 120;
 interface MixerHeaderProps {
   isPlaying: boolean;
   globalTempo: number;
-  activeMixId: string | null;
   canSave: boolean;
   isLocked: boolean;
   onToggleTransport: () => void;
@@ -35,7 +34,6 @@ interface MixerHeaderProps {
 const MixerHeaderInner = ({
   isPlaying,
   globalTempo,
-  activeMixId,
   canSave,
   isLocked,
   onToggleTransport,
@@ -100,17 +98,14 @@ const MixerHeaderInner = ({
         <Tooltip title={STRINGS.mixerHeader.reset}>
           <IconButton
             onClick={onReset}
-            disabled={isLocked || !activeMixId}
+            disabled={isLocked || !canSave}
             size="small"
           >
-            <PixelIcon glyph={Reload} />
+            <PixelIcon glyph={Delete} />
           </IconButton>
         </Tooltip>
 
-        <Box
-          sx={{ display: 'flex', gap: 0.75 }}
-          data-testid="mixer-save-group"
-        >
+        <Box sx={{ display: 'flex', gap: 0.75 }} data-testid="mixer-save-group">
           <Tooltip title={STRINGS.mixerHeader.save}>
             <IconButton
               onClick={onSave}

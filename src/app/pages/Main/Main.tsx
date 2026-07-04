@@ -675,7 +675,6 @@ export const Main = (): React.ReactElement => {
           <MixerHeader
             isPlaying={snapshot.transportPlaying}
             globalTempo={snapshot.globalTempo}
-            activeMixId={activeMixId}
             canSave={activeMixId !== null && hasUnsavedMixChanges}
             isLocked={setIsPlaying}
             onToggleTransport={handleToggleTransport}
