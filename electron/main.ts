@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { registerStorageHandlers, unregisterStorageHandlers } from './storageHandlers';
@@ -161,6 +161,10 @@ async function createWindow(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
+  // The default application menu (File / Edit / View / Window / Help) is
+  // meaningless for this app, so remove it entirely on Windows and Linux.
+  Menu.setApplicationMenu(null);
+
   registerStorageHandlers();
   protocol.handle(PRELOADED_AUDIO_SCHEME, handlePreloadedAudioRequest);
   ipcMain.handle('preloaded-audio:list', async () => listPreloadedAudioFiles());
