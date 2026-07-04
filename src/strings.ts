@@ -143,6 +143,14 @@ export const STRINGS = {
     discard: 'Discard & switch',
     cancel: 'Cancel',
   },
+  unsavedSetDialog: {
+    title: 'UNSAVED CHANGES',
+    message:
+      'The current set has unsaved changes. Switching will discard them. Save first?',
+    save: 'Save',
+    discard: 'Discard & switch',
+    cancel: 'Cancel',
+  },
   mixEditDialog: {
     createTitle: 'SAVE MIX',
     editTitle: 'EDIT MIX',
@@ -174,6 +182,8 @@ export const STRINGS = {
     duplicateSlot: 'Duplicate',
     savedSets: 'SAVED SETS',
     noSets: 'No saved sets yet.',
+    unsavedSet: 'UNTITLED',
+    saveUnsavedSet: 'Save set',
     loadSet: 'Load',
     deleteSet: 'Delete',
     renameSet: 'Rename set',

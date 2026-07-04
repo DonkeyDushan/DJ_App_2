@@ -8,7 +8,6 @@ import {
   TrackGrid,
   MixLibrary,
   MixEditDialog,
-  UnsavedChangesDialog,
 } from '../../features/Mixer';
 import { useSet, SetSection, SetLibrary, SetExportDialog } from '../../features/Set';
 import type { MixColorKey } from '../../core';
@@ -27,12 +26,14 @@ import {
   SaveLoadManager,
   ConfirmDialog,
   NameInputDialog,
+  UnsavedChangesDialog,
 } from '../../components';
 import { useSetPlayback } from './hooks/useSetPlayback';
 import { useSetExport } from './hooks/useSetExport';
 import type { DeleteTarget, RenameTarget } from './types/libraryItemTarget';
 import type { MixDialogState } from './types/mixEditTarget';
 import type { PendingMixSwitch } from './types/pendingMixSwitch';
+import type { PendingSetSwitch } from './types/pendingSetSwitch';
 
 /** Confirmation message shown for each kind of deletable library item. */
 const DELETE_MESSAGE_BY_TYPE: Record<DeleteTarget['kind'], string> = {
@@ -96,6 +97,8 @@ export const Main = (): React.ReactElement => {
   const [pendingSwitch, setPendingSwitch] = useState<PendingMixSwitch | null>(
     null,
   );
+  const [pendingSetSwitch, setPendingSetSwitch] =
+    useState<PendingSetSwitch | null>(null);
 
   // Flips true once initial hydration has settled, gating any check that must
   // observe the fully loaded session rather than the empty default state.
@@ -148,6 +151,16 @@ export const Main = (): React.ReactElement => {
     !setIsPlaying &&
     (isNewMix || snapshot.savedMixes.length === 0);
 
+  // The working set is a draft — never persisted — until its id appears in the
+  // saved list. While it is a draft, the placeholder "Untitled" set card stands
+  // in for it at the top of the set library.
+  const isSetUnsaved = !sets.some((set) => set.id === activeSet.id);
+  const unsavedSetSlotCount = activeSet.slots.length;
+  const unsavedSetDurationSeconds = activeSet.slots.reduce(
+    (sum, slot) => sum + slot.durationSeconds,
+    0,
+  );
+
   // Lookup refs keep the request handlers referentially stable so memoized
   // library/grid subtrees do not re-render when unrelated snapshot state changes.
   const tracksLookupRef = useRef(tracks);
@@ -174,6 +187,11 @@ export const Main = (): React.ReactElement => {
   // track toggle.
   const hasUnsavedMixChangesRef = useRef(hasUnsavedMixChanges);
   hasUnsavedMixChangesRef.current = hasUnsavedMixChanges;
+  // Same stable-handler pattern for the set library switch guard.
+  const hasUnsavedSetChangesRef = useRef(hasUnsavedChanges);
+  hasUnsavedSetChangesRef.current = hasUnsavedChanges;
+  const activeSetIdRef = useRef(activeSet.id);
+  activeSetIdRef.current = activeSet.id;
 
   useEffect(() => {
     if (!pendingActionsRef.current) return;
@@ -347,6 +365,62 @@ export const Main = (): React.ReactElement => {
       initialName: STRINGS.saveLoadManager.defaultMixName,
     });
   }, []);
+
+  // --- Set library switch guard (mirrors the mix switch guard above) ---
+
+  const runSetSwitch = useCallback(
+    (target: PendingSetSwitch) => {
+      if (target.kind === 'load') {
+        setActions.loadSet(target.setId);
+      } else {
+        setActions.newSet();
+      }
+    },
+    [setActions],
+  );
+
+  const handleLoadSet = useCallback(
+    (setId: string) => {
+      // Reloading the already-active set would silently discard unsaved edits;
+      // no-op instead (use Reset to revert deliberately).
+      if (setId === activeSetIdRef.current) return;
+
+      if (hasUnsavedSetChangesRef.current) {
+        setPendingSetSwitch({ kind: 'load', setId });
+
+        return;
+      }
+
+      setActions.loadSet(setId);
+    },
+    [setActions],
+  );
+
+  const handleNewSet = useCallback(() => {
+    if (hasUnsavedSetChangesRef.current) {
+      setPendingSetSwitch({ kind: 'new' });
+
+      return;
+    }
+
+    setActions.newSet();
+  }, [setActions]);
+
+  const handleCancelSetSwitch = useCallback(() => setPendingSetSwitch(null), []);
+
+  const handleDiscardSetAndSwitch = useCallback(() => {
+    if (pendingSetSwitch) runSetSwitch(pendingSetSwitch);
+
+    setPendingSetSwitch(null);
+  }, [pendingSetSwitch, runSetSwitch]);
+
+  const handleSaveSetAndSwitch = useCallback(() => {
+    setActions.saveSet();
+
+    if (pendingSetSwitch) runSetSwitch(pendingSetSwitch);
+
+    setPendingSetSwitch(null);
+  }, [pendingSetSwitch, runSetSwitch, setActions]);
   const handleToggleTransport = useCallback(
     () => void mixerActions.toggleTransport(),
     [],
@@ -680,10 +754,14 @@ export const Main = (): React.ReactElement => {
         <SetLibrary
           sets={sets}
           activeSetId={activeSet.id}
-          onLoad={setActions.loadSet}
+          showUnsavedCard={isSetUnsaved}
+          unsavedSlotCount={unsavedSetSlotCount}
+          unsavedDurationSeconds={unsavedSetDurationSeconds}
+          onLoad={handleLoadSet}
           onDelete={requestDeleteSet}
           onRename={requestRenameSet}
-          onNewSet={setActions.newSet}
+          onNewSet={handleNewSet}
+          onSaveUnsavedSet={setActions.saveSet}
         />
 
         <SetSection
@@ -777,11 +855,28 @@ export const Main = (): React.ReactElement => {
 
       <UnsavedChangesDialog
         open={pendingSwitch !== null && mixDialog === null}
-        canOverwrite={activeMixId !== null}
-        onSaveOverwrite={handleSaveAndSwitch}
-        onSaveNew={handleSaveNewAndSwitch}
+        title={STRINGS.unsavedMixDialog.title}
+        message={STRINGS.unsavedMixDialog.message}
+        discardLabel={STRINGS.unsavedMixDialog.discard}
+        cancelLabel={STRINGS.unsavedMixDialog.cancel}
         onDiscard={handleDiscardAndSwitch}
         onClose={handleCancelSwitch}
+        saveLabel={activeMixId !== null ? STRINGS.unsavedMixDialog.save : undefined}
+        onSave={activeMixId !== null ? handleSaveAndSwitch : undefined}
+        saveNewLabel={STRINGS.unsavedMixDialog.saveNew}
+        onSaveNew={handleSaveNewAndSwitch}
+      />
+
+      <UnsavedChangesDialog
+        open={pendingSetSwitch !== null}
+        title={STRINGS.unsavedSetDialog.title}
+        message={STRINGS.unsavedSetDialog.message}
+        discardLabel={STRINGS.unsavedSetDialog.discard}
+        cancelLabel={STRINGS.unsavedSetDialog.cancel}
+        onDiscard={handleDiscardSetAndSwitch}
+        onClose={handleCancelSetSwitch}
+        saveLabel={STRINGS.unsavedSetDialog.save}
+        onSave={handleSaveSetAndSwitch}
       />
 
       <ConfirmDialog

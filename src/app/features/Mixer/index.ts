@@ -5,7 +5,6 @@
 export { MixLibrary } from './components/MixLibrary/MixLibrary';
 export { MixLibraryCard } from './components/MixLibraryCard/MixLibraryCard';
 export { MixEditDialog } from './components/MixEditDialog/MixEditDialog';
-export { UnsavedChangesDialog } from './components/UnsavedChangesDialog/UnsavedChangesDialog';
 export { MixerProvider, useMixer } from './MixerContext';
 export { MixerHeader } from './components/MixerHeader/MixerHeader';
 export { TrackCard } from './components/TrackCard/TrackCard';

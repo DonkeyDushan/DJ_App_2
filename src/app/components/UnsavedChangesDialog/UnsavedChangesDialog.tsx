@@ -10,35 +10,43 @@ import {
 } from '@mui/material';
 import { Close } from 'pixelarticons/react/Close';
 
-import { STRINGS } from '../../../../strings';
-import { PixelIcon } from '../../../../components';
 import {
   buttonSx,
   discardButtonSx,
   messageSx,
   paperSx,
 } from './UnsavedChangesDialog.styles';
+import { PixelIcon } from '../PixelIcon/PixelIcon';
 
 type UnsavedChangesDialogProps = {
   open: boolean;
-  /**
-   * Whether a saved mix is currently loaded and can be overwritten in place.
-   * False for a brand-new mix, where only "Save new" makes sense.
-   */
-  canOverwrite: boolean;
-  onSaveOverwrite: () => void;
-  onSaveNew: () => void;
+  title: string;
+  message: string;
+  discardLabel: string;
+  cancelLabel: string;
   onDiscard: () => void;
   onClose: () => void;
+  /** Primary save action (overwrite in place). Omitted when nothing can be
+   * overwritten — e.g. a brand-new item that must be saved as new instead. */
+  saveLabel?: string;
+  onSave?: () => void;
+  /** Secondary "save as a new item" action. Omitted where not applicable. */
+  saveNewLabel?: string;
+  onSaveNew?: () => void;
 };
 
 const UnsavedChangesDialogInner = ({
   open,
-  canOverwrite,
-  onSaveOverwrite,
-  onSaveNew,
+  title,
+  message,
+  discardLabel,
+  cancelLabel,
   onDiscard,
   onClose,
+  saveLabel,
+  onSave,
+  saveNewLabel,
+  onSaveNew,
 }: UnsavedChangesDialogProps): React.ReactElement => (
   <Dialog
     open={open}
@@ -47,14 +55,14 @@ const UnsavedChangesDialogInner = ({
     data-testid="unsaved-changes-dialog"
   >
     <DialogTitle>
-      {STRINGS.unsavedMixDialog.title}
+      {title}
       <IconButton size="small" onClick={onClose}>
         <PixelIcon glyph={Close} />
       </IconButton>
     </DialogTitle>
 
     <DialogContent>
-      <Typography sx={messageSx}>{STRINGS.unsavedMixDialog.message}</Typography>
+      <Typography sx={messageSx}>{message}</Typography>
     </DialogContent>
 
     <DialogActions>
@@ -64,30 +72,32 @@ const UnsavedChangesDialogInner = ({
         sx={discardButtonSx}
         data-testid="unsaved-changes-discard"
       >
-        {STRINGS.unsavedMixDialog.discard}
+        {discardLabel}
       </Button>
 
       <Button variant="outlined" onClick={onClose} sx={buttonSx}>
-        {STRINGS.unsavedMixDialog.cancel}
+        {cancelLabel}
       </Button>
 
-      <Button
-        variant="outlined"
-        onClick={onSaveNew}
-        sx={buttonSx}
-        data-testid="unsaved-changes-save-new"
-      >
-        {STRINGS.unsavedMixDialog.saveNew}
-      </Button>
+      {saveNewLabel && onSaveNew && (
+        <Button
+          variant="outlined"
+          onClick={onSaveNew}
+          sx={buttonSx}
+          data-testid="unsaved-changes-save-new"
+        >
+          {saveNewLabel}
+        </Button>
+      )}
 
-      {canOverwrite && (
+      {saveLabel && onSave && (
         <Button
           variant="contained"
-          onClick={onSaveOverwrite}
+          onClick={onSave}
           sx={buttonSx}
           data-testid="unsaved-changes-save"
         >
-          {STRINGS.unsavedMixDialog.save}
+          {saveLabel}
         </Button>
       )}
     </DialogActions>

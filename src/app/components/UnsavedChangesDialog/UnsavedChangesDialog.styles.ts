@@ -1,6 +1,6 @@
 /**
- * Styles for the UnsavedChangesDialog — the prompt shown before switching away
- * from a mix that has unsaved changes.
+ * Styles for the shared UnsavedChangesDialog — the prompt shown before
+ * switching away from an item (mix, set) that has unsaved changes.
  */
 
 import type { SxProps, Theme } from '@mui/material';
