@@ -68,9 +68,10 @@ const MixerHeaderInner = ({
         isPlaying={isPlaying}
         disabled={isLocked}
         onToggleTransport={onToggleTransport}
+        testId="mixer-play"
       />
 
-      <Box sx={tempoGroupSx}>
+      <Box sx={tempoGroupSx} data-testid="mixer-tempo">
         <Typography sx={bpmLabelSx}>{STRINGS.mixerHeader.bpm}</Typography>
         <Typography sx={bpmValueSx}>{bpm}</Typography>
         <Slider

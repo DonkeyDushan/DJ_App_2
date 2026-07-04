@@ -228,13 +228,17 @@ export const STRINGS = {
       title: 'THE MIXER',
       body: 'This is the mixer. Here you blend tracks together to create a mix.',
     },
+    globalTempo: {
+      title: 'GLOBAL TEMPO',
+      body: 'Here you can change the speed for the whole mix.',
+    },
     track: {
       title: 'A TRACK',
       body: 'This is a track. Hover it to reveal its buttons: play, favourite and edit.',
     },
     trackEditor: {
       title: 'EDIT A TRACK',
-      body: 'In the editor you tweak a track’s volume, speed, EQ and effects.',
+      body: 'In the editor you tweak a track’s volume, speed, EQ and effects. Tracks are shared across mixes, so an edit applies to every mix that uses the track.',
     },
     customSoundsButton: {
       title: 'CUSTOM SOUNDS',
@@ -247,6 +251,10 @@ export const STRINGS = {
     checkTracks: {
       title: 'BUILD A MIX',
       body: 'Build a mix by checking the tracks that should play together.',
+    },
+    playMix: {
+      title: 'PLAY THE MIX',
+      body: 'Play your mix here to hear how the tracks sound together.',
     },
     saveMix: {
       title: 'SAVE',

@@ -79,6 +79,20 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = Object.freeze([
     placement: 'right',
   },
   {
+    key: 'play-mix',
+    targetSelector: '[data-testid="mixer-play"]',
+    title: STRINGS.tutorial.playMix.title,
+    body: STRINGS.tutorial.playMix.body,
+    placement: 'bottom',
+  },
+  {
+    key: 'global-tempo',
+    targetSelector: '[data-testid="mixer-tempo"]',
+    title: STRINGS.tutorial.globalTempo.title,
+    body: STRINGS.tutorial.globalTempo.body,
+    placement: 'bottom',
+  },
+  {
     key: 'save-mix',
     targetSelector: '[data-testid="mixer-save-group"]',
     title: STRINGS.tutorial.saveMix.title,
